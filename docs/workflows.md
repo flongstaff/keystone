@@ -172,7 +172,7 @@ Triggered after a phase passes the gate. Reads the UAT file, updates the corresp
 4. **Acceptance criteria coverage** — checks that each criterion from the phase context has corresponding UAT evidence
 5. **Cross-phase interface drift** — checks that the interfaces the next phase depends on actually exist
 
-**Output:** A structured report using `✅` (no issues), `⚠` (non-blocking warnings), and `❌` (blockers). Every `❌` includes a specific `/gsd:quick` fix command.
+**Output:** A structured report using `✅` (no issues), `⚠️` (non-blocking warnings), and `❌` (blockers). Every `❌` includes a specific `/gsd:quick` fix command.
 
 **Advisory role:** The monitor flags issues but does not block. Fix all `❌` items before running `phase-gate-validator`.
 
@@ -361,7 +361,7 @@ After every file write, `post-write-check.sh` runs against the written file. The
 | `.py`, `.js`, `.ts`, `.json`, `.yaml`, `.yml`, `.env` | Hardcoded secrets |
 | `.gd` (GDScript) | Absolute node paths, `yield()` syntax (Godot 3), game logic in UI scripts |
 
-Issues are reported to stderr as `❌ ERROR` (more serious) or `⚠ WARN` (advisory). The hook always exits with code 0 — it warns but never blocks.
+Issues are reported to stderr as `❌ ERROR` (more serious) or `⚠️ WARN` (advisory). The hook always exits with code 0 — it warns but never blocks.
 
 All detected issues are appended to `~/.claude/logs/post-write-check.log` with timestamps.
 

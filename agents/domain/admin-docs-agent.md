@@ -64,7 +64,7 @@ Questions: [contact / ticket queue]
 | Policy ID | IT-[number] |
 | Version | 1.0 |
 | Effective | [date] |
-| Review date | [date +1 year] |
+| Review Date | [date +1 year] |
 | Owner | [Role/Team] |
 | Approved by | [name/role] |
 | Scope | [Organisation/Region] |

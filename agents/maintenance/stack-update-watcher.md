@@ -44,7 +44,7 @@ in sync with upstream changes.
 
 ### Pi (optional)
 - npm version:   `npm view @mariozechner/pi-coding-agent version`
-- GitHub:        https://github.com/niclas-niclas/pi
+- GitHub:        https://github.com/mariozechner/pi-coding-agent
 - Local version: `pi --version 2>/dev/null`
 
 ---
