@@ -1,0 +1,27 @@
+# Secrets and credentials
+.env*
+auth.json
+*.credentials
+*.key
+*.pem
+
+# Local configuration
+settings.local.json
+stack-update-cache.json
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups (contain personal config)
+backups/
+
+# Sessions
+sessions/
+
+# Node
+node_modules/
