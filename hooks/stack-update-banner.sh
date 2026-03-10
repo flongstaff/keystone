@@ -35,7 +35,7 @@ if [ -f "$CACHE" ]; then
     # Async background refresh if cache stale
     NOW_EPOCH=$(date +%s)
     if [ -n "$NEXT_CHECK" ] && [ "$NEXT_CHECK" != "null" ]; then
-        NEXT_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${NEXT_CHECK%%+*}" +%s 2>/dev/null || echo 0)
+        NEXT_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${NEXT_CHECK%%+*}" +%s 2>/dev/null || date -d "${NEXT_CHECK%%+*}" +%s 2>/dev/null || echo 0)
         if [ "$NOW_EPOCH" -gt "$NEXT_EPOCH" ]; then
             (
                 BMAD_NEW=$(npm view bmad-method version 2>/dev/null || echo "")

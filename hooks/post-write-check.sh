@@ -73,7 +73,7 @@ fi
 if [[ ${#ERRORS[@]} -gt 0 || ${#WARNINGS[@]} -gt 0 ]]; then
   echo "" >&2
   if [[ ${#ERRORS[@]} -gt 0 ]]; then
-    echo "┌─ POST-WRITE ERRORS (" "$(basename "$FILE")" ") ─────────────────" >&2
+    echo "┌─ POST-WRITE ERRORS ($(basename "$FILE")) ─────────────────" >&2
     for e in "${ERRORS[@]}"; do
       echo "│ ❌ $e" >&2
     done
@@ -81,9 +81,9 @@ if [[ ${#ERRORS[@]} -gt 0 || ${#WARNINGS[@]} -gt 0 ]]; then
   fi
 
   if [[ ${#WARNINGS[@]} -gt 0 ]]; then
-    echo "┌─ POST-WRITE WARNINGS (" "$(basename "$FILE")" ") ──────────────" >&2
+    echo "┌─ POST-WRITE WARNINGS ($(basename "$FILE")) ──────────────" >&2
     for w in "${WARNINGS[@]}"; do
-      echo "│ ⚠ $w" >&2
+      echo "│ ⚠️ $w" >&2
     done
     echo "└────────────────────────────────────────────────" >&2
   fi

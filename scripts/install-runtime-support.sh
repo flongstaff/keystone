@@ -17,7 +17,7 @@ RED='\033[0;31m'; YEL='\033[0;33m'; GRN='\033[0;32m'
 CYN='\033[0;36m'; NC='\033[0m'
 
 ok()   { echo -e "${GRN}  ✓${NC} $*"; }
-warn() { echo -e "${YEL}  ⚠${NC} $*"; }
+warn() { echo -e "${YEL}  ⚠️${NC} $*"; }
 err()  { echo -e "${RED}  ✗${NC} $*"; }
 step() { echo -e "\n${CYN}▶${NC} $*"; }
 
@@ -96,27 +96,19 @@ if $DO_CLAUDE; then
   step "Deploying agents to Claude Code..."
   mkdir -p "$CLAUDE_DIR/agents" "$CLAUDE_DIR/scripts" "$CLAUDE_DIR/logs"
 
-  AGENTS=(
-    "project-setup-advisor.md"
-    "bmad-gsd-orchestrator.md"
-    "doc-shard-bridge.md"
-    "phase-gate-validator.md"
-    "context-health-monitor.md"
-    "it-infra-agent.md"
-    "godot-dev-agent.md"
-    "open-source-agent.md"
-    "admin-docs-agent.md"
-    "stack-update-watcher.md"
-  )
+  AGENT_COUNT=0
+  while IFS= read -r -d '' agent_src; do
+    agent_name=$(basename "$agent_src")
+    cp "$agent_src" "$CLAUDE_DIR/agents/"
+    ok "Deployed: $agent_name"
+    AGENT_COUNT=$((AGENT_COUNT + 1))
+  done < <(find "$AGENTS_SRC" -name '*.md' -print0)
 
-  for agent in "${AGENTS[@]}"; do
-    if [[ -f "$AGENTS_SRC/$agent" ]]; then
-      cp "$AGENTS_SRC/$agent" "$CLAUDE_DIR/agents/"
-      ok "Deployed: $agent"
-    else
-      warn "Not found: $AGENTS_SRC/$agent (skip)"
-    fi
-  done
+  if [[ $AGENT_COUNT -eq 0 ]]; then
+    warn "No agent files found in $AGENTS_SRC"
+  else
+    ok "Deployed $AGENT_COUNT agents to $CLAUDE_DIR/agents/"
+  fi
 fi
 
 # ── Deploy agents to Pi ───────────────────────────────────────────────
@@ -127,7 +119,7 @@ if $DO_PI; then
   # Pi loads AGENTS.md files from ~/.pi/agent/
   # We create Pi-compatible versions (no Claude Code frontmatter, AGENTS.md format)
 
-  for agent_src in "$AGENTS_SRC"/*.md; do
+  while IFS= read -r -d '' agent_src; do
     agent_name=$(basename "$agent_src" .md)
     pi_target="$PI_DIR/agent/$agent_name.md"
 
@@ -153,7 +145,7 @@ print(f"  → Pi agent: {dst}")
 PYEOF
 
     ok "Pi agent: $agent_name"
-  done
+  done < <(find "$AGENTS_SRC" -name '*.md' -print0)
 
   ok "Pi agents deployed to $PI_DIR/agent/"
   echo "  Pi loads these automatically at startup from ~/.pi/agent/"
@@ -176,9 +168,7 @@ if $DO_OPENCODE; then
   done
 
   if [[ -n "$OC_AGENT_DIR" ]]; then
-    for agent_src in "$AGENTS_SRC"/*.md; do
-      cp "$agent_src" "$OC_AGENT_DIR/"
-    done
+    find "$AGENTS_SRC" -name '*.md' -exec cp {} "$OC_AGENT_DIR/" \;
     ok "OpenCode agents deployed to $OC_AGENT_DIR"
   else
     warn "Could not determine OpenCode agent directory. Deploy manually."

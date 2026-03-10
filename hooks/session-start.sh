@@ -79,12 +79,12 @@ if $HAS_GSD || $HAS_BMAD || $HAS_CLAUDE_MD || $HAS_AGENTS_MD; then
 
   # Missing CLAUDE.md / AGENTS.md warning
   if ! $HAS_CLAUDE_MD && ! $HAS_AGENTS_MD; then
-    printf "│  %-44s│\n" "⚠ No CLAUDE.md or AGENTS.md found" >&2
+    printf "│  %-44s│\n" "⚠️ No CLAUDE.md or AGENTS.md found" >&2
   fi
 
   # Infra safety reminder
   if [[ "$PROJECT_TYPE" == "infra" ]]; then
-    printf "│  %-44s│\n" "⚠ INFRA: use dry-run mode first" >&2
+    printf "│  %-44s│\n" "⚠️ INFRA: use dry-run mode first" >&2
   fi
 
   # Suggestion if no framework
