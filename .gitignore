@@ -1,0 +1,37 @@
+# Internal development artifacts
+_bmad/
+_bmad-output/
+.planning/
+plans/
+
+# Machine-specific Claude Code files
+.claude/wizard-state.json
+.claude/skills/
+.claude/toolkit-registry.json
+.claude/settings.local.json
+settings.local.json
+stack-update-cache.json
+
+# Secrets and credentials
+.env*
+*.credentials
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Logs and sessions
+logs/
+*.log
+sessions/
+
+# Backups
+backups/
+
+# IDE-specific rules
+.github/instructions/codacy.instructions.md

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: shellcheck hooks/*.sh scripts/*.sh skills/*.sh tests/*.sh
+
+  markdownlint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install -g markdownlint-cli
+      - name: Lint markdown files
+        run: markdownlint '**/*.md' --ignore '_bmad*/**' --ignore 'plans/**' --ignore 'node_modules/**'
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run wizard detection tests
+        run: bash tests/test-wizard-detect.sh
+      - name: Run structural tests
+        run: bash tests/phase-03-structural.sh
