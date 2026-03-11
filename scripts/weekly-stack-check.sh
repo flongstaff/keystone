@@ -7,6 +7,14 @@
 # ROLLBACK: Delete ~/.claude/stack-update-cache.json to reset.
 
 set -euo pipefail
+
+for dep in jq npm; do
+    if ! command -v "$dep" &>/dev/null; then
+        echo "ERROR: '$dep' is required but not installed." >&2
+        exit 1
+    fi
+done
+
 CACHE="$HOME/.claude/stack-update-cache.json"
 LOG="$HOME/.claude/logs/update-checks.log"
 mkdir -p "$HOME/.claude/logs" 2>/dev/null || true
@@ -28,13 +36,20 @@ PI_LOCAL=$(pi --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo 
 NEXT=$(date -v+7d -Iseconds 2>/dev/null || date -d "+7 days" --iso-8601=seconds 2>/dev/null || echo "")
 REQ=$(jq -r '.required_actions_count // 0' "$CACHE" 2>/dev/null || echo 0)
 
-jq -n --arg last "$(date -Iseconds)" \
+TMPFILE="${CACHE}.tmp.$$"
+if jq -n --arg last "$(date -Iseconds)" \
       --arg bi "$BMAD_LOCAL" --arg bl "$BMAD_LATEST" \
       --arg gi "$GSD_LOCAL"  --arg gl "$GSD_LATEST" \
       --arg pi "$PI_LOCAL"   --arg pl "$PI_LATEST" \
       --arg next "$NEXT" --argjson req "${REQ:-0}" \
     '{last_checked:$last,bmad_installed:$bi,bmad_latest:$bl,gsd_installed:$gi,gsd_latest:$gl,pi_installed:$pi,pi_latest:$pl,required_actions_count:$req,next_check_recommended:$next}' \
-    > "$CACHE"
+    > "$TMPFILE"; then
+    mv "$TMPFILE" "$CACHE"
+else
+    rm -f "$TMPFILE"
+    echo "ERROR: Failed to write cache file" >&2
+    exit 1
+fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Done. BMAD=$BMAD_LOCAL>$BMAD_LATEST GSD=$GSD_LOCAL>$GSD_LATEST Pi=$PI_LOCAL>$PI_LATEST" >> "$LOG" 2>/dev/null || true
 

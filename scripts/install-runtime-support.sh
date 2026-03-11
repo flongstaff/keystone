@@ -113,6 +113,10 @@ fi
 
 # ── Deploy agents to Pi ───────────────────────────────────────────────
 if $DO_PI; then
+  if ! command -v python3 &>/dev/null; then
+    err "python3 is required for Pi agent conversion but was not found"
+    exit 1
+  fi
   step "Deploying agents to Pi..."
   mkdir -p "$PI_DIR/agent"
 
@@ -193,6 +197,7 @@ if $DO_CLAUDE; then
   # Patch settings.json
   SETTINGS="$CLAUDE_DIR/settings.json"
   [[ -f "$SETTINGS" ]] || echo '{"hooks":{}}' > "$SETTINGS"
+  cp "$SETTINGS" "$SETTINGS.bak.$(date +%s)" 2>/dev/null || true
 
   python3 - "$SETTINGS" <<'PYEOF'
 import json, sys, os
@@ -230,7 +235,8 @@ WEEKLY_SCRIPT="$CLAUDE_DIR/scripts/weekly-stack-check.sh"
 if [[ -f "$WEEKLY_SCRIPT" ]] && command -v crontab &>/dev/null; then
   CRON_LINE="0 9 * * 1 /bin/bash $WEEKLY_SCRIPT >> $HOME/.claude/logs/update-checks.log 2>&1"
   if ! crontab -l 2>/dev/null | grep -q "weekly-stack-check"; then
-    (crontab -l 2>/dev/null; echo "$CRON_LINE") | crontab -
+    EXISTING=$(crontab -l 2>/dev/null || true)
+    printf '%s\n%s\n' "$EXISTING" "$CRON_LINE" | crontab -
     ok "Weekly update check cron set (Monday 09:00)"
   else
     ok "Weekly cron already configured"

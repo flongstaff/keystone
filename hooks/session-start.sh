@@ -57,7 +57,7 @@ if $HAS_GSD || $HAS_BMAD || $HAS_CLAUDE_MD || $HAS_AGENTS_MD; then
   echo "┌──────────────────────────────────────────────┐" >&2
   [[ -n "$PROJECT_NAME" ]] && \
   printf "│  Project: %-34s│\n" "$PROJECT_NAME" >&2 || \
-  printf "│  Project: %-34s│\n" "$(basename $(pwd))" >&2
+  printf "│  Project: %-34s│\n" "$(basename "$(pwd)")" >&2
 
   # BMAD status
   if $HAS_BMAD; then

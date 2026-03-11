@@ -121,7 +121,7 @@ Before installing this stack, you need:
 **1. Clone this repository:**
 
 ```bash
-git clone <repo-url> claude-code-stack
+git clone https://github.com/flongstaff/claude-code-stack claude-code-stack
 cd claude-code-stack
 ```
 
