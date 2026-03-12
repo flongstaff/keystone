@@ -26,9 +26,12 @@ BMAD_DIR=false
 BMAD_DOCS=false
 BMAD_AMBIGUOUS=false
 
-{ [ -d "_bmad" ] || [ -d ".bmad" ]; } && BMAD_DIR=true
+{ [ -d "_bmad" ] || [ -d ".bmad" ] || [ -d "_bmad-output" ]; } && BMAD_DIR=true
 
-{ ls docs/prd-*.md docs/architecture-*.md docs/stories/story-*.md \
+# Check standard docs/ paths AND _bmad-output/ paths
+{ ls docs/prd-*.md docs/prd.md docs/architecture-*.md docs/stories/story-*.md \
+     _bmad-output/planning-artifacts/prd*.md _bmad-output/planning-artifacts/architecture*.md \
+     _bmad-output/planning-artifacts/product-brief*.md \
      2>/dev/null | grep -q .; } && BMAD_DOCS=true
 
 $BMAD_DIR && ! $BMAD_DOCS && BMAD_AMBIGUOUS=true
@@ -41,11 +44,11 @@ BMAD_STORIES_APPROVED=0
 BMAD_STORIES_DONE=0
 
 if $BMAD_DOCS; then
-    { ls docs/prd-*.md 2>/dev/null | grep -q .; } && BMAD_PRD=true
-    { ls docs/architecture-*.md 2>/dev/null | grep -q .; } && BMAD_ARCH=true
-    BMAD_STORIES_TOTAL=$(ls docs/stories/story-*.md 2>/dev/null | wc -l | tr -d ' ')
-    BMAD_STORIES_APPROVED=$(grep -rl "Status: Approved" docs/stories/ 2>/dev/null | wc -l | tr -d ' ')
-    BMAD_STORIES_DONE=$(grep -rl "Status: Done\|Status: Complete" docs/stories/ 2>/dev/null | wc -l | tr -d ' ')
+    { ls docs/prd-*.md docs/prd.md _bmad-output/planning-artifacts/prd*.md 2>/dev/null | grep -q .; } && BMAD_PRD=true
+    { ls docs/architecture-*.md _bmad-output/planning-artifacts/architecture*.md 2>/dev/null | grep -q .; } && BMAD_ARCH=true
+    BMAD_STORIES_TOTAL=$(ls docs/stories/story-*.md _bmad-output/stories/story-*.md 2>/dev/null | wc -l | tr -d ' ')
+    BMAD_STORIES_APPROVED=$(grep -rl "Status: Approved" docs/stories/ _bmad-output/stories/ 2>/dev/null | wc -l | tr -d ' ')
+    BMAD_STORIES_DONE=$(grep -rl "Status: Done\|Status: Complete" docs/stories/ _bmad-output/stories/ 2>/dev/null | wc -l | tr -d ' ')
 fi
 
 # -- GSD MARKERS --------------------------------------------------------
