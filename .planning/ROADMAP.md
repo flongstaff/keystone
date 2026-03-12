@@ -17,8 +17,10 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects (completed 2026-03-12)
 - [x] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions (completed 2026-03-12)
 - [x] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit) (completed 2026-03-12)
-- [ ] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes
+- [x] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes (completed 2026-03-12)
 - [ ] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation
+- [ ] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Agent, skill, tool and hook discovery and recommendations
+- [ ] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit)
 
 ## Phase Details
 
@@ -101,7 +103,7 @@ Plans:
   1. When UAT or phase-gate checks show failures, wizard surfaces the specific failure details and the exact repair command (e.g., "Run `/gsd:fix-issue plan-02`"), not a generic error message
   2. A user can invoke "show traceability" from the wizard and see which BMAD acceptance criteria map to which GSD phases with their current completion status
   3. Selecting "check drift" invokes context-health-monitor and presents its output without reimplementing its logic
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md -- Add post-status menus to wizard + Route C traceability display to backing agent
@@ -131,5 +133,26 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
 | 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
-| 5. Full Agent Routing | 0/1 | Planning   | - |
+| 5. Full Agent Routing | 1/1 | Complete   | 2026-03-12 |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
+
+### Phase 7: Agent, Skill, Tool and Hook Discovery
+**Goal**: [To be planned]
+**Depends on**: Phase 6
+**Requirements**: TBD
+**Plans**: TBD
+
+### Phase 8: Bridge Path Fix & Infrastructure Cleanup
+**Goal**: The orchestrator correctly scans all BMAD output paths, all stale references and orphaned files are removed, and false-negative validation commands are fixed
+**Depends on**: Phase 4.1
+**Requirements**: None (bug fix + tech debt — protects ORCH-01, TRACE-01 from regression)
+**Gap Closure:** Closes integration breaks, flow break, and tech debt from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `bmad-gsd-orchestrator.md` Operation A scans both `docs/` and `_bmad-output/planning-artifacts/` for BMAD planning documents
+  2. `wizard-backing-agent.md` Step 4 fallback message references a valid command (not non-existent `/bmad-gsd-orchestrator`)
+  3. Orphaned `skills/wizard-router.md` is deleted
+  4. `settings.local.json` inline bash snippets use current scenario labels (not superseded `bmad-only`)
+  5. `wizard-detect.sh` line 2 comment no longer references orphaned `wizard-router.md`
+  6. Phase 4 `VALIDATION.md` quick-run command produces a valid result (not permanently false-negative)
+  7. Duplicate global path `~/.claude/skills/wizard-router/wizard-detect.sh` is removed
+**Plans**: TBD

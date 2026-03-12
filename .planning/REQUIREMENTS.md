@@ -33,14 +33,14 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **ORCH-01**: Backing agent dispatches to existing agents (bmad-gsd-orchestrator, phase-gate-validator, etc.) rather than reimplementing their logic
 - [x] **ORCH-02**: Backing agent spawns in a fresh context window via Task() for heavy orchestration work
 - [x] **ORCH-03**: Wizard automatically detects when BMAD planning is complete and GSD is uninitialized, and triggers the bridge
-- [ ] **ORCH-04**: When UAT/phase-gate shows failures, wizard surfaces the failure details and the exact repair command
+- [x] **ORCH-04**: When UAT/phase-gate shows failures, wizard surfaces the failure details and the exact repair command
 - [x] **ORCH-05**: Wizard suggests relevant domain agents (Godot, IT infra, open-source, admin docs) at appropriate lifecycle points
 
 ### Bridge & Traceability
 
 - [x] **TRACE-01**: BMAD planning output (PRD, architecture, stories) flows into GSD phase context without requiring re-explanation
 - [x] **TRACE-02**: Wizard asserts that every BMAD acceptance criterion appears in a GSD phase context file at the bridge step
-- [ ] **TRACE-03**: User can view requirement traceability status (which BMAD criteria map to which GSD phases and their completion status) on demand
+- [x] **TRACE-03**: User can view requirement traceability status (which BMAD criteria map to which GSD phases and their completion status) on demand
 
 ### Recovery & Persistence
 
@@ -100,8 +100,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORCH-03 | Phase 4.1 | Complete |
 | TRACE-01 | Phase 4.1 | Complete |
 | TRACE-02 | Phase 4.1 | Complete |
-| ORCH-04 | Phase 5 | Pending |
-| TRACE-03 | Phase 5 | Pending |
+| ORCH-04 | Phase 5 | Complete |
+| TRACE-03 | Phase 5 | Complete |
 | RECOV-01 | Phase 6 | Pending |
 | RECOV-02 | Phase 6 | Pending |
 | RECOV-03 | Phase 6 | Pending |

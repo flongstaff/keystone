@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04.1-01-PLAN.md — backing agent rewired
-last_updated: "2026-03-12T21:49:09.790Z"
+stopped_at: Completed 05-01-PLAN.md — full agent routing with post-status menus and Route C
+last_updated: "2026-03-12T22:04:32.556Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
-  total_phases: 7
-  completed_phases: 5
+  total_phases: 9
+  completed_phases: 6
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 100
 ---
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 04-core-backing-agent-routes P01 | 2 | 1 tasks | 1 files |
 | Phase 04 P02 | 1 | 2 tasks | 1 files |
 | Phase 04.1-rewire-backing-agent P01 | 3 | 2 tasks | 2 files |
+| Phase 05-full-agent-routing P01 | 25 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,14 @@ Recent decisions affecting current work:
 - [Phase 04.1-01]: wizard.md bmad-ready block uses Task(wizard-backing-agent) not Skill('gsd:new-project') — traceability assertion now runs on every bridge
 - [Phase 04.1-01]: Route A removed from backing agent — detection and resume logic lives in wizard.md inline and wizard-detect.sh
 - [Phase 04.1-01]: Route Dispatch labels updated to bmad-ready/bmad-incomplete — matches wizard-detect.sh scenario values, supersedes bmad-only
+- [Phase 05-01]: Post-status menu loop: secondary options re-present same menu after completion — user stays in wizard context until Continue selected
+- [Phase 05-01]: Agent tool pass-through: wizard never summarizes or reformats context-health-monitor or phase-gate-validator output
+- [Phase 05-01]: Route C dispatch condition placed first in Route Dispatch — prompt-based before state-based (Pitfall 7 fix)
+- [Phase 05-01]: Agent tool added to wizard.md YAML frontmatter (Pitfall 8 fix); Task tool confirmed in wizard-backing-agent.md YAML
+
+### Roadmap Evolution
+
+- Phase 7 added: Agent, skill, tool and hook discovery and recommendations
 
 ### Pending Todos
 
@@ -99,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T21:45:53.420Z
-Stopped at: Completed 04.1-01-PLAN.md — backing agent rewired
+Last session: 2026-03-12T22:04:32.554Z
+Stopped at: Completed 05-01-PLAN.md — full agent routing with post-status menus and Route C
 Resume file: None
