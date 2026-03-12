@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-core-backing-agent-routes/04-01-PLAN.md
-last_updated: "2026-03-12T16:02:18.458Z"
+stopped_at: Completed 04-core-backing-agent-routes/04-02-PLAN.md
+last_updated: "2026-03-12T16:06:05.826Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 100
 ---
 
@@ -54,6 +54,7 @@ Progress: [██████████] 100%
 | Phase 02-wizard-ui-layer P01 | 2 | 2 tasks | 2 files |
 | Phase 03-new-project-routing P01 | 3 | 2 tasks | 2 files |
 | Phase 04-core-backing-agent-routes P01 | 2 | 1 tasks | 1 files |
+| Phase 04 P02 | 1 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 04-01]: Traceability assertion searches all .planning/ files (cast wide) — AC anywhere counts as covered
 - [Phase 04-01]: DEFERRED-CRITERIA.md tracks deferred and acknowledged ACs — no criterion is silently dropped
 - [Phase 04-01]: Bridge does not auto-invoke /gsd:discuss-phase 1 — user decides when to proceed (auto_advance: false)
+- [Phase Phase 04-02]: wizard.md invokes backing agent via Skill('wizard-backing-agent') with read-and-follow fallback
+- [Phase Phase 04-02]: Status box in full-stack and gsd-only preserved — backing agent adds orientation after status box
+- [Phase Phase 04-02]: bmad-only Option 2 (Continue BMAD) left unchanged — lightweight inline suggestions do not need backing agent
 
 ### Pending Todos
 
@@ -91,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T16:02:18.456Z
-Stopped at: Completed 04-core-backing-agent-routes/04-01-PLAN.md
+Last session: 2026-03-12T16:06:05.825Z
+Stopped at: Completed 04-core-backing-agent-routes/04-02-PLAN.md
 Resume file: None

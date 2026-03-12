@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Schema and State Detection** - Freeze wizard-state.json schema and build smart router skill that classifies all four project scenarios
 - [x] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture (completed 2026-03-12)
 - [x] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects (completed 2026-03-12)
-- [ ] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions
+- [x] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions (completed 2026-03-12)
 - [ ] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes
 - [ ] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation
 
@@ -70,7 +70,7 @@ Plans:
   2. Selecting "bridge to GSD" invokes bmad-gsd-orchestrator in a fresh Task() context, not inline
   3. After the bridge completes, every BMAD acceptance criterion from every story appears in at least one GSD phase context file — wizard asserts this and fails loudly if any are missing
   4. The backing agent delegates to existing agents (bmad-gsd-orchestrator, phase-gate-validator) rather than reimplementing their logic
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md -- Create wizard-backing-agent.md with Route A (resume) and Route B (bridge + traceability)
@@ -109,6 +109,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can b
 | 1. Schema and State Detection | 0/TBD | Not started | - |
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
-| 4. Core Backing Agent Routes | 1/2 | In Progress|  |
+| 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
 | 5. Full Agent Routing | 0/TBD | Not started | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
