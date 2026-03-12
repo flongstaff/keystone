@@ -88,7 +88,10 @@ Plans:
   3. wizard-backing-agent.md YAML frontmatter includes `Task` in the tools list
   4. The model reliably follows the backing agent instructions without shortcutting (the mechanism that caused the original removal must be addressed)
   5. wizard.md Context Budget Discipline block and YAML description reference current files (wizard-detect.sh, not wizard-router.md)
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 04.1-01-PLAN.md -- Rewire backing agent: remove Route A, fix scenario labels, add Task tool, rewire wizard.md bridge to Task(), deploy globally
 
 ### Phase 5: Full Agent Routing
 **Goal**: The backing agent handles phase validation, architectural drift detection, and on-demand traceability status display, completing the full intent routing surface
@@ -127,6 +130,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
-| 4.1. Rewire Backing Agent | 0/TBD | Not started | - |
+| 4.1. Rewire Backing Agent | 0/1 | Planning   | - |
 | 5. Full Agent Routing | 0/1 | Planning   | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
