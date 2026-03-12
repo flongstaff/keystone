@@ -100,3 +100,16 @@ manual_only: 2
 **Audit notes:**
 - 04-01-04 (TRACE-01): Original test checked `.planning/CONTEXT.md` — a runtime artifact produced by the bridge, not a code defect. Moved to manual-only.
 - 04-02-01 (ORCH-01): wizard.md wiring was committed (`a68e435`) then reverted (`357e5af`, `9265dc3`) because sonnet models skip indirect "read file and follow" instructions. Phase 4.1 added to roadmap to rewire with a model-compatible approach.
+
+## Validation Audit 2026-03-12 (re-audit)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+**Audit notes:**
+- Re-audit confirms prior state: 5/7 automated PASS, 2 manual-only unchanged.
+- No new test files, no implementation changes since last audit.
+- Manual-only classifications remain justified (runtime dependency + Phase 4.1 deferral).
