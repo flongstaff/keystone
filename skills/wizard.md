@@ -41,24 +41,9 @@ Read the scenario from wizard-state.json and follow ONLY the matching block belo
 
 (BMAD planning docs + GSD execution framework both present)
 
-Display this status box using box-drawing characters:
+The detection script already displayed orientation context (phase name, last activity).
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Your next step:                                            │
-│  Run: {next_command}                                        │
-│                                                             │
-│  Phase {gsd.current_phase} of {gsd.total_phases}           │
-│  Status: {gsd.phase_status}                                 │
-│                                                             │
-│  BMAD: {bmad.stories_done}/{bmad.stories_total} stories done│
-│         ({bmad.stories_approved} approved)                  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-Fill in values from wizard-state.json. Display the exact literal string from `next_command` — not a paraphrase.
-
-After displaying the status box, check the `project_type` field from wizard-state.json. If project_type matches a known domain agent, display this info banner using box-drawing characters (do NOT use AskUserQuestion — this is informational text only, not an interactive prompt):
+Check `project_type` from wizard-state.json. If it matches a known domain agent, display the domain agent info banner:
 
 Domain agent mapping:
 - "infra" -> display name "IT Infrastructure", activation phrase "use it-infra-agent", purpose "infrastructure"
@@ -76,12 +61,11 @@ Banner format:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-If project_type is null or "web" (no dedicated domain agent), skip the banner entirely. Display the banner once, then proceed.
+If project_type is null or "web" (no dedicated domain agent), skip the banner entirely.
 
-Before auto-invoking, provide resume context by invoking the backing agent:
-try `Skill('wizard-backing-agent')`. If the Skill tool is not available, read `skills/wizard-backing-agent.md` and follow Route A instructions.
+Then auto-invoke `next_command` from wizard-state.json. Use `Skill('{skill_name}')` where skill_name is extracted from next_command (e.g., `/gsd:execute-phase 2` → `Skill('gsd:execute-phase', args='2')`).
 
-The backing agent will display orientation context and then invoke the next command.
+If the Skill tool is not available, display: `Run: {next_command}` and stop.
 
 ---
 
@@ -89,24 +73,11 @@ The backing agent will display orientation context and then invoke the next comm
 
 (GSD execution framework present, no BMAD planning docs)
 
-Display this status box:
+The detection script already displayed orientation context (phase name, last activity). Auto-invoke the `next_command` from wizard-state.json.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Your next step:                                            │
-│  Run: {next_command}                                        │
-│                                                             │
-│  Phase {gsd.current_phase} of {gsd.total_phases}           │
-│  Status: {gsd.phase_status}                                 │
-└─────────────────────────────────────────────────────────────┘
-```
+Use `Skill('{skill_name}')` where skill_name is extracted from next_command (e.g., `/gsd:execute-phase 2` → `Skill('gsd:execute-phase', args='2')`).
 
-Fill in values from wizard-state.json. Display the exact literal `next_command` string.
-
-Before auto-invoking, provide resume context by invoking the backing agent:
-try `Skill('wizard-backing-agent')`. If the Skill tool is not available, read `skills/wizard-backing-agent.md` and follow Route A instructions.
-
-The backing agent will display orientation context and then invoke the next command.
+If the Skill tool is not available, display: `Run: {next_command}` and stop.
 
 ---
 
@@ -207,14 +178,35 @@ If project_type is null or "web" (no dedicated domain agent), skip the banner en
 
 **After selection:**
 
-- **Option 1 (Bridge):** Display:
+- **Option 1 (Bridge):**
+
+  **ELIGIBILITY GATE — you MUST check these conditions BEFORE invoking anything:**
+
+  Read the `bmad` fields from wizard-state.json already loaded in Step 2:
+  - `bmad.prd` must be `true`
+  - `bmad.architecture` must be `true`
+  - `bmad.stories_total` must be > 0
+  - `bmad.stories_approved` must equal `bmad.stories_total`
+
+  **If ANY condition fails**, display what's missing and STOP. Do NOT invoke any bridge command:
   ```
-  The wizard backing agent will handle the bridge:
-  1. Verify BMAD completeness
-  2. Invoke the bridge in a fresh context
-  3. Assert every acceptance criterion is covered
+  ⚠ Bridge blocked — BMAD planning is not complete:
+
+  {list each failing condition, e.g.:}
+  - Stories: only {stories_approved} of {stories_total} approved
+  - PRD: missing
+  - Architecture: missing
+
+  Complete your planning first, then try again.
+  Suggest: /po (to approve remaining stories)
   ```
-  Invoke the backing agent: try `Skill('wizard-backing-agent')`. If the Skill tool is not available, read `skills/wizard-backing-agent.md` and follow Route B instructions.
+  Then STOP. Do not proceed.
+
+  **If ALL conditions pass**, display:
+  ```
+  ✓ BMAD planning complete. Bridging to GSD...
+  ```
+  Then invoke `Skill('gsd:new-project')`. The new-project workflow will read the BMAD docs and create the GSD execution structure.
 
 - **Option 2 (Continue BMAD):** Based on what's missing, suggest the appropriate next command:
   - Missing PRD: suggest `/analyst` or `/pm`
