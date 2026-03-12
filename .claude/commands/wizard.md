@@ -1,11 +1,9 @@
 ---
-description: Detect project state and show your next action
+description: Detect project state and guide you to your next action
 ---
 
-Run the wizard-router skill: read `$HOME/.claude/skills/wizard-router/SKILL.md` and follow its instructions exactly.
+Run the wizard skill: read `skills/wizard.md` and follow its instructions exactly.
 
-1. Read `$HOME/.claude/skills/wizard-router/SKILL.md`
-2. Execute the detection instructions in that file
-3. The skill will write `.claude/wizard-state.json` and display a status box
-
-Do not ask questions. Do not show a menu. Detect silently, write JSON, display status box.
+1. Read `skills/wizard.md`
+2. Execute the wizard instructions in that file
+3. The wizard will detect your project state, show relevant options, and guide you to your next action
