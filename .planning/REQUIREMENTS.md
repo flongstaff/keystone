@@ -9,15 +9,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### State Detection
 
-- [ ] **DETECT-01**: Wizard detects 4 project states on invocation: neither framework, BMAD-only, GSD-only, full-stack (both)
-- [ ] **DETECT-02**: Wizard cross-validates state markers (directory AND content checks — empty `_bmad/` is not "BMAD present")
-- [ ] **DETECT-03**: Wizard handles STATE.AMBIGUOUS when markers contradict (e.g., `_bmad/` exists but no PRD/architecture docs)
-- [ ] **DETECT-04**: Wizard computes the exact next command from `.planning/` file state (STATE.md, plans, UAT files)
-- [ ] **DETECT-05**: Wizard reads state cold from disk on every invocation — no in-memory state dependency
+- [x] **DETECT-01**: Wizard detects 4 project states on invocation: neither framework, BMAD-only, GSD-only, full-stack (both)
+- [x] **DETECT-02**: Wizard cross-validates state markers (directory AND content checks — empty `_bmad/` is not "BMAD present")
+- [x] **DETECT-03**: Wizard handles STATE.AMBIGUOUS when markers contradict (e.g., `_bmad/` exists but no PRD/architecture docs)
+- [x] **DETECT-04**: Wizard computes the exact next command from `.planning/` file state (STATE.md, plans, UAT files)
+- [x] **DETECT-05**: Wizard reads state cold from disk on every invocation — no in-memory state dependency
 
 ### Entry & Routing
 
-- [ ] **ROUTE-01**: User can invoke wizard via single `/wizard` command
+- [x] **ROUTE-01**: User can invoke wizard via single `/wizard` command
 - [ ] **ROUTE-02**: Wizard outputs unambiguous next command (e.g., "Run `/gsd:discuss-phase 3`" not "you could discuss the next phase")
 - [ ] **ROUTE-03**: Wizard recommends BMAD+GSD vs GSD-only vs quick-task based on project complexity signals for new projects
 
@@ -82,12 +82,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DETECT-01 | Phase 1 | Pending |
-| DETECT-02 | Phase 1 | Pending |
-| DETECT-03 | Phase 1 | Pending |
-| DETECT-04 | Phase 1 | Pending |
-| DETECT-05 | Phase 1 | Pending |
-| ROUTE-01 | Phase 1 | Pending |
+| DETECT-01 | Phase 1 | Complete |
+| DETECT-02 | Phase 1 | Complete |
+| DETECT-03 | Phase 1 | Complete |
+| DETECT-04 | Phase 1 | Complete |
+| DETECT-05 | Phase 1 | Complete |
+| ROUTE-01 | Phase 1 | Complete |
 | ROUTE-02 | Phase 2 | Pending |
 | UI-01 | Phase 2 | Pending |
 | UI-02 | Phase 2 | Pending |
