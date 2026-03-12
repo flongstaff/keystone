@@ -113,3 +113,17 @@ manual_only: 2
 - Re-audit confirms prior state: 5/7 automated PASS, 2 manual-only unchanged.
 - No new test files, no implementation changes since last audit.
 - Manual-only classifications remain justified (runtime dependency + Phase 4.1 deferral).
+
+## Validation Audit 2026-03-12 (third pass)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+**Audit notes:**
+- Third-pass audit: all 5 automated checks pass green, 0 new gaps.
+- `wizard-backing-agent.md` unchanged since `1f0c7de`; `wizard.md` wiring still reverted per `357e5af`/`9265dc3`.
+- Manual-only items stable: TRACE-01 (runtime artifact), ORCH-01 (Phase 4.1 deferral).
+- No path to `nyquist_compliant: true` until Phase 4.1 resolves the wizard.md wiring.
