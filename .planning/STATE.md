@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-12T15:40:19.141Z"
+stopped_at: Completed 04-core-backing-agent-routes/04-01-PLAN.md
+last_updated: "2026-03-12T16:02:18.458Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 100
 ---
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 | Phase 01 P02 | 10 | 1 tasks | 1 files |
 | Phase 02-wizard-ui-layer P01 | 2 | 2 tasks | 2 files |
 | Phase 03-new-project-routing P01 | 3 | 2 tasks | 2 files |
+| Phase 04-core-backing-agent-routes P01 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,11 @@ Recent decisions affecting current work:
 - [Phase 03-01]: Open-source type detection is a fallback only — placed after all other type checks to preserve priority order
 - [Phase 03-01]: RECOMMENDED_PATH defaults to gsd-only so unclassifiable projects get a safe default
 - [Phase 03-01]: Domain agent banner is informational text at bridge moments — never AskUserQuestion, never an interactive turn
+- [Phase 04-01]: Route B prompts user before bridging — preserves user agency even when BMAD is fully complete
+- [Phase 04-01]: Route B delegates to bmad-gsd-orchestrator via Task() — never reimplements Operation A logic
+- [Phase 04-01]: Traceability assertion searches all .planning/ files (cast wide) — AC anywhere counts as covered
+- [Phase 04-01]: DEFERRED-CRITERIA.md tracks deferred and acknowledged ACs — no criterion is silently dropped
+- [Phase 04-01]: Bridge does not auto-invoke /gsd:discuss-phase 1 — user decides when to proceed (auto_advance: false)
 
 ### Pending Todos
 
@@ -85,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T15:40:19.140Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-core-backing-agent-routes/04-CONTEXT.md
+Last session: 2026-03-12T16:02:18.456Z
+Stopped at: Completed 04-core-backing-agent-routes/04-01-PLAN.md
+Resume file: None
