@@ -56,6 +56,26 @@ Display this status box using box-drawing characters:
 
 Fill in values from wizard-state.json. Display the exact literal string from `next_command` — not a paraphrase.
 
+After displaying the status box, check the `project_type` field from wizard-state.json. If project_type matches a known domain agent, display this info banner using box-drawing characters (do NOT use AskUserQuestion — this is informational text only, not an interactive prompt):
+
+Domain agent mapping:
+- "infra" -> display name "IT Infrastructure", activation phrase "use it-infra-agent", purpose "infrastructure"
+- "game" -> display name "Godot", activation phrase "use godot-dev-agent", purpose "game development"
+- "open-source" -> display name "Open Source", activation phrase "use open-source-agent", purpose "open-source"
+- "docs" -> display name "Admin Docs", activation phrase "use admin-docs-agent", purpose "documentation"
+
+Banner format:
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Domain agent available: {agent display name}               │
+│  This project looks like a {type description} project.      │
+│  Say "{activation phrase}" to activate {purpose} patterns.  │
+│  (Or ignore this and continue -- it is optional.)           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+If project_type is null or "web" (no dedicated domain agent), skip the banner entirely. Display the banner once, then proceed with the auto-invocation.
+
 Then immediately auto-invoke the next_command:
 - Try `Skill('gsd:discuss-phase', '<N>')` (or whatever command matches next_command)
 - If the Skill tool is not available, read the command file at `.claude/commands/<command-name>.md` and follow its instructions
@@ -97,9 +117,25 @@ Present a menu via AskUserQuestion:
 **Question:** "This looks like a new project. How do you want to start?"
 
 **Options:**
-1. "Start with BMAD planning" — Create PRD, architecture, and stories before writing code
+
+Read the `recommended_path` field from wizard-state.json. Append the `(Recommended -- reason)` tag to exactly one option based on its value. All 4 options are always visible regardless of recommendation.
+
+If recommended_path is "bmad-gsd":
+1. "Start with BMAD planning (Recommended -- planning docs detected)" — Create PRD, architecture, and stories before writing code
 2. "Start with GSD directly" — Jump into structured execution with a known spec
 3. "Quick task (no framework)" — One-off task, no planning ceremony
+4. "Explain my options" — Walk me through what each choice means
+
+If recommended_path is "gsd-only" (default):
+1. "Start with BMAD planning" — Create PRD, architecture, and stories before writing code
+2. "Start with GSD directly (Recommended -- no planning docs detected)" — Jump into structured execution with a known spec
+3. "Quick task (no framework)" — One-off task, no planning ceremony
+4. "Explain my options" — Walk me through what each choice means
+
+If recommended_path is "quick-task":
+1. "Start with BMAD planning" — Create PRD, architecture, and stories before writing code
+2. "Start with GSD directly" — Jump into structured execution with a known spec
+3. "Quick task (no framework) (Recommended -- minimal project detected)" — One-off task, no planning ceremony
 4. "Explain my options" — Walk me through what each choice means
 
 **After selection:**
@@ -146,6 +182,26 @@ Present a menu via AskUserQuestion:
 3. "Explain my options" — Walk me through what each choice means
 
 If stories are fully approved and all docs are present, omit Option 2.
+
+Before presenting the menu, check the `project_type` field from wizard-state.json. If project_type matches a known domain agent, display this info banner using box-drawing characters (do NOT use AskUserQuestion — this is informational text only, not an interactive prompt):
+
+Domain agent mapping:
+- "infra" -> display name "IT Infrastructure", activation phrase "use it-infra-agent", purpose "infrastructure"
+- "game" -> display name "Godot", activation phrase "use godot-dev-agent", purpose "game development"
+- "open-source" -> display name "Open Source", activation phrase "use open-source-agent", purpose "open-source"
+- "docs" -> display name "Admin Docs", activation phrase "use admin-docs-agent", purpose "documentation"
+
+Banner format:
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Domain agent available: {agent display name}               │
+│  This project looks like a {type description} project.      │
+│  Say "{activation phrase}" to activate {purpose} patterns.  │
+│  (Or ignore this and continue -- it is optional.)           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+If project_type is null or "web" (no dedicated domain agent), skip the banner entirely. Display the banner once, then proceed with the menu.
 
 **After selection:**
 
