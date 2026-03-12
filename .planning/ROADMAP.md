@@ -103,10 +103,11 @@ Plans:
   1. When UAT or phase-gate checks show failures, wizard surfaces the specific failure details and the exact repair command (e.g., "Run `/gsd:fix-issue plan-02`"), not a generic error message
   2. A user can invoke "show traceability" from the wizard and see which BMAD acceptance criteria map to which GSD phases with their current completion status
   3. Selecting "check drift" invokes context-health-monitor and presents its output without reimplementing its logic
-**Plans:** 1/1 plans complete
+**Plans:** 2 plans (1 complete, 1 gap closure)
 
 Plans:
-- [ ] 05-01-PLAN.md -- Add post-status menus to wizard + Route C traceability display to backing agent
+- [x] 05-01-PLAN.md -- Add post-status menus to wizard + Route C traceability display to backing agent
+- [ ] 05-02-PLAN.md -- Fix broken Continue option: replace Route A invocation with direct next_command dispatch (gap closure)
 
 ### Phase 6: Recovery, Safety, and Polish
 **Goal**: The wizard survives context resets with continuity messaging, automatically injects safety constraints for infrastructure projects, and is validated against a worst-case large project within the 10% context budget
@@ -154,7 +155,7 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
 | 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
-| 5. Full Agent Routing | 1/1 | Complete   | 2026-03-12 |
+| 5. Full Agent Routing | 1/2 | Gap closure | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
 | 7. Agent, Skill, Tool and Hook Discovery | 0/TBD | Not started | - |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 0/TBD | Not started | - |
