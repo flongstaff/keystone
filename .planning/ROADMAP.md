@@ -119,23 +119,6 @@ Plans:
   4. Running the full router + wizard + backing agent chain against a project with a PRD over 500 lines and 8+ phases consumes less than 20k tokens (10% of a 200k window)
 **Plans**: TBD
 
-## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6
-
-Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes.
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Schema and State Detection | 0/TBD | Not started | - |
-| 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
-| 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
-| 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
-| 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
-| 5. Full Agent Routing | 1/1 | Complete   | 2026-03-12 |
-| 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
-
 ### Phase 7: Agent, Skill, Tool and Hook Discovery
 **Goal**: [To be planned]
 **Depends on**: Phase 6
@@ -156,3 +139,22 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
   6. Phase 4 `VALIDATION.md` quick-run command produces a valid result (not permanently false-negative)
   7. Duplicate global path `~/.claude/skills/wizard-router/wizard-detect.sh` is removed
 **Plans**: TBD
+
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8
+
+Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes. Phase 8 is a gap closure phase that can execute any time after Phase 4.1 (independent of 5-7).
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Schema and State Detection | 0/TBD | Not started | - |
+| 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
+| 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
+| 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
+| 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
+| 5. Full Agent Routing | 1/1 | Complete   | 2026-03-12 |
+| 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
+| 7. Agent, Skill, Tool and Hook Discovery | 0/TBD | Not started | - |
+| 8. Bridge Path Fix & Infrastructure Cleanup | 0/TBD | Not started | - |
