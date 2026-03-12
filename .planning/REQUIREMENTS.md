@@ -19,7 +19,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **ROUTE-01**: User can invoke wizard via single `/wizard` command
 - [x] **ROUTE-02**: Wizard outputs unambiguous next command (e.g., "Run `/gsd:discuss-phase 3`" not "you could discuss the next phase")
-- [ ] **ROUTE-03**: Wizard recommends BMAD+GSD vs GSD-only vs quick-task based on project complexity signals for new projects
+- [x] **ROUTE-03**: Wizard recommends BMAD+GSD vs GSD-only vs quick-task based on project complexity signals for new projects
 
 ### Wizard UI
 
@@ -34,7 +34,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **ORCH-02**: Backing agent spawns in a fresh context window via Task() for heavy orchestration work
 - [ ] **ORCH-03**: Wizard automatically detects when BMAD planning is complete and GSD is uninitialized, and triggers the bridge
 - [ ] **ORCH-04**: When UAT/phase-gate shows failures, wizard surfaces the failure details and the exact repair command
-- [ ] **ORCH-05**: Wizard suggests relevant domain agents (Godot, IT infra, open-source, admin docs) at appropriate lifecycle points
+- [x] **ORCH-05**: Wizard suggests relevant domain agents (Godot, IT infra, open-source, admin docs) at appropriate lifecycle points
 
 ### Bridge & Traceability
 
@@ -93,8 +93,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-02 | Phase 2 | Complete |
 | UI-03 | Phase 2 | Complete |
 | UI-04 | Phase 2 | Complete |
-| ROUTE-03 | Phase 3 | Pending |
-| ORCH-05 | Phase 3 | Pending |
+| ROUTE-03 | Phase 3 | Complete |
+| ORCH-05 | Phase 3 | Complete |
 | ORCH-01 | Phase 4 | Pending |
 | ORCH-02 | Phase 4 | Pending |
 | ORCH-03 | Phase 4 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-12T13:19:54.410Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-12T13:53:07.264Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 3
+  total_plans: 4
+  completed_plans: 4
   percent: 100
 ---
 
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 *Updated after each plan completion*
 | Phase 01 P02 | 10 | 1 tasks | 1 files |
 | Phase 02-wizard-ui-layer P01 | 2 | 2 tasks | 2 files |
+| Phase 03-new-project-routing P01 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 02-01]: wizard.md delegates ALL detection to wizard-router.md — maintains clean separation between silent router and interactive wizard
 - [Phase 02-01]: full-stack and gsd-only are 0-turn: auto-invoke immediately after status box, no pre-invocation menu
 - [Phase 02-01]: Secondary options (drift check, progress, traceability) deferred to Phase 5 — wizard responds they are coming in a future update
+- [Phase 03-01]: Open-source type detection is a fallback only — placed after all other type checks to preserve priority order
+- [Phase 03-01]: RECOMMENDED_PATH defaults to gsd-only so unclassifiable projects get a safe default
+- [Phase 03-01]: Domain agent banner is informational text at bridge moments — never AskUserQuestion, never an interactive turn
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T13:15:48.532Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-12T13:53:07.263Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

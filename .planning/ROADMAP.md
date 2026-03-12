@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Schema and State Detection** - Freeze wizard-state.json schema and build smart router skill that classifies all four project scenarios
 - [x] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture (completed 2026-03-12)
-- [ ] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects
+- [x] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects (completed 2026-03-12)
 - [ ] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions
 - [ ] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes
 - [ ] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation
@@ -56,7 +56,7 @@ Plans:
   1. A user with a new project containing a large PRD is recommended the BMAD+GSD path, not GSD-only
   2. A user describing a single-file task is recommended quick-task execution, not full BMAD planning
   3. When a user is at the bridge step for an IT infrastructure project, wizard surfaces the Godot/IT infra domain agent suggestion before proceeding
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 03-01-PLAN.md -- Add complexity detection, recommendation tags, and domain agent banner
@@ -104,7 +104,7 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can b
 |-------|----------------|--------|-----------|
 | 1. Schema and State Detection | 0/TBD | Not started | - |
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
-| 3. New Project Routing | 0/1 | Not started | - |
+| 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 0/TBD | Not started | - |
 | 5. Full Agent Routing | 0/TBD | Not started | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
