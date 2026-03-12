@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-01-PLAN.md — full agent routing with post-status menus and Route C
-last_updated: "2026-03-12T22:04:32.556Z"
+stopped_at: Completed 05-02-PLAN.md — fix Continue option gap closure
+last_updated: "2026-03-12T22:21:03.881Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 9
+  completed_plans: 9
   percent: 100
 ---
 
@@ -57,6 +57,7 @@ Progress: [██████████] 100%
 | Phase 04 P02 | 1 | 2 tasks | 1 files |
 | Phase 04.1-rewire-backing-agent P01 | 3 | 2 tasks | 2 files |
 | Phase 05-full-agent-routing P01 | 25 | 3 tasks | 4 files |
+| Phase 05-full-agent-routing P02 | 2 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,7 @@ Recent decisions affecting current work:
 - [Phase 05-01]: Agent tool pass-through: wizard never summarizes or reformats context-health-monitor or phase-gate-validator output
 - [Phase 05-01]: Route C dispatch condition placed first in Route Dispatch — prompt-based before state-based (Pitfall 7 fix)
 - [Phase 05-01]: Agent tool added to wizard.md YAML frontmatter (Pitfall 8 fix); Task tool confirmed in wizard-backing-agent.md YAML
+- [Phase Phase 05-02]: Continue invokes Skill(next_command) directly — Route A was deliberately removed in Phase 4.1 and should not be re-routed through the backing agent
 
 ### Roadmap Evolution
 
@@ -108,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T22:04:32.554Z
-Stopped at: Completed 05-01-PLAN.md — full agent routing with post-status menus and Route C
+Last session: 2026-03-12T22:21:03.879Z
+Stopped at: Completed 05-02-PLAN.md — fix Continue option gap closure
 Resume file: None
