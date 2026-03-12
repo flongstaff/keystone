@@ -44,9 +44,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Recovery & Persistence
 
-- [ ] **RECOV-01**: After context reset, wizard detects prior session state from `.planning/wizard-state.json` and presents continuity message
-- [ ] **RECOV-02**: Wizard auto-detects infrastructure projects and injects safety rules (auto_advance: false, dry-run requirements, rollback documentation)
-- [ ] **RECOV-03**: After phase execution completes, wizard prompts user to run context-health-monitor before continuing
+- [x] **RECOV-01**: After context reset, wizard detects prior session state from `.planning/wizard-state.json` and presents continuity message
+- [x] **RECOV-02**: Wizard auto-detects infrastructure projects and injects safety rules (auto_advance: false, dry-run requirements, rollback documentation)
+- [x] **RECOV-03**: After phase execution completes, wizard prompts user to run context-health-monitor before continuing
 
 ## v2 Requirements
 
@@ -102,9 +102,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRACE-02 | Phase 4.1 | Complete |
 | ORCH-04 | Phase 5 | Complete |
 | TRACE-03 | Phase 5 | Complete |
-| RECOV-01 | Phase 6 | Pending |
-| RECOV-02 | Phase 6 | Pending |
-| RECOV-03 | Phase 6 | Pending |
+| RECOV-01 | Phase 6 | Complete |
+| RECOV-02 | Phase 6 | Complete |
+| RECOV-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-12T22:43:04.875Z"
+stopped_at: Completed 06-recovery-safety-and-polish-01-PLAN.md
+last_updated: "2026-03-12T23:07:33.956Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
   percent: 100
 ---
 
@@ -58,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 04.1-rewire-backing-agent P01 | 3 | 2 tasks | 2 files |
 | Phase 05-full-agent-routing P01 | 25 | 3 tasks | 4 files |
 | Phase 05-full-agent-routing P02 | 2 | 1 tasks | 1 files |
+| Phase 06-recovery-safety-and-polish P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,9 @@ Recent decisions affecting current work:
 - [Phase 05-01]: Route C dispatch condition placed first in Route Dispatch — prompt-based before state-based (Pitfall 7 fix)
 - [Phase 05-01]: Agent tool added to wizard.md YAML frontmatter (Pitfall 8 fix); Task tool confirmed in wizard-backing-agent.md YAML
 - [Phase Phase 05-02]: Continue invokes Skill(next_command) directly — Route A was deliberately removed in Phase 4.1 and should not be re-routed through the backing agent
+- [Phase 06-recovery-safety-and-polish]: IS_RESET placement is safety-critical: reads old wizard-state.json BEFORE JSON WRITE overwrites detected_at — ordering invariant enforced
+- [Phase 06-recovery-safety-and-polish]: Infra config write uses python3 json merge + [ -f ] guard — preserves existing keys, idempotent, never creates config.json
+- [Phase 06-recovery-safety-and-polish]: uat-passing menu collapses Check drift into Run health check — same agent (context-health-monitor), lossless, keeps menu at 4 options max
 
 ### Roadmap Evolution
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T22:43:04.872Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-recovery-safety-and-polish/06-CONTEXT.md
+Last session: 2026-03-12T23:07:33.954Z
+Stopped at: Completed 06-recovery-safety-and-polish-01-PLAN.md
+Resume file: None
