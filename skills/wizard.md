@@ -18,9 +18,9 @@ You are the interactive wizard. Your job: detect project state, present the righ
 
 ## Step 1: Run detection (turn 0 — silent)
 
-Run the detection script:
+Run the detection script (try local path first, fall back to global):
 ```bash
-bash skills/wizard-detect.sh
+if [ -f skills/wizard-detect.sh ]; then bash skills/wizard-detect.sh; else bash ~/.claude/skills/wizard-detect.sh; fi
 ```
 
 This detects project state, writes `.claude/wizard-state.json`, and prints a status box. Do NOT read `skills/wizard-router.md` — it contains standalone-mode instructions that do not apply here.
@@ -131,32 +131,19 @@ If recommended_path is "quick-task":
 
 ---
 
-### Scenario: bmad-only
+### Scenario: bmad-ready
 
-(BMAD planning docs present, no GSD execution framework)
+(BMAD planning complete — all docs present, all stories approved. Ready to bridge.)
 
 Display BMAD status summary:
 ```
 BMAD Planning Status:
-  PRD: {bmad.prd}
-  Architecture: {bmad.architecture}
-  Stories: {bmad.stories_total} total, {bmad.stories_approved} approved, {bmad.stories_done} done
+  PRD: done
+  Architecture: done
+  Stories: {bmad.stories_total} total, all approved
 ```
 
-Fill in values from wizard-state.json (true/false for prd and architecture).
-
-Present a menu via AskUserQuestion:
-
-**Question:** "You have BMAD planning artifacts. What would you like to do?"
-
-**Options:**
-1. "Bridge to GSD" — Convert BMAD planning output into GSD execution phases (primary action)
-2. "Continue BMAD planning" — Keep working on stories or missing documents (include only if stories_approved < stories_total OR bmad.prd is false OR bmad.architecture is false)
-3. "Explain my options" — Walk me through what each choice means
-
-If stories are fully approved and all docs are present, omit Option 2.
-
-Before presenting the menu, check the `project_type` field from wizard-state.json. If project_type matches a known domain agent, display this info banner using box-drawing characters (do NOT use AskUserQuestion — this is informational text only, not an interactive prompt):
+Check `project_type` from wizard-state.json. If it matches a known domain agent, display the domain agent info banner:
 
 Domain agent mapping:
 - "infra" -> display name "IT Infrastructure", activation phrase "use it-infra-agent", purpose "infrastructure"
@@ -174,47 +161,51 @@ Banner format:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-If project_type is null or "web" (no dedicated domain agent), skip the banner entirely. Display the banner once, then proceed with the menu.
+If project_type is null or "web" (no dedicated domain agent), skip the banner entirely.
+
+Present a menu via AskUserQuestion:
+
+**Question:** "BMAD planning is complete. What would you like to do?"
+
+**Options:**
+1. "Bridge to GSD" — Convert BMAD planning output into GSD execution phases
+2. "Explain my options" — Walk me through what each choice means
 
 **After selection:**
+- **Option 1 (Bridge):** Display `✓ BMAD planning complete. Bridging to GSD...` then invoke `Skill('gsd:new-project')`. If Skill tool unavailable, display `Run: /gsd:new-project` and stop.
+- **Option 2 (Explain):** See Explain Mode below. After explaining, re-present the SAME menu WITHOUT the Explain option.
 
-- **Option 1 (Bridge):**
+---
 
-  **ELIGIBILITY GATE — you MUST check these conditions BEFORE invoking anything:**
+### Scenario: bmad-incomplete
 
-  Read the `bmad` fields from wizard-state.json already loaded in Step 2:
-  - `bmad.prd` must be `true`
-  - `bmad.architecture` must be `true`
-  - `bmad.stories_total` must be > 0
-  - `bmad.stories_approved` must equal `bmad.stories_total`
+(BMAD planning docs present but NOT complete — missing PRD, architecture, or unapproved stories. Bridge is NOT available.)
 
-  **If ANY condition fails**, display what's missing and STOP. Do NOT invoke any bridge command:
-  ```
-  ⚠ Bridge blocked — BMAD planning is not complete:
+Display BMAD status summary:
+```
+BMAD Planning Status:
+  PRD: {bmad.prd — "done" or "MISSING"}
+  Architecture: {bmad.architecture — "done" or "MISSING"}
+  Stories: {bmad.stories_approved} of {bmad.stories_total} approved
+```
 
-  {list each failing condition, e.g.:}
-  - Stories: only {stories_approved} of {stories_total} approved
-  - PRD: missing
-  - Architecture: missing
+Present a menu via AskUserQuestion:
 
-  Complete your planning first, then try again.
-  Suggest: /po (to approve remaining stories)
-  ```
-  Then STOP. Do not proceed.
+**Question:** "BMAD planning is not yet complete. What would you like to do?"
 
-  **If ALL conditions pass**, display:
-  ```
-  ✓ BMAD planning complete. Bridging to GSD...
-  ```
-  Then invoke `Skill('gsd:new-project')`. The new-project workflow will read the BMAD docs and create the GSD execution structure.
+**Options:**
+1. "Continue BMAD planning" — Keep working on stories or missing documents
+2. "Explain my options" — Walk me through what each choice means
 
-- **Option 2 (Continue BMAD):** Based on what's missing, suggest the appropriate next command:
-  - Missing PRD: suggest `/analyst` or `/pm`
-  - Missing architecture: suggest `/architect`
-  - Stories not fully approved: suggest `/po` or `/sm`
+Do NOT offer a "Bridge to GSD" option. Bridge is only available in the `bmad-ready` scenario.
+
+**After selection:**
+- **Option 1 (Continue BMAD):** Based on what's missing, suggest the appropriate next command:
+  - Missing PRD (`bmad.prd` is false): suggest `/analyst` or `/pm`
+  - Missing architecture (`bmad.architecture` is false): suggest `/architect`
+  - Stories not fully approved (`bmad.stories_approved` < `bmad.stories_total`): suggest `/po` or `/sm`
   Display the suggestion and offer to invoke it.
-
-- **Option 3 (Explain):** See Explain Mode below. After explaining, re-present the SAME menu WITHOUT the Explain option.
+- **Option 2 (Explain):** See Explain Mode below. After explaining, re-present the SAME menu WITHOUT the Explain option.
 
 ---
 
@@ -266,10 +257,13 @@ Provide this explanation:
 - **Start with GSD directly**: Best when you already know what you're building. GSD organizes execution into structured phases with plans and verification. Choose this if you have a clear spec and want to move fast.
 - **Quick task (no framework)**: Best for one-off tasks, experiments, or quick fixes. No planning ceremony — just describe what you need and it gets done. Choose this if the task is simple and self-contained.
 
-**For scenario: bmad-only**
+**For scenario: bmad-ready**
 Provide this explanation:
-- **Bridge to GSD**: Takes your existing PRD, architecture, and stories and converts them into GSD execution phases. This is how you go from planning to building. Choose this when your planning is complete (or complete enough).
-- **Continue BMAD planning**: If your stories aren't fully approved, your PRD is incomplete, or you're missing an architecture doc — stay in BMAD to finish the planning artifacts before bridging. Choose this if planning is not yet solid.
+- **Bridge to GSD**: Takes your existing PRD, architecture, and stories and converts them into GSD execution phases. This is how you go from planning to building. Your planning is complete — this is the natural next step.
+
+**For scenario: bmad-incomplete**
+Provide this explanation:
+- **Continue BMAD planning**: Your stories aren't fully approved, your PRD is incomplete, or you're missing an architecture doc. Stay in BMAD to finish the planning artifacts. Once everything is approved, the Bridge option will become available.
 
 **For scenario: ambiguous**
 Provide this explanation:

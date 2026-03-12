@@ -191,14 +191,24 @@ fi
 
 COMPLEXITY_JSON="{\"has_prd\":$HAS_PRD,\"has_architecture\":$HAS_ARCH,\"has_multi_reqs\":$HAS_MULTI_REQS,\"has_long_readme\":$HAS_LONG_README,\"code_file_count\":$CODE_FILE_COUNT,\"has_dependency_manager\":$HAS_DEP_MANAGER}"
 
+# -- BRIDGE ELIGIBILITY -------------------------------------------------
+BRIDGE_ELIGIBLE=false
+if [ "$BMAD_PRD" = "true" ] && [ "$BMAD_ARCH" = "true" ] && \
+   [ "$BMAD_STORIES_TOTAL" -gt 0 ] 2>/dev/null && \
+   [ "$BMAD_STORIES_APPROVED" -eq "$BMAD_STORIES_TOTAL" ] 2>/dev/null; then
+    BRIDGE_ELIGIBLE=true
+fi
+
 # -- SCENARIO CLASSIFICATION --------------------------------------------
 # Ambiguous check FIRST (contradictory markers)
 if [ "$BMAD_AMBIGUOUS" = "true" ] || [ "$GSD_AMBIGUOUS" = "true" ]; then
     SCENARIO="ambiguous"
 elif [ "$BMAD_DOCS" = "true" ] && [ "$GSD_ROADMAP" = "true" ]; then
     SCENARIO="full-stack"
+elif [ "$BMAD_DOCS" = "true" ] && [ "$GSD_ROADMAP" = "false" ] && [ "$BRIDGE_ELIGIBLE" = "true" ]; then
+    SCENARIO="bmad-ready"
 elif [ "$BMAD_DOCS" = "true" ] && [ "$GSD_ROADMAP" = "false" ]; then
-    SCENARIO="bmad-only"
+    SCENARIO="bmad-incomplete"
 elif [ "$BMAD_DOCS" = "false" ] && [ "$GSD_ROADMAP" = "true" ]; then
     SCENARIO="gsd-only"
 else
@@ -207,7 +217,7 @@ fi
 
 # -- NEXT COMMAND -------------------------------------------------------
 case "$SCENARIO" in
-    none|bmad-only|ambiguous)
+    none|bmad-ready|bmad-incomplete|ambiguous)
         NEXT_CMD="/wizard"
         ;;
     gsd-only|full-stack)
@@ -232,6 +242,7 @@ cat > ".claude/wizard-state.json" << EOF
   "project_type": $PROJECT_TYPE_JSON,
   "complexity_signal": $COMPLEXITY_JSON,
   "recommended_path": "$RECOMMENDED_PATH",
+  "bridge_eligible": $BRIDGE_ELIGIBLE,
   "bmad": {
     "present": $BMAD_PRESENT,
     "prd": $BMAD_PRD,
@@ -291,6 +302,21 @@ if [ -n "$STOPPED_AT" ]; then
 fi
 if [ -n "$REC_LABEL" ]; then
     printf "│  Recommended: %-42s│\n" "$REC_LABEL"
+fi
+if [ "$SCENARIO" = "bmad-ready" ] || [ "$SCENARIO" = "bmad-incomplete" ]; then
+    if [ "$BRIDGE_ELIGIBLE" = "true" ]; then
+        printf "│  Bridge: READY (all planning complete)                   │\n"
+    else
+        MISSING=""
+        [ "$BMAD_PRD" = "false" ] && MISSING="${MISSING}PRD "
+        [ "$BMAD_ARCH" = "false" ] && MISSING="${MISSING}Architecture "
+        if [ "$BMAD_STORIES_TOTAL" -eq 0 ] 2>/dev/null; then
+            MISSING="${MISSING}Stories "
+        elif [ "$BMAD_STORIES_APPROVED" -lt "$BMAD_STORIES_TOTAL" ] 2>/dev/null; then
+            MISSING="${MISSING}${BMAD_STORIES_APPROVED}/${BMAD_STORIES_TOTAL}-approved "
+        fi
+        printf "│  Bridge: BLOCKED (missing: %s)%*s│\n" "$MISSING" $((27 - ${#MISSING})) ""
+    fi
 fi
 printf "│                                                          │\n"
 printf "│  Next: %-49s│\n" "$NEXT_CMD"
