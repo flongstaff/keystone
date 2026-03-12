@@ -28,13 +28,13 @@ BMAD_AMBIGUOUS=false
 
 { [ -d "_bmad" ] || [ -d ".bmad" ] || [ -d "_bmad-output" ]; } && BMAD_DIR=true
 
-# Check standard docs/ paths AND _bmad-output/ paths
-{ ls docs/prd-*.md docs/prd.md docs/architecture-*.md docs/stories/story-*.md \
-     _bmad-output/planning-artifacts/prd*.md _bmad-output/planning-artifacts/architecture*.md \
-     _bmad-output/planning-artifacts/product-brief*.md \
-     2>/dev/null | grep -q .; } && BMAD_DOCS=true
+# Check standard docs/ paths AND _bmad-output/ paths (find-based for zsh compat)
+BMAD_FILE_COUNT=$(find docs _bmad-output/planning-artifacts -maxdepth 2 \
+    \( -name "prd*.md" -o -name "architecture*.md" -o -name "product-brief*.md" -o -name "story-*.md" \) \
+    2>/dev/null | head -1 | wc -l | tr -d ' ')
+[ "$BMAD_FILE_COUNT" -gt 0 ] && BMAD_DOCS=true
 
-$BMAD_DIR && ! $BMAD_DOCS && BMAD_AMBIGUOUS=true
+[ "$BMAD_DIR" = "true" ] && [ "$BMAD_DOCS" = "false" ] && BMAD_AMBIGUOUS=true
 
 # -- BMAD DETAIL --------------------------------------------------------
 BMAD_PRD=false
@@ -43,10 +43,12 @@ BMAD_STORIES_TOTAL=0
 BMAD_STORIES_APPROVED=0
 BMAD_STORIES_DONE=0
 
-if $BMAD_DOCS; then
-    { ls docs/prd-*.md docs/prd.md _bmad-output/planning-artifacts/prd*.md 2>/dev/null | grep -q .; } && BMAD_PRD=true
-    { ls docs/architecture-*.md _bmad-output/planning-artifacts/architecture*.md 2>/dev/null | grep -q .; } && BMAD_ARCH=true
-    BMAD_STORIES_TOTAL=$(ls docs/stories/story-*.md _bmad-output/stories/story-*.md 2>/dev/null | wc -l | tr -d ' ')
+if [ "$BMAD_DOCS" = "true" ]; then
+    PRD_COUNT=$(find docs _bmad-output/planning-artifacts -maxdepth 2 -name "prd*.md" 2>/dev/null | wc -l | tr -d ' ')
+    [ "$PRD_COUNT" -gt 0 ] && BMAD_PRD=true
+    ARCH_COUNT=$(find docs _bmad-output/planning-artifacts -maxdepth 2 -name "architecture*.md" 2>/dev/null | wc -l | tr -d ' ')
+    [ "$ARCH_COUNT" -gt 0 ] && BMAD_ARCH=true
+    BMAD_STORIES_TOTAL=$(find docs/stories _bmad-output/stories -maxdepth 1 -name "story-*.md" 2>/dev/null | wc -l | tr -d ' ')
     BMAD_STORIES_APPROVED=$(grep -rl "Status: Approved" docs/stories/ _bmad-output/stories/ 2>/dev/null | wc -l | tr -d ' ')
     BMAD_STORIES_DONE=$(grep -rl "Status: Done\|Status: Complete" docs/stories/ _bmad-output/stories/ 2>/dev/null | wc -l | tr -d ' ')
 fi
@@ -59,7 +61,7 @@ GSD_AMBIGUOUS=false
 [ -f ".planning/ROADMAP.md" ] && GSD_ROADMAP=true
 [ -f ".planning/STATE.md" ]   && GSD_STATE=true
 
-$GSD_STATE && ! $GSD_ROADMAP && GSD_AMBIGUOUS=true
+[ "$GSD_STATE" = "true" ] && [ "$GSD_ROADMAP" = "false" ] && GSD_AMBIGUOUS=true
 
 # -- GSD DETAIL ---------------------------------------------------------
 GSD_CURRENT_PHASE_JSON=null
@@ -68,13 +70,13 @@ GSD_PHASE_STATUS_JSON=null
 GSD_NEXT_CMD="/gsd:discuss-phase 1"
 GSD_PHASE_STATUS=""
 
-if $GSD_ROADMAP; then
+if [ "$GSD_ROADMAP" = "true" ]; then
     # Count total phases from ROADMAP.md using ### Phase headings
     TOTAL=$(grep -c "^### Phase" .planning/ROADMAP.md 2>/dev/null || echo 0)
     [ "$TOTAL" -gt 0 ] && GSD_TOTAL_PHASES_JSON=$TOTAL
 
     # File-state ladder: find latest phase dir
-    LATEST_PHASE_DIR=$(ls -d .planning/phases/[0-9]* 2>/dev/null | sort -V | tail -1)
+    LATEST_PHASE_DIR=$(find .planning/phases -maxdepth 1 -type d -name "[0-9]*" 2>/dev/null | sort -V | tail -1)
 
     if [ -n "$LATEST_PHASE_DIR" ]; then
         # Extract phase number (strip leading zeros for arithmetic)
@@ -83,12 +85,12 @@ if $GSD_ROADMAP; then
 
         GSD_CURRENT_PHASE_JSON=$PHASE_NUM
 
-        # Check lifecycle files — CRITICAL: use *-PLAN*.md to match 01-01-PLAN.md
-        HAS_CONTEXT=$(ls "$LATEST_PHASE_DIR"/*-CONTEXT.md 2>/dev/null | grep -q . && echo true || echo false)
-        HAS_PLAN=$(ls "$LATEST_PHASE_DIR"/*-PLAN*.md 2>/dev/null | grep -q . && echo true || echo false)
-        HAS_UAT=$(ls "$LATEST_PHASE_DIR"/*-UAT.md 2>/dev/null | grep -q . && echo true || echo false)
+        # Check lifecycle files using find (zsh-safe)
+        HAS_CONTEXT=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-CONTEXT.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+        HAS_PLAN=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-PLAN*.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+        HAS_UAT=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-UAT.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
 
-        if $HAS_UAT; then
+        if [ "$HAS_UAT" -gt 0 ]; then
             FAIL_COUNT=$(grep -c "FAIL\|fail" "$LATEST_PHASE_DIR"/*-UAT.md 2>/dev/null || echo 0)
             if [ "$FAIL_COUNT" -gt 0 ]; then
                 GSD_NEXT_CMD="/gsd:execute-phase $PHASE_NUM"
@@ -105,10 +107,10 @@ if $GSD_ROADMAP; then
                     GSD_PHASE_STATUS="uat-passing"
                 fi
             fi
-        elif $HAS_PLAN; then
+        elif [ "$HAS_PLAN" -gt 0 ]; then
             GSD_NEXT_CMD="/gsd:execute-phase $PHASE_NUM"
             GSD_PHASE_STATUS="plans-ready"
-        elif $HAS_CONTEXT; then
+        elif [ "$HAS_CONTEXT" -gt 0 ]; then
             GSD_NEXT_CMD="/gsd:plan-phase $PHASE_NUM"
             GSD_PHASE_STATUS="context-ready"
         else
@@ -146,8 +148,10 @@ echo "$PROJECT_NAME" | grep -iqE "game|godot" && PROJECT_TYPE="game"
 
 # Check for docs-only pattern
 if [ -z "$PROJECT_TYPE" ]; then
-    if ! $BMAD_DOCS && ! $GSD_ROADMAP; then
-        DOC_COUNT=$(ls *.md docs/*.md 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$BMAD_DOCS" = "false" ] && [ "$GSD_ROADMAP" = "false" ]; then
+        DOC_COUNT=$(find . -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+        DOCS_DIR_COUNT=$(find docs -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+        DOC_COUNT=$((DOC_COUNT + DOCS_DIR_COUNT))
         [ "$DOC_COUNT" -gt 2 ] && PROJECT_TYPE="docs"
     fi
 fi
@@ -156,13 +160,13 @@ fi
 
 # -- SCENARIO CLASSIFICATION --------------------------------------------
 # Ambiguous check FIRST (contradictory markers)
-if $BMAD_AMBIGUOUS || $GSD_AMBIGUOUS; then
+if [ "$BMAD_AMBIGUOUS" = "true" ] || [ "$GSD_AMBIGUOUS" = "true" ]; then
     SCENARIO="ambiguous"
-elif $BMAD_DOCS && $GSD_ROADMAP; then
+elif [ "$BMAD_DOCS" = "true" ] && [ "$GSD_ROADMAP" = "true" ]; then
     SCENARIO="full-stack"
-elif $BMAD_DOCS && ! $GSD_ROADMAP; then
+elif [ "$BMAD_DOCS" = "true" ] && [ "$GSD_ROADMAP" = "false" ]; then
     SCENARIO="bmad-only"
-elif ! $BMAD_DOCS && $GSD_ROADMAP; then
+elif [ "$BMAD_DOCS" = "false" ] && [ "$GSD_ROADMAP" = "true" ]; then
     SCENARIO="gsd-only"
 else
     SCENARIO="none"
