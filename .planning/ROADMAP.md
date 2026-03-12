@@ -70,7 +70,11 @@ Plans:
   2. Selecting "bridge to GSD" invokes bmad-gsd-orchestrator in a fresh Task() context, not inline
   3. After the bridge completes, every BMAD acceptance criterion from every story appears in at least one GSD phase context file — wizard asserts this and fails loudly if any are missing
   4. The backing agent delegates to existing agents (bmad-gsd-orchestrator, phase-gate-validator) rather than reimplementing their logic
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md -- Create wizard-backing-agent.md with Route A (resume) and Route B (bridge + traceability)
+- [ ] 04-02-PLAN.md -- Wire wizard.md to invoke backing agent and deploy globally
 
 ### Phase 5: Full Agent Routing
 **Goal**: The backing agent handles phase validation, architectural drift detection, and on-demand traceability status display, completing the full intent routing surface
@@ -105,6 +109,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can b
 | 1. Schema and State Detection | 0/TBD | Not started | - |
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
-| 4. Core Backing Agent Routes | 0/TBD | Not started | - |
+| 4. Core Backing Agent Routes | 0/2 | Planning complete | - |
 | 5. Full Agent Routing | 0/TBD | Not started | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
