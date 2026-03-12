@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-12T20:40:22.412Z"
+stopped_at: Completed 04.1-01-PLAN.md — backing agent rewired
+last_updated: "2026-03-12T21:45:53.422Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
-  total_phases: 6
-  completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
+  total_phases: 7
+  completed_phases: 5
+  total_plans: 8
+  completed_plans: 7
   percent: 100
 ---
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 03-new-project-routing P01 | 3 | 2 tasks | 2 files |
 | Phase 04-core-backing-agent-routes P01 | 2 | 1 tasks | 1 files |
 | Phase 04 P02 | 1 | 2 tasks | 1 files |
+| Phase 04.1-rewire-backing-agent P01 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - [Phase Phase 04-02]: wizard.md invokes backing agent via Skill('wizard-backing-agent') with read-and-follow fallback
 - [Phase Phase 04-02]: Status box in full-stack and gsd-only preserved — backing agent adds orientation after status box
 - [Phase Phase 04-02]: bmad-only Option 2 (Continue BMAD) left unchanged — lightweight inline suggestions do not need backing agent
+- [Phase 04.1-01]: wizard.md bmad-ready block uses Task(wizard-backing-agent) not Skill('gsd:new-project') — traceability assertion now runs on every bridge
+- [Phase 04.1-01]: Route A removed from backing agent — detection and resume logic lives in wizard.md inline and wizard-detect.sh
+- [Phase 04.1-01]: Route Dispatch labels updated to bmad-ready/bmad-incomplete — matches wizard-detect.sh scenario values, supersedes bmad-only
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T20:40:22.410Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-full-agent-routing/05-CONTEXT.md
+Last session: 2026-03-12T21:45:53.420Z
+Stopped at: Completed 04.1-01-PLAN.md — backing agent rewired
+Resume file: None

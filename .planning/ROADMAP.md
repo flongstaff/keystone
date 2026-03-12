@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture (completed 2026-03-12)
 - [x] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects (completed 2026-03-12)
 - [x] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions (completed 2026-03-12)
-- [ ] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit)
+- [x] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit) (completed 2026-03-12)
 - [ ] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes
 - [ ] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation
 
@@ -88,7 +88,7 @@ Plans:
   3. wizard-backing-agent.md YAML frontmatter includes `Task` in the tools list
   4. The model reliably follows the backing agent instructions without shortcutting (the mechanism that caused the original removal must be addressed)
   5. wizard.md Context Budget Discipline block and YAML description reference current files (wizard-detect.sh, not wizard-router.md)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 04.1-01-PLAN.md -- Rewire backing agent: remove Route A, fix scenario labels, add Task tool, rewire wizard.md bridge to Task(), deploy globally
@@ -130,6 +130,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
-| 4.1. Rewire Backing Agent | 0/1 | Planning   | - |
+| 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
 | 5. Full Agent Routing | 0/1 | Planning   | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
