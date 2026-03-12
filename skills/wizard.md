@@ -1,7 +1,7 @@
 ---
 name: wizard
 description: >
-  Interactive wizard UI. Invokes wizard-router for detection, reads wizard-state.json,
+  Interactive wizard UI. Invokes wizard-detect.sh for detection, reads wizard-state.json,
   presents scenario-appropriate menu, auto-invokes the chosen command.
 model: sonnet
 tools:
@@ -9,6 +9,7 @@ tools:
   - Bash
   - AskUserQuestion
   - Skill
+  - Task
 maxTurns: 15
 ---
 
@@ -23,7 +24,7 @@ Run the detection script (try local path first, fall back to global):
 if [ -f skills/wizard-detect.sh ]; then bash skills/wizard-detect.sh; else bash ~/.claude/skills/wizard-detect.sh; fi
 ```
 
-This detects project state, writes `.claude/wizard-state.json`, and prints a status box. Do NOT read `skills/wizard-router.md` — it contains standalone-mode instructions that do not apply here.
+This detects project state, writes `.claude/wizard-state.json`, and prints a status box. Do NOT read any standalone mode instructions — wizard-detect.sh handles all detection.
 
 After the script runs, IMMEDIATELY continue to Step 2. Do NOT stop. Do NOT display "Run: /wizard".
 
@@ -172,7 +173,15 @@ Present a menu via AskUserQuestion:
 2. "Explain my options" — Walk me through what each choice means
 
 **After selection:**
-- **Option 1 (Bridge):** Display `✓ BMAD planning complete. Bridging to GSD...` then invoke `Skill('gsd:new-project')`. If Skill tool unavailable, display `Run: /gsd:new-project` and stop.
+- **Option 1 (Bridge):**
+  Use the Task tool to invoke the backing agent in a fresh context:
+  - description: "Bridge BMAD planning to GSD execution"
+  - prompt: "Read skills/wizard-backing-agent.md and follow Route B — bridge to GSD."
+
+  If the Task tool is not available, display: "Run: /wizard-backing-agent (Route B)" and stop.
+
+  If Task returns without creating `.planning/config.json`, display:
+  "Bridge did not complete. Run /gsd:new-project manually to bridge without traceability assertion."
 - **Option 2 (Explain):** See Explain Mode below. After explaining, re-present the SAME menu WITHOUT the Explain option.
 
 ---
@@ -278,6 +287,6 @@ After the explanation, call AskUserQuestion again with the SAME options but WITH
 ## Context Budget Discipline
 
 - Do NOT load project documentation files, agent files, or any external files not listed here.
-- Do NOT run bash yourself — bash runs only inside wizard-router.md.
-- The only files this skill reads directly are: `skills/wizard-router.md` (to invoke) and `.claude/wizard-state.json` (to read state).
+- Do NOT run bash yourself — bash runs via the detection script (wizard-detect.sh) in Step 1.
+- The only files this skill reads directly are: `.claude/wizard-state.json` (to read state).
 - Keep your responses focused: status box, menu, action. No lengthy preambles.
