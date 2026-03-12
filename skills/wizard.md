@@ -77,7 +77,7 @@ Present a menu via AskUserQuestion:
 
 **After selection:**
 
-- **Option 1 (Continue):** Invoke `Skill('wizard-backing-agent')` with prompt: "Route A: resume GSD work." If Skill tool unavailable, display `Run: {next_command}` and stop.
+- **Option 1 (Continue):** Read `next_command` from wizard-state.json. Invoke the command directly using `Skill('{skill_name}')` where skill_name is derived from next_command (strip leading `/`, take command name before any space). Pass any arguments (text after the command name) as the Skill prompt. If Skill tool unavailable, display `Run: {next_command}` and stop.
 
 - **Option 2 (Check drift):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number (e.g. "check drift phase 2"), extract that number instead. Use the Agent tool:
   - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format."
@@ -112,7 +112,7 @@ Present a menu via AskUserQuestion:
 
 **After selection:**
 
-- **Option 1 (Continue):** Invoke `Skill('wizard-backing-agent')` with prompt: "Route A: resume GSD work." If Skill tool unavailable, display `Run: {next_command}` and stop.
+- **Option 1 (Continue):** Read `next_command` from wizard-state.json. Invoke the command directly using `Skill('{skill_name}')` where skill_name is derived from next_command (strip leading `/`, take command name before any space). Pass any arguments (text after the command name) as the Skill prompt. If Skill tool unavailable, display `Run: {next_command}` and stop.
 
 - **Option 2 (Check drift):** Same as full-stack Option 2 above.
 
