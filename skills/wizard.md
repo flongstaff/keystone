@@ -10,6 +10,7 @@ tools:
   - AskUserQuestion
   - Skill
   - Task
+  - Agent
 maxTurns: 15
 ---
 
@@ -64,9 +65,33 @@ Banner format:
 
 If project_type is null or "web" (no dedicated domain agent), skip the banner entirely.
 
-Then auto-invoke `next_command` from wizard-state.json. Use `Skill('{skill_name}')` where skill_name is extracted from next_command (e.g., `/gsd:execute-phase 2` → `Skill('gsd:execute-phase', args='2')`).
+Present a menu via AskUserQuestion:
 
-If the Skill tool is not available, display: `Run: {next_command}` and stop.
+**Question:** "Here's where you are. What would you like to do?"
+
+**Options:**
+1. "Continue (Recommended)" -- Proceed to {next_command from wizard-state.json}
+2. "Check drift" -- Run context-health-monitor for phase {gsd.current_phase}
+3. "Show traceability" -- See BMAD criteria mapped to GSD phases
+4. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
+
+**After selection:**
+
+- **Option 1 (Continue):** Invoke `Skill('wizard-backing-agent')` with prompt: "Route A: resume GSD work." If Skill tool unavailable, display `Run: {next_command}` and stop.
+
+- **Option 2 (Check drift):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number (e.g. "check drift phase 2"), extract that number instead. Use the Agent tool:
+  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format."
+  Display the agent's output as-is. Do not summarize, reformat, or truncate.
+  After the agent completes, re-present the SAME AskUserQuestion menu above.
+
+- **Option 3 (Show traceability):** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status."
+  If Skill tool unavailable, read `skills/wizard-backing-agent.md` and follow Route C instructions.
+  After the skill completes, re-present the SAME AskUserQuestion menu above.
+
+- **Option 4 (Validate phase):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number, extract that number instead. Use the Agent tool:
+  - prompt: "Read agents/bridge/phase-gate-validator.md and run gate validation for phase {N}. Report results using the agent's standard output format."
+  Display the agent's output as-is. Do not summarize, reformat, or truncate.
+  After the agent completes, re-present the SAME AskUserQuestion menu above.
 
 ---
 
@@ -74,11 +99,26 @@ If the Skill tool is not available, display: `Run: {next_command}` and stop.
 
 (GSD execution framework present, no BMAD planning docs)
 
-The detection script already displayed orientation context (phase name, last activity). Auto-invoke the `next_command` from wizard-state.json.
+The detection script already displayed orientation context (phase name, last activity).
 
-Use `Skill('{skill_name}')` where skill_name is extracted from next_command (e.g., `/gsd:execute-phase 2` → `Skill('gsd:execute-phase', args='2')`).
+Present a menu via AskUserQuestion:
 
-If the Skill tool is not available, display: `Run: {next_command}` and stop.
+**Question:** "Here's where you are. What would you like to do?"
+
+**Options:**
+1. "Continue (Recommended)" -- Proceed to {next_command from wizard-state.json}
+2. "Check drift" -- Run context-health-monitor for phase {gsd.current_phase}
+3. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
+
+**After selection:**
+
+- **Option 1 (Continue):** Invoke `Skill('wizard-backing-agent')` with prompt: "Route A: resume GSD work." If Skill tool unavailable, display `Run: {next_command}` and stop.
+
+- **Option 2 (Check drift):** Same as full-stack Option 2 above.
+
+- **Option 3 (Validate phase):** Same as full-stack Option 4 above.
+
+Note: Gsd-only has NO "Show traceability" option because there are no BMAD docs to trace.
 
 ---
 
