@@ -13,7 +13,7 @@ Keystone is a thin orchestration layer that makes BMAD planning and GSD executio
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Schema and State Detection** - Freeze wizard-state.json schema and build smart router skill that classifies all four project scenarios
-- [ ] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture
+- [x] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture (completed 2026-03-12)
 - [ ] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects
 - [ ] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions
 - [ ] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes
@@ -43,7 +43,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A user reaches a concrete recommendation within at most 2 questions from initial `/wizard` invocation
   4. Wizard component overhead consumes less than 10% of context window before delegating to backing agent
   5. A user can type "explain" at any menu prompt and receive context without the wizard restarting
-**Plans**: TBD
+**Plans:** 1/1 plans complete
+
+Plans:
+- [ ] 02-01-PLAN.md -- Create interactive wizard skill with 5-scenario menus and rebind /wizard entry point
 
 ### Phase 3: New Project Routing
 **Goal**: Users starting a fresh project receive a path recommendation (BMAD+GSD vs GSD-only vs quick-task) based on detectable project complexity signals, with relevant domain agents surfaced at the right moment
@@ -90,14 +93,14 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can be planned in parallel but should be executed sequentially to manage context.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Schema and State Detection | 0/TBD | Not started | - |
-| 2. Wizard UI Layer | 0/TBD | Not started | - |
+| 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 0/TBD | Not started | - |
 | 4. Core Backing Agent Routes | 0/TBD | Not started | - |
 | 5. Full Agent Routing | 0/TBD | Not started | - |

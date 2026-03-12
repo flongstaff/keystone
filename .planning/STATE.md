@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-02-PLAN.md (acceptance verification)
-last_updated: "2026-03-12T12:23:50.490Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-12T13:15:48.533Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
   percent: 100
 ---
 
@@ -51,6 +51,7 @@ Progress: [██████████] 100%
 
 *Updated after each plan completion*
 | Phase 01 P02 | 10 | 1 tasks | 1 files |
+| Phase 02-wizard-ui-layer P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Pre-Phase 1]: State detection cross-validates markers: BMAD "present" requires directory AND at least one doc file, not just directory
 - [Phase 01-02]: Schema is frozen: wizard-state.json shape validated by human + JSON type assertions; safe for Phase 2 to depend on it
 - [Phase 01-02]: BMAD detection must check _bmad-output/planning-artifacts/ path — the real artifacts directory, not just _bmad/docs/
+- [Phase 02-01]: wizard.md delegates ALL detection to wizard-router.md — maintains clean separation between silent router and interactive wizard
+- [Phase 02-01]: full-stack and gsd-only are 0-turn: auto-invoke immediately after status box, no pre-invocation menu
+- [Phase 02-01]: Secondary options (drift check, progress, traceability) deferred to Phase 5 — wizard responds they are coming in a future update
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T12:23:50.489Z
-Stopped at: Completed 01-02-PLAN.md (acceptance verification)
+Last session: 2026-03-12T13:15:48.532Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None

@@ -18,15 +18,15 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Entry & Routing
 
 - [x] **ROUTE-01**: User can invoke wizard via single `/wizard` command
-- [ ] **ROUTE-02**: Wizard outputs unambiguous next command (e.g., "Run `/gsd:discuss-phase 3`" not "you could discuss the next phase")
+- [x] **ROUTE-02**: Wizard outputs unambiguous next command (e.g., "Run `/gsd:discuss-phase 3`" not "you could discuss the next phase")
 - [ ] **ROUTE-03**: Wizard recommends BMAD+GSD vs GSD-only vs quick-task based on project complexity signals for new projects
 
 ### Wizard UI
 
-- [ ] **UI-01**: Wizard presents scenario-appropriate menu based on detected state (4 distinct paths)
-- [ ] **UI-02**: User reaches an actionable recommendation within 2 turns of invoking `/wizard`
-- [ ] **UI-03**: Wizard overhead consumes less than 10% of context window before delegating to real work
-- [ ] **UI-04**: User can request inline explanation at any branch point without restarting the wizard flow
+- [x] **UI-01**: Wizard presents scenario-appropriate menu based on detected state (4 distinct paths)
+- [x] **UI-02**: User reaches an actionable recommendation within 2 turns of invoking `/wizard`
+- [x] **UI-03**: Wizard overhead consumes less than 10% of context window before delegating to real work
+- [x] **UI-04**: User can request inline explanation at any branch point without restarting the wizard flow
 
 ### Orchestration
 
@@ -88,11 +88,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DETECT-04 | Phase 1 | Complete |
 | DETECT-05 | Phase 1 | Complete |
 | ROUTE-01 | Phase 1 | Complete |
-| ROUTE-02 | Phase 2 | Pending |
-| UI-01 | Phase 2 | Pending |
-| UI-02 | Phase 2 | Pending |
-| UI-03 | Phase 2 | Pending |
-| UI-04 | Phase 2 | Pending |
+| ROUTE-02 | Phase 2 | Complete |
+| UI-01 | Phase 2 | Complete |
+| UI-02 | Phase 2 | Complete |
+| UI-03 | Phase 2 | Complete |
+| UI-04 | Phase 2 | Complete |
 | ROUTE-03 | Phase 3 | Pending |
 | ORCH-05 | Phase 3 | Pending |
 | ORCH-01 | Phase 4 | Pending |
