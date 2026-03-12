@@ -16,6 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture (completed 2026-03-12)
 - [x] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects (completed 2026-03-12)
 - [x] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions (completed 2026-03-12)
+- [ ] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit)
 - [ ] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes
 - [ ] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation
 
@@ -76,15 +77,31 @@ Plans:
 - [ ] 04-01-PLAN.md -- Create wizard-backing-agent.md with Route A (resume) and Route B (bridge + traceability)
 - [ ] 04-02-PLAN.md -- Wire wizard.md to invoke backing agent and deploy globally
 
+### Phase 4.1: Rewire Backing Agent
+**Goal**: The backing agent is reachable in all live user flows — bridge path runs traceability assertion, resume path uses coordinator, and all scenario labels match current detection output
+**Depends on**: Phase 4
+**Requirements**: ORCH-01, ORCH-02, ORCH-03, TRACE-01, TRACE-02
+**Gap Closure:** Closes gaps from v1.0 milestone audit — backing agent orphaned by fix commit 357e5af
+**Success Criteria** (what must be TRUE):
+  1. Selecting "bridge to GSD" in the wizard reaches wizard-backing-agent Route B, which prompts for confirmation, delegates via Task(bmad-gsd-orchestrator), and runs the traceability assertion
+  2. The backing agent's Route Dispatch matches on `bmad-ready` and `bmad-incomplete` (not the superseded `bmad-only`)
+  3. wizard-backing-agent.md YAML frontmatter includes `Task` in the tools list
+  4. The model reliably follows the backing agent instructions without shortcutting (the mechanism that caused the original removal must be addressed)
+  5. wizard.md Context Budget Discipline block and YAML description reference current files (wizard-detect.sh, not wizard-router.md)
+**Plans**: TBD
+
 ### Phase 5: Full Agent Routing
 **Goal**: The backing agent handles phase validation, architectural drift detection, and on-demand traceability status display, completing the full intent routing surface
-**Depends on**: Phase 4
+**Depends on**: Phase 4.1
 **Requirements**: ORCH-04, TRACE-03
 **Success Criteria** (what must be TRUE):
   1. When UAT or phase-gate checks show failures, wizard surfaces the specific failure details and the exact repair command (e.g., "Run `/gsd:fix-issue plan-02`"), not a generic error message
   2. A user can invoke "show traceability" from the wizard and see which BMAD acceptance criteria map to which GSD phases with their current completion status
   3. Selecting "check drift" invokes context-health-monitor and presents its output without reimplementing its logic
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md -- Add post-status menus to wizard + Route C traceability display to backing agent
 
 ### Phase 6: Recovery, Safety, and Polish
 **Goal**: The wizard survives context resets with continuity messaging, automatically injects safety constraints for infrastructure projects, and is validated against a worst-case large project within the 10% context budget
@@ -100,9 +117,9 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6
 
-Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can be planned in parallel but should be executed sequentially to manage context.
+Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -110,5 +127,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can b
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
-| 5. Full Agent Routing | 0/TBD | Not started | - |
+| 4.1. Rewire Backing Agent | 0/TBD | Not started | - |
+| 5. Full Agent Routing | 0/1 | Planning   | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |

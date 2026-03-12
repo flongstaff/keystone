@@ -30,16 +30,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Orchestration
 
-- [x] **ORCH-01**: Backing agent dispatches to existing agents (bmad-gsd-orchestrator, phase-gate-validator, etc.) rather than reimplementing their logic
-- [x] **ORCH-02**: Backing agent spawns in a fresh context window via Task() for heavy orchestration work
-- [x] **ORCH-03**: Wizard automatically detects when BMAD planning is complete and GSD is uninitialized, and triggers the bridge
+- [ ] **ORCH-01**: Backing agent dispatches to existing agents (bmad-gsd-orchestrator, phase-gate-validator, etc.) rather than reimplementing their logic
+- [ ] **ORCH-02**: Backing agent spawns in a fresh context window via Task() for heavy orchestration work
+- [ ] **ORCH-03**: Wizard automatically detects when BMAD planning is complete and GSD is uninitialized, and triggers the bridge
 - [ ] **ORCH-04**: When UAT/phase-gate shows failures, wizard surfaces the failure details and the exact repair command
 - [x] **ORCH-05**: Wizard suggests relevant domain agents (Godot, IT infra, open-source, admin docs) at appropriate lifecycle points
 
 ### Bridge & Traceability
 
-- [x] **TRACE-01**: BMAD planning output (PRD, architecture, stories) flows into GSD phase context without requiring re-explanation
-- [x] **TRACE-02**: Wizard asserts that every BMAD acceptance criterion appears in a GSD phase context file at the bridge step
+- [ ] **TRACE-01**: BMAD planning output (PRD, architecture, stories) flows into GSD phase context without requiring re-explanation
+- [ ] **TRACE-02**: Wizard asserts that every BMAD acceptance criterion appears in a GSD phase context file at the bridge step
 - [ ] **TRACE-03**: User can view requirement traceability status (which BMAD criteria map to which GSD phases and their completion status) on demand
 
 ### Recovery & Persistence
@@ -95,11 +95,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-04 | Phase 2 | Complete |
 | ROUTE-03 | Phase 3 | Complete |
 | ORCH-05 | Phase 3 | Complete |
-| ORCH-01 | Phase 4 | Complete |
-| ORCH-02 | Phase 4 | Complete |
-| ORCH-03 | Phase 4 | Complete |
-| TRACE-01 | Phase 4 | Complete |
-| TRACE-02 | Phase 4 | Complete |
+| ORCH-01 | Phase 4.1 | Pending |
+| ORCH-02 | Phase 4.1 | Pending |
+| ORCH-03 | Phase 4.1 | Pending |
+| TRACE-01 | Phase 4.1 | Pending |
+| TRACE-02 | Phase 4.1 | Pending |
 | ORCH-04 | Phase 5 | Pending |
 | TRACE-03 | Phase 5 | Pending |
 | RECOV-01 | Phase 6 | Pending |
@@ -113,4 +113,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-11 after roadmap creation — all 23 requirements mapped*
+*Last updated: 2026-03-12 after milestone audit — ORCH-01/02/03, TRACE-01/02 reassigned to Phase 4.1 gap closure*
