@@ -156,7 +156,59 @@ if [ -z "$PROJECT_TYPE" ]; then
     fi
 fi
 
+# Open-source detection (fallback for untyped projects)
+if [ -z "$PROJECT_TYPE" ]; then
+    if [ -f "LICENSE" ] || [ -f "CONTRIBUTING.md" ] || [ -d ".github" ]; then
+        PROJECT_TYPE="open-source"
+    fi
+fi
+
 [ -n "$PROJECT_TYPE" ] && PROJECT_TYPE_JSON="\"$PROJECT_TYPE\""
+
+# -- COMPLEXITY DETECTION -----------------------------------------------
+HAS_PRD=false
+HAS_ARCH=false
+HAS_MULTI_REQS=false
+HAS_LONG_README=false
+HAS_DEP_MANAGER=false
+CODE_FILE_COUNT=0
+RECOMMENDED_PATH="gsd-only"
+
+# PRD docs
+PRD_SIGNAL=$(find . -maxdepth 3 \( -name "prd*.md" -o -name "product-brief*.md" \) 2>/dev/null | grep -v ".planning" | head -1 | wc -l | tr -d ' ')
+[ "$PRD_SIGNAL" -gt 0 ] && HAS_PRD=true
+
+# Architecture docs
+ARCH_SIGNAL=$(find . -maxdepth 3 \( -name "architecture*.md" -o -name "design*.md" \) 2>/dev/null | grep -v ".planning" | head -1 | wc -l | tr -d ' ')
+[ "$ARCH_SIGNAL" -gt 0 ] && HAS_ARCH=true
+
+# Multiple requirement files
+MULTI_REQS_COUNT=$(find docs specs -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+[ "$MULTI_REQS_COUNT" -gt 2 ] && HAS_MULTI_REQS=true
+
+# Long README
+if [ -f "README.md" ]; then
+    README_LINES=$(wc -l < README.md | tr -d ' ')
+    README_HEADINGS=$(grep -c "^##" README.md 2>/dev/null || echo 0)
+    [ "$README_LINES" -gt 100 ] && [ "$README_HEADINGS" -gt 3 ] && HAS_LONG_README=true
+fi
+
+# Dependency manager
+{ [ -f "package.json" ] || [ -f "requirements.txt" ] || [ -f "Cargo.toml" ] || [ -f "go.mod" ] || [ -f "pyproject.toml" ] || [ -f "Gemfile" ]; } && HAS_DEP_MANAGER=true
+
+# Code file count
+CODE_FILE_COUNT=$(find . -maxdepth 3 -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.rb" -o -name "*.sh" -o -name "*.tsx" -o -name "*.jsx" -o -name "*.cs" -o -name "*.cpp" -o -name "*.c" -o -name "*.swift" -o -name "*.kt" \) 2>/dev/null | grep -v "node_modules\|.planning\|_bmad" | wc -l | tr -d ' ')
+
+# Priority-ordered path determination (doc signals ALWAYS win over file count)
+if [ "$HAS_PRD" = "true" ] || [ "$HAS_ARCH" = "true" ] || \
+   [ "$HAS_MULTI_REQS" = "true" ] || [ "$HAS_LONG_README" = "true" ]; then
+    RECOMMENDED_PATH="bmad-gsd"
+elif [ "$CODE_FILE_COUNT" -lt 5 ] && [ "$HAS_DEP_MANAGER" = "false" ]; then
+    RECOMMENDED_PATH="quick-task"
+fi
+# else RECOMMENDED_PATH stays "gsd-only" (the default)
+
+COMPLEXITY_JSON="{\"has_prd\":$HAS_PRD,\"has_architecture\":$HAS_ARCH,\"has_multi_reqs\":$HAS_MULTI_REQS,\"has_long_readme\":$HAS_LONG_README,\"code_file_count\":$CODE_FILE_COUNT,\"has_dependency_manager\":$HAS_DEP_MANAGER}"
 
 # -- SCENARIO CLASSIFICATION --------------------------------------------
 # Ambiguous check FIRST (contradictory markers)
@@ -197,6 +249,8 @@ cat > ".claude/wizard-state.json" << EOF
   "detected_at": "$DETECTED_AT",
   "next_command": "$NEXT_CMD",
   "project_type": $PROJECT_TYPE_JSON,
+  "complexity_signal": $COMPLEXITY_JSON,
+  "recommended_path": "$RECOMMENDED_PATH",
   "bmad": {
     "present": $BMAD_PRESENT,
     "prd": $BMAD_PRD,

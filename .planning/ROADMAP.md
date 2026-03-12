@@ -56,7 +56,10 @@ Plans:
   1. A user with a new project containing a large PRD is recommended the BMAD+GSD path, not GSD-only
   2. A user describing a single-file task is recommended quick-task execution, not full BMAD planning
   3. When a user is at the bridge step for an IT infrastructure project, wizard surfaces the Godot/IT infra domain agent suggestion before proceeding
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 03-01-PLAN.md -- Add complexity detection, recommendation tags, and domain agent banner
 
 ### Phase 4: Core Backing Agent Routes
 **Goal**: The backing agent handles the two highest-value intents — resuming GSD work and bridging from completed BMAD planning to GSD — with every BMAD acceptance criterion verified present in GSD phase context files at bridge time
@@ -101,7 +104,7 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). They can b
 |-------|----------------|--------|-----------|
 | 1. Schema and State Detection | 0/TBD | Not started | - |
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
-| 3. New Project Routing | 0/TBD | Not started | - |
+| 3. New Project Routing | 0/1 | Not started | - |
 | 4. Core Backing Agent Routes | 0/TBD | Not started | - |
 | 5. Full Agent Routing | 0/TBD | Not started | - |
 | 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
