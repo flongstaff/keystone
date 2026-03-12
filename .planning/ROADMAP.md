@@ -118,7 +118,11 @@ Plans:
   2. When the wizard detects an IT infrastructure project, it automatically sets auto_advance to false and requires dry-run confirmation before any destructive operation — without the user having to configure this
   3. After a phase execution completes, wizard prompts the user to run context-health-monitor before proceeding to the next phase
   4. Running the full router + wizard + backing agent chain against a project with a PRD over 500 lines and 8+ phases consumes less than 20k tokens (10% of a 200k window)
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md -- Add context-reset continuity, IT safety injection, and uat-passing health-check menus
+- [ ] 06-02-PLAN.md -- Token budget audit and conditional trim
 
 ### Phase 7: Agent, Skill, Tool and Hook Discovery
 **Goal**: [To be planned]
@@ -156,6 +160,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
 | 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
 | 5. Full Agent Routing | 2/2 | Complete   | 2026-03-12 |
-| 6. Recovery, Safety, and Polish | 0/TBD | Not started | - |
+| 6. Recovery, Safety, and Polish | 0/2 | Planning complete | - |
 | 7. Agent, Skill, Tool and Hook Discovery | 0/TBD | Not started | - |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 0/TBD | Not started | - |

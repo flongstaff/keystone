@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wizard detection script — shared by wizard.md and wizard-router.md
+# Wizard detection script — shared by wizard.md and wizard-detect.sh
 # Detects project state, writes .claude/wizard-state.json, prints status box.
 
 # -- BMAD MARKERS -------------------------------------------------------
@@ -146,6 +146,20 @@ fi
 
 [ -n "$PROJECT_TYPE" ] && PROJECT_TYPE_JSON="\"$PROJECT_TYPE\""
 
+# -- INFRA SAFETY INJECTION ---------------------------------------------
+PLANNING_CONFIG=".planning/config.json"
+if [ "$PROJECT_TYPE" = "infra" ] && [ -f "$PLANNING_CONFIG" ]; then
+    python3 -c "
+import json
+with open('$PLANNING_CONFIG', 'r') as f:
+    config = json.load(f)
+config['auto_advance'] = False
+config['dry_run_required'] = True
+with open('$PLANNING_CONFIG', 'w') as f:
+    json.dump(config, f, indent=2)
+" 2>/dev/null
+fi
+
 # -- COMPLEXITY DETECTION -----------------------------------------------
 HAS_PRD=false
 HAS_ARCH=false
@@ -230,6 +244,30 @@ esac
 BMAD_PRESENT=$BMAD_DOCS
 GSD_PRESENT=$GSD_ROADMAP
 
+# -- IS_RESET DETECTION -------------------------------------------------
+# Must run BEFORE JSON write — reads previous wizard-state.json
+IS_RESET=false
+PREV_STATE=".claude/wizard-state.json"
+if [ -f "$PREV_STATE" ]; then
+    PREV_DETECTED=$(python3 -c "
+import json, sys
+try:
+    with open('$PREV_STATE') as f:
+        d = json.load(f)
+    print(d.get('detected_at', ''))
+except Exception:
+    print('')
+" 2>/dev/null)
+    if [ -n "$PREV_DETECTED" ]; then
+        # macOS: date -j -f; Linux: date -d; fallback: 0
+        PREV_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$PREV_DETECTED" "+%s" 2>/dev/null || \
+                     date -d "$PREV_DETECTED" "+%s" 2>/dev/null || echo 0)
+        NOW_EPOCH=$(date -u +%s)
+        ELAPSED=$((NOW_EPOCH - PREV_EPOCH))
+        [ "$ELAPSED" -gt 30 ] && IS_RESET=true
+    fi
+fi
+
 # -- JSON WRITE ---------------------------------------------------------
 DETECTED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 mkdir -p ".claude"
@@ -288,10 +326,16 @@ esac
 # -- STATUS BOX ---------------------------------------------------------
 echo ""
 printf "┌──────────────────────────────────────────────────────────┐\n"
+if [ "$IS_RESET" = "true" ]; then
+    printf "│  Welcome back.                                           │\n"
+fi
 printf "│  Project: %-46s│\n" "$PROJECT_NAME"
 printf "│  Scenario: %-45s│\n" "$SCENARIO"
 if [ -n "$PROJECT_TYPE" ]; then
     printf "│  Type: %-49s│\n" "$PROJECT_TYPE"
+fi
+if [ "$PROJECT_TYPE" = "infra" ]; then
+    printf "│  IT Safety: active                                       │\n"
 fi
 if [ -n "$PHASE_NAME" ]; then
     PHASE_LABEL="Phase $GSD_CURRENT_PHASE_JSON: $PHASE_NAME"
