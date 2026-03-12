@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 06-recovery-safety-and-polish-01-PLAN.md
-last_updated: "2026-03-12T23:07:33.956Z"
+stopped_at: Completed 06-recovery-safety-and-polish-02-PLAN.md
+last_updated: "2026-03-12T23:10:18.412Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 9
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 100
 ---
 
@@ -59,6 +59,7 @@ Progress: [██████████] 100%
 | Phase 05-full-agent-routing P01 | 25 | 3 tasks | 4 files |
 | Phase 05-full-agent-routing P02 | 2 | 1 tasks | 1 files |
 | Phase 06-recovery-safety-and-polish P01 | 2 | 2 tasks | 2 files |
+| Phase 06-recovery-safety-and-polish P02 | 2 | 1 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase 06-recovery-safety-and-polish]: IS_RESET placement is safety-critical: reads old wizard-state.json BEFORE JSON WRITE overwrites detected_at — ordering invariant enforced
 - [Phase 06-recovery-safety-and-polish]: Infra config write uses python3 json merge + [ -f ] guard — preserves existing keys, idempotent, never creates config.json
 - [Phase 06-recovery-safety-and-polish]: uat-passing menu collapses Check drift into Run health check — same agent (context-health-monitor), lossless, keeps menu at 4 options max
+- [Phase 06-recovery-safety-and-polish]: Token budget is 48.2% utilized (~9,658 tokens of 20k) — no trimming needed; ~10,342 tokens headroom remaining
+- [Phase 06-recovery-safety-and-polish]: wizard-backing-agent.md is NOT counted in the always-loaded budget — it runs in separate Task() context
 
 ### Roadmap Evolution
 
@@ -114,6 +117,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T23:07:33.954Z
-Stopped at: Completed 06-recovery-safety-and-polish-01-PLAN.md
+Last session: 2026-03-12T23:10:18.410Z
+Stopped at: Completed 06-recovery-safety-and-polish-02-PLAN.md
 Resume file: None

@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions (completed 2026-03-12)
 - [x] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit) (completed 2026-03-12)
 - [x] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes (completed 2026-03-12)
-- [ ] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation
+- [x] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation (completed 2026-03-12)
 - [ ] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Agent, skill, tool and hook discovery and recommendations
 - [ ] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit)
 
@@ -118,7 +118,7 @@ Plans:
   2. When the wizard detects an IT infrastructure project, it automatically sets auto_advance to false and requires dry-run confirmation before any destructive operation — without the user having to configure this
   3. After a phase execution completes, wizard prompts the user to run context-health-monitor before proceeding to the next phase
   4. Running the full router + wizard + backing agent chain against a project with a PRD over 500 lines and 8+ phases consumes less than 20k tokens (10% of a 200k window)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md -- Add context-reset continuity, IT safety injection, and uat-passing health-check menus
@@ -160,6 +160,6 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
 | 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
 | 5. Full Agent Routing | 2/2 | Complete   | 2026-03-12 |
-| 6. Recovery, Safety, and Polish | 1/2 | In Progress|  |
+| 6. Recovery, Safety, and Polish | 2/2 | Complete   | 2026-03-12 |
 | 7. Agent, Skill, Tool and Hook Discovery | 0/TBD | Not started | - |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 0/TBD | Not started | - |
