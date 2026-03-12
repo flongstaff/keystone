@@ -16,14 +16,16 @@ maxTurns: 15
 
 You are the interactive wizard. Your job: detect project state, present the right menu, and execute the chosen action — all within 2 interactive turns (detection is turn 0, not counted).
 
-## Step 1: Invoke the router (turn 0 — silent detection)
+## Step 1: Run detection (turn 0 — silent)
 
-Read `skills/wizard-router.md` and execute its instructions exactly. The router will:
-- Run a bash detection block
-- Write `.claude/wizard-state.json`
-- Display a compact status box
+Run the detection script:
+```bash
+bash skills/wizard-detect.sh
+```
 
-Do NOT duplicate detection logic. Do NOT run any bash yourself. Let the router do its work.
+This detects project state, writes `.claude/wizard-state.json`, and prints a status box. Do NOT read `skills/wizard-router.md` — it contains standalone-mode instructions that do not apply here.
+
+After the script runs, IMMEDIATELY continue to Step 2. Do NOT stop. Do NOT display "Run: /wizard".
 
 ## Step 2: Read wizard-state.json
 
@@ -74,13 +76,12 @@ Banner format:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-If project_type is null or "web" (no dedicated domain agent), skip the banner entirely. Display the banner once, then proceed with the auto-invocation.
+If project_type is null or "web" (no dedicated domain agent), skip the banner entirely. Display the banner once, then proceed.
 
-Then immediately auto-invoke the next_command:
-- Try `Skill('gsd:discuss-phase', '<N>')` (or whatever command matches next_command)
-- If the Skill tool is not available, read the command file at `.claude/commands/<command-name>.md` and follow its instructions
+Before auto-invoking, provide resume context by invoking the backing agent:
+try `Skill('wizard-backing-agent')`. If the Skill tool is not available, read `skills/wizard-backing-agent.md` and follow Route A instructions.
 
-Do NOT show a menu before auto-invoking. Execute first.
+The backing agent will display orientation context and then invoke the next command.
 
 ---
 
@@ -102,9 +103,10 @@ Display this status box:
 
 Fill in values from wizard-state.json. Display the exact literal `next_command` string.
 
-Then immediately auto-invoke the next_command (same pattern as full-stack).
+Before auto-invoking, provide resume context by invoking the backing agent:
+try `Skill('wizard-backing-agent')`. If the Skill tool is not available, read `skills/wizard-backing-agent.md` and follow Route A instructions.
 
-Do NOT show a menu before auto-invoking. Execute first.
+The backing agent will display orientation context and then invoke the next command.
 
 ---
 
@@ -207,12 +209,12 @@ If project_type is null or "web" (no dedicated domain agent), skip the banner en
 
 - **Option 1 (Bridge):** Display:
   ```
-  To bridge your BMAD planning to GSD execution, run `/bmad-gsd-orchestrator`.
-  This will convert your PRD, architecture, and stories into GSD phases.
-
-  Run: /bmad-gsd-orchestrator
+  The wizard backing agent will handle the bridge:
+  1. Verify BMAD completeness
+  2. Invoke the bridge in a fresh context
+  3. Assert every acceptance criterion is covered
   ```
-  Then offer to invoke: try `Skill('bmad-gsd-orchestrator')` or read `.claude/commands/bmad-gsd-orchestrator.md`.
+  Invoke the backing agent: try `Skill('wizard-backing-agent')`. If the Skill tool is not available, read `skills/wizard-backing-agent.md` and follow Route B instructions.
 
 - **Option 2 (Continue BMAD):** Based on what's missing, suggest the appropriate next command:
   - Missing PRD: suggest `/analyst` or `/pm`
