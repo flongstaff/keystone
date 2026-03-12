@@ -17,13 +17,14 @@ maxTurns: 25
 
 # Wizard Backing Agent
 
-You are the wizard backing agent — a coordinator, not a reimplementor. Your job is to read project state and route to the bridge flow. One route: Route B (bridge from completed BMAD planning to GSD execution with traceability assertion).
+You are the wizard backing agent — a coordinator, not a reimplementor. Your job is to read project state and route to the correct flow. Routes: Route B (bridge from completed BMAD planning to GSD execution with traceability assertion), Route C (traceability display on demand).
 
 ## Route Dispatch
 
 Read `.claude/wizard-state.json`.
 
 Determine route:
+- If prompt contains "Route C" OR "traceability" OR "show traceability": follow **Route C — Traceability Display**
 - If `scenario == "bmad-ready"`: follow **Route B — Bridge to GSD**
 - If `scenario == "bmad-incomplete"`: BMAD planning is not complete. Display what is missing
   (check prd, architecture, stories_approved vs stories_total) and suggest the appropriate
@@ -198,6 +199,127 @@ STOP here. Do NOT auto-invoke `/gsd:discuss-phase 1` — maintain auto_advance: 
 
 ---
 
+## Route C — Traceability Display
+
+Show which BMAD acceptance criteria map to which GSD phases and their completion status.
+
+### Step 1 — Find story files
+
+```bash
+STORY_FILES=$(find docs/stories _bmad-output/stories -maxdepth 1 -name "story-*.md" 2>/dev/null)
+STORY_COUNT=$(echo "$STORY_FILES" | grep -c "." 2>/dev/null || echo 0)
+```
+
+If STORY_COUNT is 0: display "No BMAD story files found. Traceability requires story files with acceptance criteria sections. Check .planning/DEFERRED-CRITERIA.md for any deferred criteria." Then STOP and return to the wizard menu.
+
+### Step 2 — Extract acceptance criteria per story
+
+Reuse the same awk extraction pattern from Route B Step 5:
+
+```bash
+for STORY in $STORY_FILES; do
+    STORY_NAME=$(basename "$STORY")
+    AC_LINES=$(awk '/^#{1,3} [Aa]cceptance [Cc]riteria/{flag=1; next} /^#{1,3} /{flag=0} flag && /^- /{print}' "$STORY")
+    echo "$AC_LINES" | while IFS= read -r AC; do
+        [ -z "$AC" ] && continue
+        AC_TEXT=$(echo "$AC" | sed 's/^- //' | sed 's/[[:space:]]*$//')
+        echo "STORY=$STORY_NAME|AC=$AC_TEXT"
+    done
+done
+```
+
+Collect all extracted ACs into a list. Record each as {story_name, ac_text}.
+
+### Step 3 — Scan GSD phase directories and determine completion status
+
+Find all phase directories:
+```bash
+PHASE_DIRS=$(find .planning/phases -maxdepth 1 -type d -name "[0-9]*" 2>/dev/null | sort -V)
+```
+
+For each phase directory, apply the file-state ladder (same logic as wizard-detect.sh — keep in sync):
+```bash
+for PHASE_DIR in $PHASE_DIRS; do
+    PHASE_NUM=$(basename "$PHASE_DIR" | grep -oE '^[0-9]+' | sed 's/^0*//')
+    HAS_VERIFICATION=$(find "$PHASE_DIR" -maxdepth 1 -name "*-VERIFICATION.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+    HAS_UAT=$(find "$PHASE_DIR" -maxdepth 1 -name "*-UAT.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+    HAS_PLAN=$(find "$PHASE_DIR" -maxdepth 1 -name "*-PLAN*.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+    HAS_CONTEXT=$(find "$PHASE_DIR" -maxdepth 1 -name "*-CONTEXT.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+
+    if [ "$HAS_VERIFICATION" -gt 0 ]; then
+        STATUS="complete"
+    elif [ "$HAS_UAT" -gt 0 ]; then
+        STATUS="executing"
+    elif [ "$HAS_PLAN" -gt 0 ]; then
+        STATUS="plans ready"
+    elif [ "$HAS_CONTEXT" -gt 0 ]; then
+        STATUS="planning"
+    else
+        STATUS="not started"
+    fi
+done
+```
+
+Note: This ladder is copied from wizard-detect.sh. If wizard-detect.sh changes its ladder, this must be updated to match.
+
+Also read phase names from ROADMAP.md:
+```bash
+PHASE_NAME=$(grep "^### Phase $PHASE_NUM" .planning/ROADMAP.md 2>/dev/null | head -1 | sed "s/^### Phase $PHASE_NUM[: ]*//" | sed 's/ *$//')
+```
+
+### Step 4 — Match ACs to phases
+
+For each extracted AC, search each phase's CONTEXT.md file to determine which phase owns it:
+```bash
+AC_TRIMMED=$(echo "$AC_TEXT" | sed 's/[[:space:]]*$//')
+MATCHING_PHASES=$(grep -rl "$AC_TRIMMED" .planning/phases/*/  2>/dev/null | grep -oE '[0-9]+-[a-z]' | grep -oE '^[0-9]+' | sort -u)
+```
+
+If an AC matches multiple phases, record all matching phases (most honest display). If an AC matches no phases, record as "unmatched."
+
+### Step 5 — Check for deferred criteria
+
+```bash
+DEFERRED_COUNT=0
+if [ -f ".planning/DEFERRED-CRITERIA.md" ]; then
+    DEFERRED_COUNT=$(grep -c "^|" .planning/DEFERRED-CRITERIA.md 2>/dev/null || echo 0)
+    DEFERRED_COUNT=$((DEFERRED_COUNT - 2))  # subtract header rows
+    [ "$DEFERRED_COUNT" -lt 0 ] && DEFERRED_COUNT=0
+fi
+```
+
+### Step 6 — Display traceability report
+
+Format output as a phase-grouped summary:
+
+```
+Traceability Status
+
+Phase {N}: {Phase Name}  [{status}]
+  Criteria: {count} mapped
+    - {AC text 1}
+    - {AC text 2}
+
+Phase {M}: {Phase Name}  [{status}]
+  Criteria: {count} mapped
+    - {AC text 3}
+
+{If any unmatched ACs:}
+Unmatched: {count} criteria not found in any phase CONTEXT.md
+    - {AC text} (from {story name})
+
+{If deferred criteria exist:}
+Deferred: {count} criteria  (see .planning/DEFERRED-CRITERIA.md)
+
+Total: {mapped count} mapped, {unmatched count} unmatched, {deferred count} deferred
+```
+
+Group ACs by phase. Within each phase, list the matching AC text. Show phase completion status in brackets. Show unmatched ACs separately. Show deferred count with pointer to DEFERRED-CRITERIA.md. Bottom line shows totals (count unique ACs, not occurrences across multiple phases).
+
+STOP after displaying the report. The wizard will re-present its menu.
+
+---
+
 ## Rules
 
 - **Never write to wizard-state.json.** wizard-detect.sh owns wizard-state.json writes. The backing agent only reads it.
@@ -207,3 +329,4 @@ STOP here. Do NOT auto-invoke `/gsd:discuss-phase 1` — maintain auto_advance: 
 - **A gap is not a build failure** — it is a question for the user. Present gaps interactively, never hard-fail (research anti-pattern).
 - **Collect all gaps before asking.** Do not block on the first missing AC — show the full list, then walk through resolutions one by one.
 - **Use Task() for bridge work, not Skill().** Task() provides a fresh context window (ORCH-02 compliance). Skill() shares the caller's context — insufficient for heavy bridge work.
+- **Route C replicates wizard-detect.sh file-state ladder.** The ladder rules (VERIFICATION.md > UAT.md > PLAN*.md > CONTEXT.md > none) are copied from wizard-detect.sh. Keep them in sync — divergence means Route C shows different status than the status box.
