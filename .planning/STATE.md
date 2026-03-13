@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Defining requirements
-stopped_at: Phase 11 context gathered
-last_updated: "2026-03-13T13:21:40.368Z"
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-03-13T13:37:18.263Z"
 last_activity: 2026-03-13 — Milestone v1.1 started
 progress:
   total_phases: 12
-  completed_phases: 11
-  total_plans: 16
-  completed_plans: 16
+  completed_phases: 12
+  total_plans: 17
+  completed_plans: 17
   percent: 0
 ---
 
@@ -93,6 +93,7 @@ Recent decisions affecting current work:
 - [Phase 10-code-and-documentation-tech-debt]: VERIFICATION.md added as top-of-ladder check in wizard-detect.sh — TOTAL_RAW duplicated in both branches intentionally to keep each self-contained
 - [Phase 10-code-and-documentation-tech-debt]: wizard.md menus handle both 'uat-passing' and 'complete' with health-check-first menu; question text simplified to 'Phase execution is complete. Ready to proceed?'
 - [Phase 10-code-and-documentation-tech-debt]: Operation B dual-path reads docs/stories and _bmad-output/stories; write target bmad-outputs/STATUS.md remains single-path
+- [Phase 11-final-global-deployment-sync]: Fix project-local wizard.md first, then copy all files — ensures global gets the patched version (not the stale one)
 
 ### Roadmap Evolution
 
@@ -109,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T13:21:40.366Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-final-global-deployment-sync/11-CONTEXT.md
+Last session: 2026-03-13T13:37:18.260Z
+Stopped at: Completed 11-01-PLAN.md
+Resume file: None
