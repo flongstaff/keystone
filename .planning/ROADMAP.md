@@ -169,7 +169,10 @@ Plans:
   2. `~/.claude/skills/wizard-backing-agent.md` matches project-local `skills/wizard-backing-agent.md` (no stale `/bmad-gsd-orchestrator` fallback)
   3. `~/.claude/skills/wizard-router/` directory (SKILL.md + wizard-detect.sh) is deleted
   4. Diff between global and project-local skill files shows zero differences
-**Plans**: TBD
+**Plans:** 1 plans
+
+Plans:
+- [ ] 09-01-PLAN.md -- Delete orphaned wizard-router/ directory and redeploy all skill files from project-local to global
 
 ### Phase 10: Code & Documentation Tech Debt
 **Goal**: Fix code-level tech debt items — Route C ladder alignment, orchestrator dual-path support in Operation B, and ROADMAP accuracy
@@ -201,5 +204,5 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 6. Recovery, Safety, and Polish | 2/2 | Complete   | 2026-03-12 |
 | 7. Agent, Skill, Tool and Hook Discovery | 1/1 | Complete   | 2026-03-12 |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |
-| 9. Global Deployment Sync | 0/TBD | Not started | - |
+| 9. Global Deployment Sync | 0/1 | Not started | - |
 | 10. Code & Documentation Tech Debt | 0/TBD | Not started | - |
