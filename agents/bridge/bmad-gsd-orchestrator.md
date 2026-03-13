@@ -34,18 +34,19 @@ Triggered when: user says "initialise GSD from BMAD docs" or similar.
 
 ### Step 1 — Locate and validate BMAD documents
 
+# Scans both docs/ and _bmad-output/planning-artifacts/ (must match wizard-detect.sh pattern)
 ```bash
 echo "=== BMAD Document Scan ==="
 
 # V6 structure
 ls _bmad/ 2>/dev/null && echo "BMAD_DIR=_bmad" || true
-# Legacy v4 structure  
+# Legacy v4 structure
 ls .bmad/ 2>/dev/null && echo "BMAD_LEGACY=true — upgrade recommended: npx bmad-method install"
 
 # Required docs
-ls docs/prd*.md 2>/dev/null && echo "PRD=found" || echo "PRD=MISSING"
-ls docs/architecture*.md 2>/dev/null && echo "ARCH=found" || echo "ARCH=MISSING"
-ls docs/stories/ 2>/dev/null && echo "STORIES=found" || echo "STORIES=missing (optional)"
+find docs _bmad-output/planning-artifacts -maxdepth 2 -name "prd*.md" 2>/dev/null | head -1 | grep -q "." && echo "PRD=found" || echo "PRD=MISSING"
+find docs _bmad-output/planning-artifacts -maxdepth 2 -name "architecture*.md" 2>/dev/null | head -1 | grep -q "." && echo "ARCH=found" || echo "ARCH=MISSING"
+find docs _bmad-output/stories docs/stories -maxdepth 1 -name "story-*.md" 2>/dev/null | head -1 | grep -q "." && echo "STORIES=found" || echo "STORIES=missing (optional)"
 
 # bmad-outputs status tracking
 ls bmad-outputs/ 2>/dev/null || echo "bmad-outputs=missing (will create)"

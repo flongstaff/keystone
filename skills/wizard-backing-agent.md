@@ -94,7 +94,8 @@ Bridge did not complete. Expected files are missing:
   .planning/config.json: {found/missing}
   .planning/CONTEXT.md: {found/missing}
 
-Try running: /bmad-gsd-orchestrator directly to see detailed error output.
+To debug: read agents/bridge/bmad-gsd-orchestrator.md and run Operation A manually.
+Or re-run /wizard to restart the bridge flow.
 ```
 Then STOP.
 
