@@ -58,7 +58,7 @@ by_stage = {}
 for stage in STAGES:
     names = [t['name'] for t in tools if stage in t.get('stages', [])]
     names.sort(key=sort_key)
-    by_stage[stage] = names[:8]
+    by_stage[stage] = names[:6]
 
 summary = {'version': 1, 'counts': counts, 'by_stage': by_stage}
 print(json.dumps(summary, separators=(',', ':')))
@@ -111,7 +111,7 @@ def assign_stages(name, description):
 
 
 def parse_agent_frontmatter(path):
-    '''Parse YAML frontmatter from an agent .md file. Returns dict or None.'''
+    '''Parse YAML frontmatter from an agent .md file. Returns dict (possibly empty) or None on read error.'''
     try:
         content = path.read_text(encoding='utf-8', errors='replace')
     except Exception:
@@ -120,7 +120,8 @@ def parse_agent_frontmatter(path):
     # Extract between first --- and second ---
     m = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
     if not m:
-        return None
+        # No frontmatter -- return empty dict so file still gets included
+        return {}
 
     fm = m.group(1)
     result = {}
@@ -252,7 +253,8 @@ if AGENTS_DIR.is_dir():
     for md_file in sorted(AGENTS_DIR.glob('*.md')):
         fm = parse_agent_frontmatter(md_file)
         if fm is None:
-            print(f'WARNING: Could not parse frontmatter from {md_file.name}', file=sys.stderr)
+            # File could not be read at all — skip
+            print(f'WARNING: Could not read agent file {md_file.name}', file=sys.stderr)
             continue
 
         name = fm.get('name', md_file.stem)
@@ -338,8 +340,11 @@ if SETTINGS_FILE.exists():
 
                     # Derive name from script filename
                     # e.g. 'bash ~/.claude/hooks/session-start.sh' -> 'session-start'
+                    # e.g. 'node "/path/to/gsd-context-monitor.js"' -> 'gsd-context-monitor'
                     parts = cmd.split()
                     script_path = parts[-1] if parts else cmd
+                    # Strip surrounding quotes (single or double)
+                    script_path = script_path.strip(chr(39)).strip(chr(34))
                     hook_name = os.path.basename(script_path)
                     # Remove extension
                     hook_name = re.sub(r'\.(sh|js|py|rb)$', '', hook_name)
@@ -450,7 +455,7 @@ by_stage = {}
 for stage in STAGES:
     names = [t['name'] for t in all_tools if stage in t.get('stages', [])]
     names.sort(key=sort_key)
-    by_stage[stage] = names[:8]
+    by_stage[stage] = names[:6]
 
 summary = {
     'version': 1,
