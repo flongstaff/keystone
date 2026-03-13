@@ -69,13 +69,35 @@ Use AskUserQuestion:
 
 If user declines, stop gracefully with: "Bridge cancelled. Run `/wizard` when you're ready to bridge."
 
+### Step 2.5 -- Build Bridge Capability Block
+
+If wizard-state.json contains non-empty `toolkit.by_stage.planning`:
+
+1. Read `toolkit.by_stage.planning` (array of tool names, already in context from Route Dispatch read)
+2. For each tool name:
+   - MCP tools (context7, deepwiki, or any name that is not a known agent/skill/hook):
+     `- {name} (configured -- availability may vary) -- MCP server for {name}`
+   - All others: `- {name} -- {tool name as identifier}`
+3. Build:
+
+```xml
+<capabilities>
+Reference these during planning if relevant:
+{pointer lines}
+</capabilities>
+```
+
+4. Append this block to the Task() prompt in Step 3, after the Operation A instruction line.
+
+If wizard-state.json is missing, toolkit is `{}`, or `by_stage.planning` is empty: skip -- do not append any block. The bridge proceeds normally without capability hints.
+
 ### Step 3 — Delegate to bmad-gsd-orchestrator via Task()
 
 Use the Task tool to spawn bmad-gsd-orchestrator in a fresh context. This satisfies ORCH-01 (delegate, don't reimplement) and ORCH-02 (fresh context window).
 
 Task invocation:
 - **description:** "Bridge BMAD planning docs to GSD execution structure"
-- **prompt:** "Read agents/bridge/bmad-gsd-orchestrator.md and follow Operation A to initialise GSD from BMAD docs."
+- **prompt:** "Read agents/bridge/bmad-gsd-orchestrator.md and follow Operation A to initialise GSD from BMAD docs.{capability_block_if_built}"
 
 Do NOT reimplement Operation A logic in this file. The backing agent coordinates — the orchestrator builds.
 
@@ -338,3 +360,4 @@ STOP after displaying the report. The wizard will re-present its menu.
 - **Collect all gaps before asking.** Do not block on the first missing AC — show the full list, then walk through resolutions one by one.
 - **Use Task() for bridge work, not Skill().** Task() provides a fresh context window (ORCH-02 compliance). Skill() shares the caller's context — insufficient for heavy bridge work.
 - **Route C replicates wizard-detect.sh file-state ladder.** The ladder rules (VERIFICATION.md > UAT.md > PLAN*.md > CONTEXT.md > none) are copied from wizard-detect.sh. Keep them in sync — divergence means Route C shows different status than the status box.
+- **Never read toolkit-registry.json.** Injection uses only wizard-state.json toolkit.by_stage (compact summary). Full registry is reserved for 'Discover tools' display (PERF-03).
