@@ -279,6 +279,30 @@ except Exception:
     fi
 fi
 
+# -- TOOLKIT DISCOVERY --------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TOOLKIT_JSON=$(bash "$SCRIPT_DIR/toolkit-discovery.sh" 2>/dev/null)
+[ -z "$TOOLKIT_JSON" ] && TOOLKIT_JSON='{}'
+
+# -- TOOLKIT COUNTS FOR STATUS BOX --------------------------------------
+TOOLKIT_LINE=""
+if [ "$TOOLKIT_JSON" != '{}' ]; then
+    TOOLKIT_LINE=$(echo "$TOOLKIT_JSON" | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    c = d.get('counts', {})
+    parts = []
+    if c.get('agents', 0) > 0: parts.append(f\"{c['agents']} agents\")
+    if c.get('skills', 0) > 0: parts.append(f\"{c['skills']} skills\")
+    if c.get('hooks', 0) > 0: parts.append(f\"{c['hooks']} hooks\")
+    if c.get('mcp', 0) > 0: parts.append(f\"{c['mcp']} MCP\")
+    print(', '.join(parts))
+except Exception:
+    pass
+" 2>/dev/null)
+fi
+
 # -- JSON WRITE ---------------------------------------------------------
 DETECTED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 mkdir -p ".claude"
@@ -307,7 +331,8 @@ cat > ".claude/wizard-state.json" << EOF
     "current_phase": $GSD_CURRENT_PHASE_JSON,
     "total_phases": $GSD_TOTAL_PHASES_JSON,
     "phase_status": $GSD_PHASE_STATUS_JSON
-  }
+  },
+  "toolkit": $TOOLKIT_JSON
 }
 EOF
 
@@ -351,6 +376,9 @@ fi
 if [ -n "$PHASE_NAME" ]; then
     PHASE_LABEL="Phase $GSD_CURRENT_PHASE_JSON: $PHASE_NAME"
     printf "│  %-55s│\n" "$PHASE_LABEL"
+fi
+if [ -n "$TOOLKIT_LINE" ]; then
+    printf "│  Tools: %-49s│\n" "$TOOLKIT_LINE"
 fi
 if [ -n "$STOPPED_AT" ]; then
     printf "│  Last: %-49s│\n" "$STOPPED_AT"
