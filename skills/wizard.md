@@ -94,7 +94,7 @@ You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 - **Option 2 (Continue):** Same as existing Continue logic (read next_command, invoke Skill).
 - **Option 3 (Validate phase):** Same as existing Validate phase logic. After completion, re-present the SAME uat-passing menu.
 - **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
-- **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` and follow Route C instructions. After completion, re-present the SAME uat-passing menu.
+- **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` (or `~/.claude/skills/wizard-backing-agent.md` if not found) and follow Route C instructions. After completion, re-present the SAME uat-passing menu.
 
   Display:
 
@@ -172,7 +172,7 @@ You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 - **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
 
-- **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` and follow Route C instructions. After completion, re-present the SAME non-uat-passing menu.
+- **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` (or `~/.claude/skills/wizard-backing-agent.md` if not found) and follow Route C instructions. After completion, re-present the SAME non-uat-passing menu.
 
   Display:
 
@@ -466,7 +466,7 @@ Present a menu via AskUserQuestion:
 - **Option 1 (Bridge):**
   Use the Task tool to invoke the backing agent in a fresh context:
   - description: "Bridge BMAD planning to GSD execution"
-  - prompt: "Read skills/wizard-backing-agent.md and follow Route B — bridge to GSD."
+  - prompt: "Read skills/wizard-backing-agent.md (or ~/.claude/skills/wizard-backing-agent.md if not found) and follow Route B — bridge to GSD."
 
   If the Task tool is not available, display: "Run: /wizard-backing-agent (Route B)" and stop.
 
