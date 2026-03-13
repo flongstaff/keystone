@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/flong/.claude/skills/**)",
+      "Skill(gsd:discuss-phase)",
+      "Bash(cp /Users/flong/Developer/keystone/skills/wizard.md ~/.claude/skills/wizard.md && cp /Users/flong/Developer/keystone/skills/wizard-backing-agent.md ~/.claude/skills/wizard-backing-agent.md && echo \"PASS: Files copied to ~/.claude/skills/\")"
+    ]
+  }
+}
