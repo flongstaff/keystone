@@ -205,10 +205,10 @@ Plans:
   3. `~/.claude/skills/wizard.md` matches project-local `skills/wizard.md` (includes Option 3 fix + complete status handling)
   4. `~/.claude/skills/wizard-backing-agent.md` matches project-local `skills/wizard-backing-agent.md`
   5. Diff between global and project-local skill files shows zero differences
-**Plans:** 0/0 plans complete
+**Plans:** 1 plan
 
 Plans:
-- (none yet — run `/gsd:plan-phase 11`)
+- [ ] 11-01-PLAN.md -- Fix Option 3 label in wizard.md and redeploy all 3 skill files to ~/.claude/skills/
 
 ## Progress
 
@@ -230,4 +230,4 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |
 | 9. Global Deployment Sync | 1/1 | Complete   | 2026-03-13 |
 | 10. Code & Documentation Tech Debt | 1/1 | Complete    | 2026-03-13 |
-| 11. Final Global Deployment Sync | 0/0 | Not Started | - |
+| 11. Final Global Deployment Sync | 0/1 | Not Started | - |
