@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit) (completed 2026-03-12)
 - [x] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes (completed 2026-03-12)
 - [x] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation (completed 2026-03-12)
-- [ ] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Agent, skill, tool and hook discovery and recommendations
+- [ ] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Add on-demand Discover tools option to wizard post-status menus with hardcoded catalog of all Keystone agents, skills, and hooks
 - [ ] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit)
 
 ## Phase Details
@@ -125,10 +125,18 @@ Plans:
 - [ ] 06-02-PLAN.md -- Token budget audit and conditional trim
 
 ### Phase 7: Agent, Skill, Tool and Hook Discovery
-**Goal**: [To be planned]
+**Goal**: Users can browse a complete catalog of all Keystone-authored agents, skills, and hooks on-demand from the wizard's post-status menu, with the active domain agent clearly marked
 **Depends on**: Phase 6
-**Requirements**: TBD
-**Plans**: TBD
+**Requirements**: None (additive functionality beyond v1 requirements)
+**Success Criteria** (what must be TRUE):
+  1. Selecting "Discover tools" from any post-status menu (full-stack or gsd-only, uat-passing or not) displays the complete catalog
+  2. The catalog shows all 11 agents (grouped by entry/bridge/domain/maintenance), 4 skills, and 3 hooks with name, one-liner, and activation command
+  3. The domain agent matching the current project_type is marked "(active)"
+  4. After viewing the catalog, the wizard returns to the same post-status menu the user came from
+**Plans:** 1 plans
+
+Plans:
+- [ ] 07-01-PLAN.md -- Add Discover tools option and inline catalog to all post-status menus, deploy globally
 
 ### Phase 8: Bridge Path Fix & Infrastructure Cleanup
 **Goal**: The orchestrator correctly scans all BMAD output paths, all stale references and orphaned files are removed, and false-negative validation commands are fixed
@@ -161,5 +169,5 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
 | 5. Full Agent Routing | 2/2 | Complete   | 2026-03-12 |
 | 6. Recovery, Safety, and Polish | 2/2 | Complete   | 2026-03-12 |
-| 7. Agent, Skill, Tool and Hook Discovery | 0/TBD | Not started | - |
+| 7. Agent, Skill, Tool and Hook Discovery | 0/1 | Not started | - |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 0/TBD | Not started | - |
