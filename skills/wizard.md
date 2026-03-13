@@ -173,54 +173,8 @@ You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 - **Option 2 (Continue):** Same as existing Continue logic (read next_command, invoke Skill).
 - **Option 3 (Validate phase):** Same as existing Validate phase logic. After completion, re-present the SAME uat-passing menu.
-- **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
+- **Option 4 (Discover tools):** Go to ## Display Catalog below, then re-present this SAME uat-passing menu.
 - **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` (or `~/.claude/skills/wizard-backing-agent.md` if not found) and follow Route C instructions. After completion, re-present the SAME uat-passing menu.
-
-  Display:
-
----
-
-### Agents
-
-#### Entry
-- **project-setup-advisor** -- Detects setup state and outputs the exact workflow to follow -- say "start a project"
-- **project-setup-wizard** -- Detects installed tooling and produces step-by-step workflow -- say "set up this project"
-
-#### Bridge
-- **bmad-gsd-orchestrator** -- Bridges BMAD planning docs to GSD execution structure -- say "bridge docs"
-- **context-health-monitor** -- Detects drift between what was planned and what was built -- say "check drift"
-- **doc-shard-bridge** -- Creates trimmed per-phase context shards from BMAD docs -- say "shard documents"
-- **phase-gate-validator** -- Validates a GSD phase is complete before advancing -- say "validate phase"
-
-#### Domain
-- **admin-docs-agent** -- Administrative docs, runbooks, SOPs, internal communications -- say "use admin-docs-agent"
-- **godot-dev-agent** -- Godot game development: GDScript, scenes, nodes, signals -- say "use godot-dev-agent"
-- **it-infra-agent** -- IT infrastructure and DevOps with safety enforcement -- say "use it-infra-agent"
-- **open-source-agent** -- Open source management, GitHub Actions, Next.js/TypeScript -- say "use open-source-agent"
-
-#### Maintenance
-- **stack-update-watcher** -- Checks for BMAD/GSD updates and produces an action plan -- say "check for updates"
-
-### Skills
-- **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
-- **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
-- **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-
-### Hooks
-- **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
-- **stack-update-banner** -- Checks for BMAD/GSD version updates (non-blocking, cached) -- installed alongside session-start
-- **post-write-check** -- Checks for safety issues after every file write -- install via install-runtime-support.sh
-
----
-
-  Active-marking logic for domain agents:
-  - project_type == "docs" -> append " (active)" to admin-docs-agent entry
-  - project_type == "game" -> append " (active)" to godot-dev-agent entry
-  - project_type == "infra" -> append " (active)" to it-infra-agent entry
-  - project_type == "open-source" -> append " (active)" to open-source-agent entry
-  - project_type == "web" or null -> no (active) marking
-
-  After displaying the catalog, re-present this SAME uat-passing menu.
 
 **If phase_status is not "uat-passing" and not "complete":** present existing menu (unchanged):
 
@@ -250,55 +204,9 @@ You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present the SAME AskUserQuestion menu above.
 
-- **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
+- **Option 4 (Discover tools):** Go to ## Display Catalog below, then re-present this SAME non-uat-passing menu.
 
 - **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` (or `~/.claude/skills/wizard-backing-agent.md` if not found) and follow Route C instructions. After completion, re-present the SAME non-uat-passing menu.
-
-  Display:
-
----
-
-### Agents
-
-#### Entry
-- **project-setup-advisor** -- Detects setup state and outputs the exact workflow to follow -- say "start a project"
-- **project-setup-wizard** -- Detects installed tooling and produces step-by-step workflow -- say "set up this project"
-
-#### Bridge
-- **bmad-gsd-orchestrator** -- Bridges BMAD planning docs to GSD execution structure -- say "bridge docs"
-- **context-health-monitor** -- Detects drift between what was planned and what was built -- say "check drift"
-- **doc-shard-bridge** -- Creates trimmed per-phase context shards from BMAD docs -- say "shard documents"
-- **phase-gate-validator** -- Validates a GSD phase is complete before advancing -- say "validate phase"
-
-#### Domain
-- **admin-docs-agent** -- Administrative docs, runbooks, SOPs, internal communications -- say "use admin-docs-agent"
-- **godot-dev-agent** -- Godot game development: GDScript, scenes, nodes, signals -- say "use godot-dev-agent"
-- **it-infra-agent** -- IT infrastructure and DevOps with safety enforcement -- say "use it-infra-agent"
-- **open-source-agent** -- Open source management, GitHub Actions, Next.js/TypeScript -- say "use open-source-agent"
-
-#### Maintenance
-- **stack-update-watcher** -- Checks for BMAD/GSD updates and produces an action plan -- say "check for updates"
-
-### Skills
-- **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
-- **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
-- **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-
-### Hooks
-- **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
-- **stack-update-banner** -- Checks for BMAD/GSD version updates (non-blocking, cached) -- installed alongside session-start
-- **post-write-check** -- Checks for safety issues after every file write -- install via install-runtime-support.sh
-
----
-
-  Active-marking logic for domain agents:
-  - project_type == "docs" -> append " (active)" to admin-docs-agent entry
-  - project_type == "game" -> append " (active)" to godot-dev-agent entry
-  - project_type == "infra" -> append " (active)" to it-infra-agent entry
-  - project_type == "open-source" -> append " (active)" to open-source-agent entry
-  - project_type == "web" or null -> no (active) marking
-
-  After displaying the catalog, re-present this SAME non-uat-passing menu.
 
 ---
 
@@ -332,53 +240,7 @@ Read `gsd.phase_status` from wizard-state.json.
 
 - **Option 2 (Continue):** Same as existing Continue logic.
 - **Option 3 (Validate phase):** Same as existing Validate phase logic. After completion, re-present the SAME uat-passing menu.
-- **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
-
-  Display:
-
----
-
-### Agents
-
-#### Entry
-- **project-setup-advisor** -- Detects setup state and outputs the exact workflow to follow -- say "start a project"
-- **project-setup-wizard** -- Detects installed tooling and produces step-by-step workflow -- say "set up this project"
-
-#### Bridge
-- **bmad-gsd-orchestrator** -- Bridges BMAD planning docs to GSD execution structure -- say "bridge docs"
-- **context-health-monitor** -- Detects drift between what was planned and what was built -- say "check drift"
-- **doc-shard-bridge** -- Creates trimmed per-phase context shards from BMAD docs -- say "shard documents"
-- **phase-gate-validator** -- Validates a GSD phase is complete before advancing -- say "validate phase"
-
-#### Domain
-- **admin-docs-agent** -- Administrative docs, runbooks, SOPs, internal communications -- say "use admin-docs-agent"
-- **godot-dev-agent** -- Godot game development: GDScript, scenes, nodes, signals -- say "use godot-dev-agent"
-- **it-infra-agent** -- IT infrastructure and DevOps with safety enforcement -- say "use it-infra-agent"
-- **open-source-agent** -- Open source management, GitHub Actions, Next.js/TypeScript -- say "use open-source-agent"
-
-#### Maintenance
-- **stack-update-watcher** -- Checks for BMAD/GSD updates and produces an action plan -- say "check for updates"
-
-### Skills
-- **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
-- **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
-- **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-
-### Hooks
-- **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
-- **stack-update-banner** -- Checks for BMAD/GSD version updates (non-blocking, cached) -- installed alongside session-start
-- **post-write-check** -- Checks for safety issues after every file write -- install via install-runtime-support.sh
-
----
-
-  Active-marking logic for domain agents:
-  - project_type == "docs" -> append " (active)" to admin-docs-agent entry
-  - project_type == "game" -> append " (active)" to godot-dev-agent entry
-  - project_type == "infra" -> append " (active)" to it-infra-agent entry
-  - project_type == "open-source" -> append " (active)" to open-source-agent entry
-  - project_type == "web" or null -> no (active) marking
-
-  After displaying the catalog, re-present this SAME uat-passing menu.
+- **Option 4 (Discover tools):** Go to ## Display Catalog below, then re-present this SAME uat-passing menu.
 
 **If phase_status is not "uat-passing" and not "complete":** present existing menu (unchanged):
 
@@ -400,53 +262,7 @@ Present a menu via AskUserQuestion:
 
 - **Option 3 (Validate phase):** Same as full-stack Option 3 above.
 
-- **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
-
-  Display:
-
----
-
-### Agents
-
-#### Entry
-- **project-setup-advisor** -- Detects setup state and outputs the exact workflow to follow -- say "start a project"
-- **project-setup-wizard** -- Detects installed tooling and produces step-by-step workflow -- say "set up this project"
-
-#### Bridge
-- **bmad-gsd-orchestrator** -- Bridges BMAD planning docs to GSD execution structure -- say "bridge docs"
-- **context-health-monitor** -- Detects drift between what was planned and what was built -- say "check drift"
-- **doc-shard-bridge** -- Creates trimmed per-phase context shards from BMAD docs -- say "shard documents"
-- **phase-gate-validator** -- Validates a GSD phase is complete before advancing -- say "validate phase"
-
-#### Domain
-- **admin-docs-agent** -- Administrative docs, runbooks, SOPs, internal communications -- say "use admin-docs-agent"
-- **godot-dev-agent** -- Godot game development: GDScript, scenes, nodes, signals -- say "use godot-dev-agent"
-- **it-infra-agent** -- IT infrastructure and DevOps with safety enforcement -- say "use it-infra-agent"
-- **open-source-agent** -- Open source management, GitHub Actions, Next.js/TypeScript -- say "use open-source-agent"
-
-#### Maintenance
-- **stack-update-watcher** -- Checks for BMAD/GSD updates and produces an action plan -- say "check for updates"
-
-### Skills
-- **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
-- **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
-- **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-
-### Hooks
-- **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
-- **stack-update-banner** -- Checks for BMAD/GSD version updates (non-blocking, cached) -- installed alongside session-start
-- **post-write-check** -- Checks for safety issues after every file write -- install via install-runtime-support.sh
-
----
-
-  Active-marking logic for domain agents:
-  - project_type == "docs" -> append " (active)" to admin-docs-agent entry
-  - project_type == "game" -> append " (active)" to godot-dev-agent entry
-  - project_type == "infra" -> append " (active)" to it-infra-agent entry
-  - project_type == "open-source" -> append " (active)" to open-source-agent entry
-  - project_type == "web" or null -> no (active) marking
-
-  After displaying the catalog, re-present this SAME non-uat-passing menu.
+- **Option 4 (Discover tools):** Go to ## Display Catalog below, then re-present this SAME non-uat-passing menu.
 
 Note: Gsd-only has NO "Show traceability" option because there are no BMAD docs to trace.
 
@@ -655,10 +471,155 @@ After the explanation, call AskUserQuestion again with the SAME options but WITH
 
 ---
 
+## Display Catalog
+
+This section is invoked by all "Discover tools" Option 4 handlers.
+
+**Step 1: Refresh registry**
+Run: `bash skills/toolkit-discovery.sh` (if local file exists) or `bash ~/.claude/skills/toolkit-discovery.sh`. The script handles TTL internally and exits fast when the registry is fresh. Suppress stderr with 2>/dev/null.
+
+**Step 2: Read and render registry**
+Read `.claude/toolkit-registry.json`. Parse it as JSON. If the file does not exist or JSON parsing fails, go to Step 3 (Fallback Display).
+
+If valid, read `project_type` from wizard-state.json (already in context from Step 2). Render the dynamic catalog using the following structure:
+
+Summary header line:
+**{N}** agents . **{N}** skills . **{N}** hooks . **{N}** MCP servers
+
+(Use counts from registry `counts` object.)
+
+Then for each stage in order [Research, Planning, Execution, Review]:
+
+Print stage heading: `### {Stage}`
+
+**Keystone tools** subsection (hardcoded -- these are NOT reliably in the registry):
+
+Research stage Keystone tools:
+- context-health-monitor -- Detects drift between what was planned and what was built
+- doc-shard-bridge -- Creates trimmed per-phase context shards from BMAD docs
+- stack-update-watcher -- Checks for BMAD/GSD updates and produces an action plan
+
+Planning stage Keystone tools:
+- bmad-gsd-orchestrator -- Bridges BMAD planning docs to GSD execution structure
+- phase-gate-validator -- Validates a GSD phase is complete before advancing
+- project-setup-advisor -- Detects setup state and outputs the exact workflow to follow
+- project-setup-wizard -- Detects installed tooling and produces step-by-step workflow
+
+Execution stage Keystone tools:
+- bmad-gsd-orchestrator -- Bridges BMAD planning docs to GSD execution structure
+- doc-shard-bridge -- Creates trimmed per-phase context shards from BMAD docs
+
+Review stage Keystone tools:
+- context-health-monitor -- Detects drift between what was planned and what was built
+- phase-gate-validator -- Validates a GSD phase is complete before advancing
+
+Domain agents (shown in every stage where relevant, with active marking):
+- admin-docs-agent -- Administrative docs, runbooks, SOPs, internal communications
+- godot-dev-agent -- Godot game development: GDScript, scenes, nodes, signals
+- it-infra-agent -- IT infrastructure and DevOps with safety enforcement
+- open-source-agent -- Open source management, GitHub Actions, Next.js/TypeScript
+
+Apply active-marking: if `project_type` matches a domain agent (docs -> admin-docs-agent, game -> godot-dev-agent, infra -> it-infra-agent, open-source -> open-source-agent), append " (active)" to that entry. If project_type is null or "web", no marking.
+
+Skills (shown once under Planning stage Keystone):
+- wizard -- Interactive wizard: detects project state, presents next action
+- wizard-backing-agent -- Bridge coordinator: BMAD-to-GSD bridge and traceability display
+- wizard-detect -- Shell detection script: computes project state, writes wizard-state.json
+- toolkit-discovery -- Scans installed agents, skills, hooks, and MCP servers into registry
+
+Hooks (shown once under Review stage Keystone):
+- session-start -- Shows project state, GSD phase, BMAD status, and update banner at session start
+- stack-update-banner -- Checks for BMAD/GSD version updates (non-blocking, cached)
+- post-write-check -- Checks for safety issues after every file write
+
+**Installed tools** subsection (from registry, filtered to NON-Keystone):
+
+For each stage, filter `tools` array to entries where `stage` is in the tool's `stages` array AND the tool's `name` is not in the KEYSTONE_NAMES set. Group the filtered tools by type:
+
+*Agents ({count})*
+Show up to 10 entries in format: `- {name} -- {description}`
+If more than 10, add: `... and {remaining} more`
+
+*Skills ({count})*
+Show up to 10 entries, same format and cap.
+
+*MCP ({count})*
+Show ALL MCP entries (typically few). Format: `- {name} (configured) -- {description}`
+
+If a type sub-group has 0 entries for this stage, skip it entirely.
+If a stage has 0 user-installed tools (only Keystone), skip the "Installed tools" subsection for that stage.
+
+KEYSTONE_NAMES set (hardcoded in the instruction block):
+```
+bmad-gsd-orchestrator, context-health-monitor, doc-shard-bridge,
+phase-gate-validator, project-setup-wizard, project-setup-advisor,
+stack-update-watcher, admin-docs-agent, godot-dev-agent, it-infra-agent,
+open-source-agent, wizard, wizard-backing-agent, wizard-detect,
+toolkit-discovery, session-start, stack-update-banner, post-write-check
+```
+
+After all 4 stages, print footer:
+*Source: toolkit-registry.json (scanned {scanned_at})*
+
+**Step 3: Fallback Display**
+If registry was missing or malformed, display the hardcoded catalog:
+
+---
+
+### Agents
+
+#### Entry
+- **project-setup-advisor** -- Detects setup state and outputs the exact workflow to follow
+- **project-setup-wizard** -- Detects installed tooling and produces step-by-step workflow
+
+#### Bridge
+- **bmad-gsd-orchestrator** -- Bridges BMAD planning docs to GSD execution structure
+- **context-health-monitor** -- Detects drift between what was planned and what was built
+- **doc-shard-bridge** -- Creates trimmed per-phase context shards from BMAD docs
+- **phase-gate-validator** -- Validates a GSD phase is complete before advancing
+
+#### Domain
+- **admin-docs-agent** -- Administrative docs, runbooks, SOPs, internal communications
+- **godot-dev-agent** -- Godot game development: GDScript, scenes, nodes, signals
+- **it-infra-agent** -- IT infrastructure and DevOps with safety enforcement
+- **open-source-agent** -- Open source management, GitHub Actions, Next.js/TypeScript
+
+#### Maintenance
+- **stack-update-watcher** -- Checks for BMAD/GSD updates and produces an action plan
+
+### Skills
+- **wizard** -- Interactive wizard: detects project state, presents next action
+- **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display
+- **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json
+- **toolkit-discovery** -- Scans installed agents, skills, hooks, and MCP servers into registry
+
+### Hooks
+- **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start
+- **stack-update-banner** -- Checks for BMAD/GSD version updates (non-blocking, cached)
+- **post-write-check** -- Checks for safety issues after every file write
+
+---
+
+Apply active-marking for domain agents using same project_type logic.
+
+*Showing built-in catalog. Run toolkit-discovery.sh for full scan.*
+
+**Step 4: Return to calling menu**
+Return to the menu that triggered this section and re-present it.
+
+**IMPORTANT formatting notes (per user decisions):**
+- Entry format for dynamic catalog: `- name -- one-liner description` (no bold, no activation commands)
+- Entry format for fallback catalog: `- **name** -- one-liner description` (bold names preserved for fallback, matches Phase 7 original format; no activation commands)
+- MCP entries in dynamic catalog: append `(configured)` after name
+- The fallback catalog uses the Phase 7 type-first format as-is -- no stage re-grouping
+- The fallback catalog now includes toolkit-discovery as the 4th skill (added Phase 12, was missing from Phase 7 original)
+
+---
+
 ## Context Budget Discipline
 
 - Do NOT load project documentation files, agent files, or any external files not listed here.
-- Do NOT run bash yourself — bash runs via the detection script (wizard-detect.sh) in Step 1.
+- Do NOT run bash yourself -- bash runs via the detection script (wizard-detect.sh) in Step 1. Exception: ## Display Catalog runs toolkit-discovery.sh for registry refresh.
 - The only files this skill reads directly are: `.claude/wizard-state.json` (to read state).
 - Keep your responses focused: status box, menu, action. No lengthy preambles.
-- The only toolkit data source is wizard-state.json toolkit.by_stage (already loaded in Step 2). Never read toolkit-registry.json from wizard.md.
+- The only toolkit data source for Steps 1-3 is wizard-state.json toolkit.by_stage (already loaded in Step 2). Exception: ## Display Catalog may run `bash skills/toolkit-discovery.sh` and read `.claude/toolkit-registry.json` -- this is the PERF-03 designated lazy-load point.
