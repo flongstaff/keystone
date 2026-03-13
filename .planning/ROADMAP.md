@@ -36,7 +36,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Running `/wizard` against a project with only an empty `_bmad/` directory produces STATE.AMBIGUOUS, not scenario C
   4. Running `/wizard` reads at most 3 files and runs at most 1 bash block before writing wizard-state.json
   5. Running `/wizard` cold against a project with an existing wizard-state.json reads state from disk, not memory
-**Plans**: TBD
+**Plans:** 2/2 plans complete
+
+Plans:
+- [x] 01-01-PLAN.md -- Create wizard-router skill with 5-scenario detection
+- [x] 01-02-PLAN.md -- Verify frozen schema against all scenarios
 
 ### Phase 2: Wizard UI Layer
 **Goal**: Users reach an actionable, unambiguous recommendation within 2 turns of invoking `/wizard`, with inline explanation available at any branch
@@ -51,7 +55,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 02-01-PLAN.md -- Create interactive wizard skill with 5-scenario menus and rebind /wizard entry point
+- [x] 02-01-PLAN.md -- Create interactive wizard skill with 5-scenario menus and rebind /wizard entry point
 
 ### Phase 3: New Project Routing
 **Goal**: Users starting a fresh project receive a path recommendation (BMAD+GSD vs GSD-only vs quick-task) based on detectable project complexity signals, with relevant domain agents surfaced at the right moment
@@ -64,7 +68,7 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 03-01-PLAN.md -- Add complexity detection, recommendation tags, and domain agent banner
+- [x] 03-01-PLAN.md -- Add complexity detection, recommendation tags, and domain agent banner
 
 ### Phase 4: Core Backing Agent Routes
 **Goal**: The backing agent handles the two highest-value intents — resuming GSD work and bridging from completed BMAD planning to GSD — with every BMAD acceptance criterion verified present in GSD phase context files at bridge time
@@ -78,8 +82,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 04-01-PLAN.md -- Create wizard-backing-agent.md with Route A (resume) and Route B (bridge + traceability)
-- [ ] 04-02-PLAN.md -- Wire wizard.md to invoke backing agent and deploy globally
+- [x] 04-01-PLAN.md -- Create wizard-backing-agent.md with Route A (resume) and Route B (bridge + traceability)
+- [x] 04-02-PLAN.md -- Wire wizard.md to invoke backing agent and deploy globally
 
 ### Phase 4.1: Rewire Backing Agent
 **Goal**: The backing agent is reachable in all live user flows — bridge path runs traceability assertion, resume path uses coordinator, and all scenario labels match current detection output
@@ -95,7 +99,7 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 04.1-01-PLAN.md -- Rewire backing agent: remove Route A, fix scenario labels, add Task tool, rewire wizard.md bridge to Task(), deploy globally
+- [x] 04.1-01-PLAN.md -- Rewire backing agent: remove Route A, fix scenario labels, add Task tool, rewire wizard.md bridge to Task(), deploy globally
 
 ### Phase 5: Full Agent Routing
 **Goal**: The backing agent handles phase validation, architectural drift detection, and on-demand traceability status display, completing the full intent routing surface
@@ -109,7 +113,7 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md -- Add post-status menus to wizard + Route C traceability display to backing agent
-- [ ] 05-02-PLAN.md -- Fix broken Continue option: replace Route A invocation with direct next_command dispatch (gap closure)
+- [x] 05-02-PLAN.md -- Fix broken Continue option: replace Route A invocation with direct next_command dispatch (gap closure)
 
 ### Phase 6: Recovery, Safety, and Polish
 **Goal**: The wizard survives context resets with continuity messaging, automatically injects safety constraints for infrastructure projects, and is validated against a worst-case large project within the 10% context budget
@@ -123,8 +127,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 06-01-PLAN.md -- Add context-reset continuity, IT safety injection, and uat-passing health-check menus
-- [ ] 06-02-PLAN.md -- Token budget audit and conditional trim
+- [x] 06-01-PLAN.md -- Add context-reset continuity, IT safety injection, and uat-passing health-check menus
+- [x] 06-02-PLAN.md -- Token budget audit and conditional trim
 
 ### Phase 7: Agent, Skill, Tool and Hook Discovery
 **Goal**: Users can browse a complete catalog of all Keystone-authored agents, skills, and hooks on-demand from the wizard's post-status menu, with the active domain agent clearly marked
@@ -135,10 +139,10 @@ Plans:
   2. The catalog shows all 11 agents (grouped by entry/bridge/domain/maintenance), 4 skills, and 3 hooks with name, one-liner, and activation command
   3. The domain agent matching the current project_type is marked "(active)"
   4. After viewing the catalog, the wizard returns to the same post-status menu the user came from
-**Plans:** 1 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 07-01-PLAN.md -- Add Discover tools option and inline catalog to all post-status menus, deploy globally
+- [x] 07-01-PLAN.md -- Add Discover tools option and inline catalog to all post-status menus, deploy globally
 
 ### Phase 8: Bridge Path Fix & Infrastructure Cleanup
 **Goal**: The orchestrator correctly scans all BMAD output paths, all stale references and orphaned files are removed, and false-negative validation commands are fixed
@@ -156,8 +160,8 @@ Plans:
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 08-01-PLAN.md -- Fix orchestrator dual-path scanning, backing agent fallback, and delete orphaned wizard-router.md
-- [ ] 08-02-PLAN.md -- Clean stale settings.local.json entries and fix Phase 4 VALIDATION.md false-negative
+- [x] 08-01-PLAN.md -- Fix orchestrator dual-path scanning, backing agent fallback, and delete orphaned wizard-router.md
+- [x] 08-02-PLAN.md -- Clean stale settings.local.json entries and fix Phase 4 VALIDATION.md false-negative
 
 ### Phase 9: Global Deployment Sync
 **Goal**: Global skill files in ~/.claude/skills/ match project-local versions, and orphaned files are removed — users invoking /wizard from any project context get current behavior
@@ -172,7 +176,7 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md -- Delete orphaned wizard-router/ directory and redeploy all skill files from project-local to global
+- [x] 09-01-PLAN.md -- Delete orphaned wizard-router/ directory and redeploy all skill files from project-local to global
 
 ### Phase 10: Code & Documentation Tech Debt
 **Goal**: Fix code-level tech debt items — Route C ladder alignment, orchestrator dual-path support in Operation B, and ROADMAP accuracy
@@ -184,10 +188,10 @@ Plans:
   2. bmad-gsd-orchestrator.md Operation B Step 2 scans both `docs/stories/` and `_bmad-output/` paths
   3. bmad-gsd-orchestrator.md config.json template uses dynamic bmad_source paths (not hardcoded `docs/`)
   4. ROADMAP.md Phase 1 and Phase 7 checkboxes and progress table reflect completed status; all plan checkboxes for completed phases are checked
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 10-01-PLAN.md -- Fix Route C ladder alignment, Operation B dual-path, config.json dynamic paths, and ROADMAP checkboxes
+- [x] 10-01-PLAN.md -- Fix Route C ladder alignment, Operation B dual-path, config.json dynamic paths, and ROADMAP checkboxes
 
 ## Progress
 
