@@ -12,15 +12,17 @@ Keystone is a thin orchestration layer that makes BMAD planning and GSD executio
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Schema and State Detection** - Freeze wizard-state.json schema and build smart router skill that classifies all four project scenarios
+- [x] **Phase 1: Schema and State Detection** - Freeze wizard-state.json schema and build smart router skill that classifies all four project scenarios (completed 2026-03-12)
 - [x] **Phase 2: Wizard UI Layer** - Build interactive wizard skill with 4-scenario menus, 2-turn max to recommendation, and intent capture (completed 2026-03-12)
 - [x] **Phase 3: New Project Routing** - Add complexity-based path recommendation and domain agent suggestions for fresh projects (completed 2026-03-12)
 - [x] **Phase 4: Core Backing Agent Routes** - Build backing agent with resume and bridge-to-GSD routes, including traceability assertions (completed 2026-03-12)
 - [x] **Phase 4.1: Rewire Backing Agent** - INSERTED — Fix backing agent orphaned by fix commit; restore bridge flow with traceability assertion, update scenario labels, clean tech debt (Gap closure from audit) (completed 2026-03-12)
 - [x] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes (completed 2026-03-12)
 - [x] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation (completed 2026-03-12)
-- [ ] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Add on-demand Discover tools option to wizard post-status menus with hardcoded catalog of all Keystone agents, skills, and hooks
+- [x] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Add on-demand Discover tools option to wizard post-status menus with hardcoded catalog of all Keystone agents, skills, and hooks (completed 2026-03-12)
 - [x] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit) (completed 2026-03-13)
+- [ ] **Phase 9: Global Deployment Sync** - Redeploy project-local skill files to ~/.claude/skills/ and delete orphaned wizard-router directory (Gap closure from audit)
+- [ ] **Phase 10: Code & Documentation Tech Debt** - Fix Route C ladder divergence, orchestrator Operation B path hardcoding, and ROADMAP staleness (Gap closure from audit)
 
 ## Phase Details
 
@@ -157,21 +159,47 @@ Plans:
 - [ ] 08-01-PLAN.md -- Fix orchestrator dual-path scanning, backing agent fallback, and delete orphaned wizard-router.md
 - [ ] 08-02-PLAN.md -- Clean stale settings.local.json entries and fix Phase 4 VALIDATION.md false-negative
 
+### Phase 9: Global Deployment Sync
+**Goal**: Global skill files in ~/.claude/skills/ match project-local versions, and orphaned files are removed — users invoking /wizard from any project context get current behavior
+**Depends on**: Phase 8
+**Requirements**: None (deployment sync — protects UI-01, ORCH-01, TRACE-01 from regression in global context)
+**Gap Closure:** Closes 2 integration gaps + 3 tech debt items from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `~/.claude/skills/wizard.md` matches project-local `skills/wizard.md` (no stale wizard-router catalog entries)
+  2. `~/.claude/skills/wizard-backing-agent.md` matches project-local `skills/wizard-backing-agent.md` (no stale `/bmad-gsd-orchestrator` fallback)
+  3. `~/.claude/skills/wizard-router/` directory (SKILL.md + wizard-detect.sh) is deleted
+  4. Diff between global and project-local skill files shows zero differences
+**Plans**: TBD
+
+### Phase 10: Code & Documentation Tech Debt
+**Goal**: Fix code-level tech debt items — Route C ladder alignment, orchestrator dual-path support in Operation B, and ROADMAP accuracy
+**Depends on**: Phase 9
+**Requirements**: None (tech debt — improves correctness for _bmad-output/ projects and documentation accuracy)
+**Gap Closure:** Closes 4 tech debt items from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. Route C file-state ladder in wizard-backing-agent.md aligns with wizard-detect.sh (VERIFICATION.md condition either added to detection or removed from ladder)
+  2. bmad-gsd-orchestrator.md Operation B Step 2 scans both `docs/stories/` and `_bmad-output/` paths
+  3. bmad-gsd-orchestrator.md config.json template uses dynamic bmad_source paths (not hardcoded `docs/`)
+  4. ROADMAP.md Phase 1 and Phase 7 checkboxes and progress table reflect completed status; all plan checkboxes for completed phases are checked
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
-Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes. Phase 8 is a gap closure phase that can execute any time after Phase 4.1 (independent of 5-7).
+Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes. Phase 8 is a gap closure phase that can execute any time after Phase 4.1 (independent of 5-7). Phases 9-10 are gap closure phases from the final milestone audit.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Schema and State Detection | 0/TBD | Not started | - |
+| 1. Schema and State Detection | 2/2 | Complete   | 2026-03-12 |
 | 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
 | 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
 | 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
 | 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
 | 5. Full Agent Routing | 2/2 | Complete   | 2026-03-12 |
 | 6. Recovery, Safety, and Polish | 2/2 | Complete   | 2026-03-12 |
-| 7. Agent, Skill, Tool and Hook Discovery | 0/1 | Not started | - |
+| 7. Agent, Skill, Tool and Hook Discovery | 1/1 | Complete   | 2026-03-12 |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |
+| 9. Global Deployment Sync | 0/TBD | Not started | - |
+| 10. Code & Documentation Tech Debt | 0/TBD | Not started | - |
