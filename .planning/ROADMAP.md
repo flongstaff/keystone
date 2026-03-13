@@ -271,7 +271,11 @@ Plans:
   4. Capability pointers are appended only to Task()/Agent() spawn calls — Skill() invocations receive no injection (verify by text search)
   5. MCP recommendations in the injected block use conditional language ("configured — availability may vary"), not definitive language ("available")
   6. "Discover tools" is not selected (not triggered by a menu action) — the full registry is not loaded; wizard startup token cost is unchanged (verify by measuring context window before/after injection is added)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 14-01-PLAN.md -- Wizard-side injection: Step 2.5 confirmation UX, trust classification, capability injection for Agent()/Task() spawns in wizard.md and wizard-backing-agent.md
+- [ ] 14-02-PLAN.md -- GSD workflow injection: capability injection for Task() spawns in plan-phase.md, execute-phase.md, and research-phase.md
 ### Phase 15: Dynamic Catalog Display
 **Goal**: "Discover tools" shows the user's actual installed toolkit from the live registry rather than a hardcoded snapshot, grouped by stage relevance and category, with the hardcoded Phase 7 catalog as a fallback for fresh installs
 **Depends on**: Phase 12
@@ -304,7 +308,7 @@ Note: Phase 14 and Phase 15 both depend on Phase 12 and could be built in parall
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 12. Core Discovery Scanner | 1/1 | Complete    | 2026-03-13 | - |
-| 13. State Integration | 1/1 | Complete   | 2026-03-13 | - |
-| 14. Subagent Injection and Confirmation UX | v1.1 | 0/? | Not started | - |
+| 13. State Integration | 1/1 | Complete    | 2026-03-13 | - |
+| 14. Subagent Injection and Confirmation UX | v1.1 | 0/2 | Not started | - |
 | 15. Dynamic Catalog Display | v1.1 | 0/? | Not started | - |
 | 16. Global Deployment Sync | v1.1 | 0/? | Not started | - |
