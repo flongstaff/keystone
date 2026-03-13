@@ -3,9 +3,9 @@
 **Defined:** 2026-03-11
 **Core Value:** At any point in a project, one command (`/wizard`) tells the user exactly where they are and does the next right thing.
 
-## v1 Requirements
+## v1.0 Requirements (Complete)
 
-Requirements for initial release. Each maps to roadmap phases.
+All 23 v1.0 requirements shipped across 11 phases. See v1.0 milestone archive for details.
 
 ### State Detection
 
@@ -48,6 +48,48 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **RECOV-02**: Wizard auto-detects infrastructure projects and injects safety rules (auto_advance: false, dry-run requirements, rollback documentation)
 - [x] **RECOV-03**: After phase execution completes, wizard prompts user to run context-health-monitor before continuing
 
+## v1.1 Requirements
+
+Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phases.
+
+### Discovery
+
+- [ ] **DISC-01**: Wizard dynamically scans `~/.claude/agents/` for all installed agents, parsing YAML frontmatter name and description
+- [ ] **DISC-02**: Wizard dynamically scans MCP servers from `settings.json` mcpServers and `installed_plugins.json`
+- [ ] **DISC-03**: Wizard dynamically scans `~/.claude/skills/` for all installed skills with SKILL.md metadata
+- [ ] **DISC-04**: Wizard dynamically scans `~/.claude/hooks/` for all registered hooks
+- [ ] **DISC-05**: Discovery writes full catalog to `toolkit-registry.json` (machine-specific, gitignored)
+
+### Matching
+
+- [ ] **MATCH-01**: Wizard maps discovered tools to workflow stages (research/planning/execution/review) via keyword matching on description fields
+- [ ] **MATCH-02**: Stage filtering caps injected pointers at 5-8 per spawn to prevent context bloat
+
+### Injection
+
+- [ ] **INJ-01**: GSD subagent Task() prompts receive stage-filtered capability pointers (name + one-liner format)
+- [ ] **INJ-02**: BMAD subagent prompts receive stage-filtered capability pointers at appropriate lifecycle points
+- [ ] **INJ-03**: Injection uses token-efficient format (~40 tokens per pointer, ~200 total per spawn)
+- [ ] **INJ-04**: Injection targets Task()/Agent() spawns only, never Skill() invocations
+
+### Confirmation
+
+- [ ] **CONF-01**: Known-safe tools (Keystone/GSD agents, read-only MCPs) auto-inject without confirmation
+- [ ] **CONF-02**: Unknown user-installed tools get one batched confirmation per `/wizard` invocation
+- [ ] **CONF-03**: MCP recommendations use conditional language ("configured — availability may vary")
+
+### Catalog
+
+- [ ] **CAT-01**: "Discover tools" reads `toolkit-registry.json` for dynamic display
+- [ ] **CAT-02**: Catalog displays tools grouped by stage relevance and category
+- [ ] **CAT-03**: Hardcoded Phase 7 catalog remains as fallback when registry is absent or malformed
+
+### Performance
+
+- [ ] **PERF-01**: Discovery uses TTL-gated caching (skip rescan when `toolkit-registry.json` is fresh)
+- [ ] **PERF-02**: `wizard-state.json` carries compact toolkit summary (~600 bytes) for lightweight startup reads
+- [ ] **PERF-03**: Full registry loaded only when "Discover tools" is explicitly selected
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -62,6 +104,11 @@ Deferred to future release. Tracked but not in current roadmap.
 - **REPORT-01**: Wizard generates project health dashboard on demand (phases, coverage, drift status)
 - **REPORT-02**: Wizard tracks and displays time-in-phase metrics
 
+### Advanced Discovery
+
+- **ADISC-01**: Semantic capability matching via LLM-based classification over agent bodies
+- **ADISC-02**: Per-phase tool recommendation history with persistent cross-session state
+
 ## Out of Scope
 
 Explicitly excluded. Documented to prevent scope creep.
@@ -73,12 +120,14 @@ Explicitly excluded. Documented to prevent scope creep.
 | Autonomous multi-phase execution | auto_advance: false is a hard constraint — unattended execution creates irreversible changes, especially on infra projects |
 | Natural language intent parsing | Non-deterministic routing defeats the wizard's value prop of reliable, testable state detection |
 | Cross-project orchestration | Multiplies state complexity by N — one wizard, one project |
-| Changelog / history tracking | Belongs in BMAD docs or external tools — wizard reads state, doesn't track it |
-| Configuration wizard / onboarding tour | Adds friction before value — state detection handles first-time case naturally |
+| Semantic capability matching | LLM-based classification is too expensive and unproven vs keyword matching — defer until keyword matching proves insufficient |
+| BMAD internal agent modification | v1.1 injects into BMAD subagent prompts at spawn time, never modifies BMAD framework internals |
 
 ## Traceability
 
 Which phases cover which requirements. Updated during roadmap creation.
+
+### v1.0 Traceability (Complete)
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
@@ -106,11 +155,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RECOV-02 | Phase 6 | Complete |
 | RECOV-03 | Phase 6 | Complete |
 
+### v1.1 Traceability (Pending)
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DISC-01 | — | Pending |
+| DISC-02 | — | Pending |
+| DISC-03 | — | Pending |
+| DISC-04 | — | Pending |
+| DISC-05 | — | Pending |
+| MATCH-01 | — | Pending |
+| MATCH-02 | — | Pending |
+| INJ-01 | — | Pending |
+| INJ-02 | — | Pending |
+| INJ-03 | — | Pending |
+| INJ-04 | — | Pending |
+| CONF-01 | — | Pending |
+| CONF-02 | — | Pending |
+| CONF-03 | — | Pending |
+| CAT-01 | — | Pending |
+| CAT-02 | — | Pending |
+| CAT-03 | — | Pending |
+| PERF-01 | — | Pending |
+| PERF-02 | — | Pending |
+| PERF-03 | — | Pending |
+
 **Coverage:**
-- v1 requirements: 23 total
-- Mapped to phases: 23
-- Unmapped: 0
+- v1.1 requirements: 20 total
+- Mapped to phases: 0
+- Unmapped: 20 ⚠️
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-12 after milestone audit — ORCH-01/02/03, TRACE-01/02 reassigned to Phase 4.1 gap closure*
+*Last updated: 2026-03-13 after v1.1 milestone requirements definition*
