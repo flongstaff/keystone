@@ -1,170 +1,223 @@
-# Feature Landscape
+# Feature Research
 
-**Domain:** Unified wizard/orchestrator for a two-framework AI coding stack (BMAD planning + GSD execution)
-**Researched:** 2026-03-11
-**Confidence:** HIGH — based on direct reading of all existing agents, hooks, and docs in the codebase
+**Domain:** Dynamic toolkit discovery and capability-aware orchestration for an AI agent wizard system
+**Researched:** 2026-03-13
+**Confidence:** HIGH — based on direct analysis of all existing wizard infrastructure, live agent/skill/hook/MCP inventory in ~/.claude/, and clear scope from PROJECT.md v1.1 requirements
 
 ---
 
 ## Research Method
 
-No web search was available. All findings are derived from direct analysis of the existing Claude Code Stack:
-- 6 agents read in full (project-setup-wizard, project-setup-advisor, bmad-gsd-orchestrator, doc-shard-bridge, phase-gate-validator, context-health-monitor)
-- docs/workflows.md, docs/orchestration.md, .planning/PROJECT.md read in full
-- Pain points sourced from PROJECT.md "Current pain points the wizard solves" section
+No web search was needed. All findings derive from direct code and file analysis:
+- `skills/wizard.md` — full wizard UI skill, current "Discover tools" hardcoded catalog
+- `skills/wizard-backing-agent.md` — Route B and C implementations
+- `skills/wizard-detect.sh` — implied by references in wizard.md Step 1
+- `.claude/wizard-state.json` — current detection output schema
+- `~/.claude/agents/*.md` — 90+ agents installed globally (gsd-executor, gsd-planner, design-*, sales-*, etc.)
+- `~/.claude/skills/` — skill directories: code-standards, fix-issue, gen-test, release-notes, project-scaffolder, create-agent-skills, expertise/*, docker-dev-local, security-check, agent-browser, adapt, animate, bolder, clarify, colorize, delight, distill, extract, wizard, wizard-backing-agent
+- `~/.claude/hooks/` — 20 hooks: session-start.sh, post-write-check.sh, stack-update-banner.sh, pre-bash-guard.sh, context-warning.sh, post-failure-guidance.sh, skill-activation-prompt.sh, quality-check.sh, etc.
+- `~/.claude/plugins/cache/` — MCP plugin inventory: context7, playwright, serena, greptile, Notion, Figma, Slack, Chrome DevTools, HuggingFace, TypeScript LSP, Swift LSP, claude-code-setup, code-simplifier, superpowers, agent-sdk-dev
+- `.planning/PROJECT.md` v1.1 requirements — explicit feature list for this milestone
 
-This gives HIGH confidence on features for this specific domain because the wizard is wrapping known, installed, documented infrastructure.
+**What the v1.0 catalog shows (Phase 7 baseline):**
+The current "Discover tools" option shows a hardcoded list: 11 Keystone agents (entry/bridge/domain/maintenance), 3 skills (wizard, wizard-backing-agent, wizard-detect), and 3 hooks (session-start, stack-update-banner, post-write-check). This is the catalog that existed at the time of writing and is baked directly into wizard.md as inline text — duplicated across 4 code paths. It does NOT reflect the 90+ global agents, 20+ skills, 20 hooks, or 15 MCP servers the user actually has installed.
 
 ---
 
-## Table Stakes
+## Feature Landscape
 
-Features a user MUST have or the wizard is useless. Without these, users are worse off than running commands manually.
+### Table Stakes (Users Expect These)
+
+Features the system must have for "dynamic toolkit discovery" to mean anything. Without these, the feature is just a renamed version of what Phase 7 already built.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **State detection at entry** | Without knowing where the project is, the wizard can't route anywhere. Four states exist: neither/BMAD-only/GSD-only/both. Detecting wrong state causes harmful suggestions. | Medium | Detection script exists in project-setup-wizard already; router skill must replicate or delegate to it |
-| **Single entry command** | The whole point is one command. Multiple entry points defeats the wizard premise entirely. | Low | `/wizard` is decided; must activate agent/skill reliably |
-| **Route to the right next action** | Users open the wizard because they don't know what to run next. A wizard that says "here are your options" without a recommended default gives no value over the existing docs. | Medium | Must read `.planning/STATE.md`, `.planning/*.md` glob, UAT files to compute next command |
-| **Context-efficient dispatch** | The wizard sits in the context window before real work happens. If it consumes 20%+ of context before delegating, it harms every session. | High | PROJECT.md constraint: wizard overhead < 10% of context window |
-| **Full lifecycle coverage** | Must handle all four entry states (fresh/BMAD-only/GSD-only/full-stack) and all lifecycle transitions (plan → bridge → execute → verify → milestone → next milestone). Missing a state means users fall back to manual commands. | High | Six workflow paths exist in the wizard agent already; router must cover all of them |
-| **Preserve and pass context** | BMAD docs must flow into GSD without re-asking questions already answered in planning. This is the #1 current pain point in PROJECT.md. | High | bmad-gsd-orchestrator already does this, but only when triggered manually; wizard must trigger it automatically |
-| **State persistence across resets** | Context windows reset. The wizard must always be able to re-orient from file state, never from in-memory state. | Medium | `.planning/STATE.md`, `.planning/config.json`, UAT file presence are the signals; wizard must read these cold |
-| **Unambiguous next command output** | Must end every interaction with the exact command to run, not a description of options. "Run `/gsd:discuss-phase 3`" not "you could discuss the next phase." | Low | Already a rule in existing project-setup-wizard; must be enforced in new router skill |
+| **Dynamic agent discovery** | The catalog today is hardcoded and only shows Keystone agents. Users expect "Discover tools" to show ALL installed agents — the 90+ global ones plus any project-local ones — not just the 11 Keystone authored ones. | MEDIUM | `ls ~/.claude/agents/*.md` plus a glob for project-local `agents/**/*.md`. Parse YAML frontmatter name + description fields. Already readable: agents have `name:` and `description:` in YAML. |
+| **Dynamic skill discovery** | Skills installed in `~/.claude/skills/` (20+ directories) and any project-local `skills/` are invisible to the current catalog. Users assume the wizard knows about tools they've installed. | MEDIUM | Skills use directory/SKILL.md structure. Read the `name:` and `description:` from each SKILL.md. Directory walk with `ls ~/.claude/skills/*/SKILL.md`. |
+| **Dynamic hook discovery** | The current catalog lists exactly 3 hooks. There are 20 hooks in `~/.claude/hooks/`. Users who add hooks expect them to appear. | LOW | `ls ~/.claude/hooks/*.sh` plus parse the first comment block for description. Simpler than agents/skills because hooks have no YAML frontmatter — use filename as name and first-comment as description. |
+| **MCP server awareness** | The current catalog has no MCP section at all. The user has 15+ MCP plugins (context7, playwright, Notion, Figma, Slack, Chrome DevTools, etc.). Subagents that could use these tools have no way to know they're available unless told. | HIGH | MCP servers are registered via Claude Code plugin cache at `~/.claude/plugins/cache/`. Read each `.mcp.json` or `.claude-plugin/plugin.json` to extract name and tools. Claude Code also has a CLI `claude mcp list` command (verify availability). The scan path is deterministic but the format varies per plugin. |
+| **Subagent context injection** | When the wizard routes to a GSD subagent (gsd-executor, gsd-phase-researcher, etc.), that subagent gets no information about what tools are available. It will suggest using its built-in tools and miss context7, playwright, or Notion if they'd help the current phase. | HIGH | Requires: (1) capability-to-stage mapping (which tools help at which GSD phase), (2) lightweight pointer injection into the subagent Task() prompt — "FYI: context7 and playwright are available via MCP." NOT full agent/skill text injection. Pointers only, per the token budget constraint. |
+| **Token-efficient injection** | The wizard has a hard < 10% context budget constraint. Injecting full agent or skill docs would blow it immediately. Users expect the wizard to "use their tools" without paying a context tax. | HIGH | Inject capability pointers: "Available MCP: context7 (library docs), playwright (browser testing)" — one line per tool, not the tool's full instructions. The subagent can read the tool docs itself if it needs them. |
+| **User confirmation when ambiguous** | If the system discovers a tool that MIGHT be useful but isn't certain, it should ask before using it rather than silently applying it. This is the trust contract: "system uses my tools" means "system tells me it's using my tools and why." | MEDIUM | Ambiguity threshold: anything where the capability match is a heuristic (e.g., "playwright might help with your browser-related UAT") gets a confirmation prompt. Deterministic matches (e.g., "context7 is always useful for research phases") do not. |
 
----
+### Differentiators (Competitive Advantage)
 
-## Differentiators
-
-Features that make Keystone better than running commands manually. Not expected — users don't know to ask for them — but they create the "oh, this is actually useful" moment.
+Features that move from "shows you what tools exist" to "actively uses your tools well."
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Automatic BMAD → GSD bridge trigger** | Today users must remember to say "initialise GSD from BMAD docs" at the right moment. Wizard detects when BMAD is complete and proactively offers/runs the bridge. Removes the most common mistake (running /gsd:new-project on a BMAD project). | High | Requires reading BMAD story approval counts, PRD/architecture presence, and .planning absence simultaneously |
-| **Next-command computation from file state** | Rather than showing menus, compute the exact next command from `.planning/` file state: "plans exist but no UAT → execute-phase 3." This is deterministic and can be done without user input. | Medium | Logic already exists in project-setup-wizard Phase 1 detection; needs to be extracted into the router skill |
-| **UAT failure short-circuit** | When UAT shows failures, wizard automatically generates and presents fix plan — no user needs to know which command repairs a failed phase. | Medium | phase-gate-validator already reports what failed; wizard adds the "here's the fix command" layer |
-| **Requirement traceability display** | At any point, show which BMAD acceptance criteria map to which GSD phase and their status. Today this requires manually reading bmad-outputs/STATUS.md. | Medium | Doc already exists; wizard can surface it in a formatted summary on demand |
-| **Context health integration** | After execute-phase, automatically prompt "run context-health-monitor before continuing?" — users currently skip this and only discover drift at the gate. | Low | Advisory integration; just emit the prompt at the right lifecycle moment |
-| **Inline education mode** | When a user asks "explain" at any branch point, wizard gives a concise explanation of what each choice means, then returns to the same branch. Does not restart the whole flow. | Medium | "W6: Explain" workflow exists; needs to be accessible from within any wizard state, not just at startup |
-| **Complexity-based path recommendation** | Wizard recommends BMAD+GSD vs GSD-only vs quick-task based on scope signals (duration estimate, team size, risk level). Currently users must self-classify. | Medium | Complexity heuristic already in project-setup-advisor (3 days / 1 week / multi-team thresholds); extract it |
-| **IT infrastructure project detection and override** | Auto-detect infra projects and inject safety rules (auto_advance: false, dry-run requirements, rollback docs) without requiring the user to remember or configure them. | Low | Detection logic exists in project-setup-wizard Phase 1; IT rules defined in it-infra-agent; wizard just needs to wire them together |
-| **Domain agent activation suggestions** | When the project type matches a domain agent (Godot, IT infra, open-source, admin docs), wizard surfaces "you may want to use [domain-agent] for this phase" at appropriate points rather than requiring the user to know these agents exist. | Low | Domain detection already done in session-start.sh and project-setup-advisor; just surface it |
+| **Capability-to-stage matching** | Don't just list tools — map them to the workflow stage where they're most useful. A user in a research phase should see "context7 is available for library docs lookups" not a flat list of everything. A user executing a phase should see "playwright is available for browser UAT." | HIGH | Needs a capability taxonomy: research tools (context7, greptile), execution tools (playwright, Chrome DevTools, serena), review tools (code-review plugin, pr-review-toolkit), planning tools (Notion, Figma). Map GSD phase types to capability categories. Store this as a small lookup table in wizard-detect.sh or a separate config. |
+| **"Active tool" marking beyond domain agents** | Today wizard marks the domain agent "(active)." The same pattern should extend: mark which MCP servers and skills are currently active (installed and accessible), vs which are in the catalog but not installed. Users with playwright installed vs not installed have different capabilities. | MEDIUM | Scan determines presence. Display format: "playwright (installed)" vs "playwright (not installed — see instructions)." This is the "which tools do you actually have" vs "which tools exist in theory" distinction. |
+| **Research phase MCP surfacing** | When the wizard routes to a GSD research phase (gsd-phase-researcher), proactively surface: "context7 and greptile are available if you need library docs or codebase search." This saves the researcher from having to know these tools exist. | MEDIUM | Requires knowing which GSD phase type is active (research, planning, execution, review) from wizard-state.json. Already detected: `gsd.current_phase` is in wizard-state.json. Cross-reference phase number against ROADMAP.md phase name to infer type. Or ask the user one time to tag phases with type. |
+| **Deduplication between global and project-local** | The user may have a project-local `agents/` and a global `~/.claude/agents/`. Both should appear in the catalog, deduped by name. If both have an agent named "gsd-executor," show it once but note where it came from. | LOW | Post-scan dedup by name. Prefer project-local when names collide (closer to the project). |
+| **Graceful scan failure** | Discovery requires reading the filesystem. On a new machine or in a CI context, some paths may not exist. The wizard must not crash if `~/.claude/agents/` doesn't exist. | LOW | Guard every glob with existence check. Fall back to current hardcoded catalog if scan produces zero results. Log a warning but don't block the wizard. |
+| **Persistent capability cache** | Running discovery on every `/wizard` invocation adds a bash scan on startup. For users with 90+ agents, this can add latency. Cache the scan result to `wizard-state.json` under a `toolkit` key and invalidate it when files change (check mtime on the agents directory). | MEDIUM | `wizard-state.json` already exists and is written by wizard-detect.sh. Add a `toolkit_scanned_at` timestamp and rescan only if the timestamp is older than 5 minutes or the agent directory mtime changed. This is the same "cold read from disk" pattern the wizard already uses for project state. |
 
----
+### Anti-Features (Commonly Requested, Often Problematic)
 
-## Anti-Features
-
-Features to explicitly NOT build. Each one is a complexity trap that has killed similar tools.
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| **Replacing BMAD or GSD commands** | Replacing existing, working tools requires maintaining two codebases, breaks user muscle memory, and eliminates the benefit of upstream improvements to BMAD/GSD. PROJECT.md makes this an explicit constraint. | Wrap existing commands. Wizard dispatches to `/gsd:discuss-phase N` — it does not reimplement discuss-phase. |
-| **A GUI or visual workflow builder** | Claude Code is a terminal-first, text-first environment. Any visual layer would require a separate server, break inside SSH sessions, and add maintenance burden entirely outside the Claude Code ecosystem. | Use structured text output with ASCII box drawing (as the existing project-setup-wizard already does). |
-| **Autonomous phase execution without human checkpoints** | auto_advance: false is a hard constraint in the project. Agents that run multiple phases without pausing for human review create irreversible changes, especially on infra projects. | Require explicit user confirmation before every phase transition. Always present "run this next" rather than running it. |
-| **Storing state in agent memory** | Agent memory is destroyed on context reset. Any state stored only in the conversation context will be lost. This is the "context rot" problem GSD was built to solve. | Write all state to `.planning/` files. Router reads cold from disk every time. |
-| **Generic AI orchestration features** | Features like "spawn N agents in parallel for any task" or "auto-retry failed steps" are useful for general orchestration but are already handled by GSD's execute-phase. Adding them to the wizard creates duplication and competing behavior. | Let GSD handle parallel execution and retry. Wizard routes to GSD; GSD handles orchestration details. |
-| **Cross-project orchestration** | Managing multiple projects from one wizard session multiplies state complexity by N and is explicitly out of scope in PROJECT.md. | One wizard, one project. If users want multi-project views, that's a separate tool. |
-| **Natural language intent parsing for routing** | Parsing "I want to build a new feature" into a specific GSD phase route requires a full NLU step that will fail on edge cases. Current wizard uses explicit state detection, which is deterministic and testable. | Detect routing from file system state, not from user intent. When intent is needed, present numbered menu choices. |
-| **Changelog / history tracking** | The wizard is not a project management dashboard. Adding ticket tracking, sprint burndown, or velocity metrics brings in complexity that belongs in BMAD docs or an external tool. | BMAD stories in `docs/stories/` and `bmad-outputs/STATUS.md` serve as the source of truth. Wizard reads them; it does not add to them. |
-| **Configuration wizard / onboarding tour** | First-run setup flows ("let's configure your preferences") add friction before any value is delivered. The stack installs via npm with known defaults. | State detection handles the "first time" case (STATE A: Clean Slate). No separate onboarding needed. |
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| **Full agent doc injection into subagent context** | "The subagent should know everything about the tools available to it." | A single agent YAML + body averages 2-4k tokens. 90 agents = 180-360k tokens — exceeds a full context window before any work happens. Violates the < 10% overhead constraint instantly. | Inject capability pointers only: name, one-liner description, activation phrase. The subagent can read the agent file itself if it decides to use that agent. |
+| **Auto-invoking tools without confirmation** | "Just use the best tool automatically — don't ask me." | The wizard has no way to know which tool the user wants for a given task. Auto-invoking context7 in a phase where the user is doing UI work wastes turns. Invoking playwright without knowing it's connected to a live browser causes errors. The confirmation UX exists precisely because capability matching is heuristic, not certain. | Deterministic cases (e.g., always show MCP list in research phases) can auto-surface. Heuristic matches (e.g., "playwright might help") require one confirmation question. |
+| **Crawling all agent files at startup for semantic matching** | "The system should understand what each agent does and match it to the task semantically." | Semantic matching requires reading all 90+ agent files at startup to extract their capabilities. This is a full LLM pass over 360k+ tokens of agent docs on every `/wizard` invocation. Destroys the context budget. | Use explicit capability tags in agent YAML frontmatter (`capability: [research, web-search]`) and match on tags. This makes the matching deterministic and zero-cost to query. If agents don't have tags, use a small hardcoded mapping file rather than reading every agent. |
+| **Plugin marketplace discovery (finding new tools)** | "The wizard should suggest tools I don't have installed yet." | Suggesting uninstalled tools requires knowing the full Claude Code plugin marketplace catalog, which changes externally and requires network access. This is outside Keystone's scope (one project, one session, one user's installed tools) and is already covered by `stack-update-watcher`. | Stay scoped to installed tools only. If a user asks "what tools should I install," point to the Claude Code plugin marketplace docs — don't build a new feature for it. |
+| **Per-project tool whitelisting/blacklisting** | "I want to control which tools the wizard surfaces for this project." | Configuration management is overhead. The user has to configure before getting value, which is friction before first use. And the discovery catalog is already filtered by what's installed — there are no wrong tools to surface. | Surface everything installed. Let the user ignore what's irrelevant. The UX cost of one more line in the catalog is lower than the config overhead of maintaining a whitelist. |
+| **Tool versioning and compatibility checking** | "Show me which version of each MCP server I have and whether it's compatible with the current phase." | Versions live inside plugin packages, not in easily discoverable locations. Compatibility between tool versions and workflow phases is not a solvable problem without deep MCP protocol knowledge. This is the kind of generalist orchestration feature that belongs in a package manager, not a project wizard. | `stack-update-watcher` already handles checking for BMAD/GSD updates. Let it handle all version monitoring. |
+| **Automatic capability injection based on project type** | "Since this is an open-source project, the wizard should automatically inject the open-source-agent into every subagent prompt." | The open-source-agent is already surfaced via the domain agent banner. Injecting it into every subagent prompt means every subagent gets different instructions based on project type — this creates hidden behavior that's hard to debug and violates the "no surprises" principle. | Keep explicit: the banner tells the user the domain agent is available. The user decides to activate it. Subagents don't get automatic injections. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-State detection → Everything (all routing depends on knowing current state)
+Dynamic agent scan
+    └──enables──> Capability-to-stage matching
+    └──enables──> "Active tool" marking
+    └──enables──> Deduplication (global + project-local)
 
-State detection → Route computation → Next command output
-State detection → BMAD bridge trigger (requires BMAD docs present + GSD absent)
-State detection → Complexity recommendation (fresh project only)
+Dynamic MCP scan
+    └──enables──> MCP surfacing in catalog
+    └──enables──> Research phase MCP surfacing
 
-Route computation → UAT failure short-circuit (requires UAT file presence)
-Route computation → Context health integration (requires post-execute-phase state)
+Capability-to-stage matching
+    └──enables──> Subagent context injection (pointers only)
+    └──enables──> Research phase MCP surfacing
 
-BMAD bridge trigger → Requirement traceability display (requires bmad-outputs/STATUS.md)
+Token-efficient injection format
+    └──required by──> Subagent context injection
+    └──required by──> Hardcoded < 10% context budget
 
-Domain detection (exists in session-start.sh) → IT override injection
-Domain detection → Domain agent activation suggestions
+wizard-state.json toolkit cache
+    └──requires──> Dynamic agent scan (something to cache)
+    └──enables──> Persistent capability cache (skip rescan)
 
-Inline education mode → Any state branch point (must not restart flow)
+User confirmation flow
+    └──requires──> Capability-to-stage matching (need a match to confirm)
+
+Dynamic hook scan
+    └──independent of above
+    └──enhances──> Discovery catalog completeness
+
+Phase 7 hardcoded catalog (existing)
+    └──replaced by──> Dynamic agent scan + Dynamic skill scan + Dynamic hook scan + Dynamic MCP scan
+    └──fallback for──> Graceful scan failure (use hardcoded if scan returns nothing)
 ```
 
-Dependencies that must be sequenced:
+### Dependency Notes
 
-1. **State detection must be implemented first.** Nothing else can be built without it. The detection logic in project-setup-wizard (Phase 1 bash block) is the reference implementation.
-
-2. **Route computation depends on state detection.** The next-command computation logic (reading `*-PLAN*.md`, `*-UAT.md`, `STATE.md` globs) is the second building block.
-
-3. **BMAD bridge trigger depends on both.** Must know: (a) BMAD docs are complete, (b) GSD is not yet initialized.
-
-4. **All differentiators depend on table stakes.** No differentiator can be built before the core routing path works end-to-end.
+- **Dynamic scan must precede injection:** You cannot inject pointers to tools you haven't discovered yet. Discovery runs at wizard startup (wizard-detect.sh), injection happens at subagent dispatch (wizard.md Task() call).
+- **Capability-to-stage matching required before injection is useful:** Injecting an unsorted list of 90 agents into every subagent prompt is noise. The mapping table (research → context7/greptile, execution → playwright/chrome-devtools) is what makes injection valuable vs burdensome.
+- **MCP scan is independently scoped:** MCP servers are discovered via plugin cache, not the same path as agents or skills. This can be built and tested independently.
+- **Phase 7 catalog is the fallback, not the primary:** The hardcoded catalog should remain as the fallback if dynamic scan produces zero results. It should not be removed — it's the safety net for corrupted or missing `~/.claude/` directories.
 
 ---
 
-## MVP Recommendation
+## MVP Definition
 
-Prioritize to make the wizard functional and deliver immediate value:
+### Launch With (v1.1 — current milestone)
 
-**Phase 1 (table stakes — must have):**
-1. State detection (four states: neither/BMAD-only/GSD-only/full-stack)
-2. Next-command computation from file state
-3. Single-entry `/wizard` routing to the right recommendation
-4. State persistence via `.planning/` file reads
-5. Unambiguous "run this command next" output
+Minimum viable "dynamic toolkit discovery." These are the requirements listed in PROJECT.md v1.1.
 
-**Phase 2 (key differentiators — make it better than manual):**
-6. Automatic BMAD → GSD bridge trigger (highest user pain point per PROJECT.md)
-7. UAT failure short-circuit
-8. IT infrastructure detection and override injection
-9. Inline education mode at branch points
+- [ ] **Dynamic agent scan** — scan `~/.claude/agents/*.md` and project-local `agents/**/*.md`, extract name + description from YAML frontmatter — this replaces the hardcoded 11-agent catalog with the actual installed count
+- [ ] **Dynamic skill scan** — scan `~/.claude/skills/*/SKILL.md` and project-local `skills/**/*.md`, extract name + description — replaces hardcoded 3-skill catalog
+- [ ] **Dynamic hook scan** — scan `~/.claude/hooks/*.sh`, extract hook name from filename and description from first comment block — replaces hardcoded 3-hook catalog
+- [ ] **MCP server awareness** — scan `~/.claude/plugins/cache/` for installed MCP servers, extract name and capability summary from plugin.json — add a new MCP section to the discovery catalog
+- [ ] **Capability-to-stage matching** — a small lookup table (research/planning/execution/review phases mapped to tool categories) stored in wizard-detect.sh or a dedicated config file — drives the surfacing logic
+- [ ] **Subagent context injection** — when the wizard routes to a subagent via Task(), append a lightweight capability block to the Task prompt: "Available tools: [name (description), ...]" — one line per tool, not full docs
+- [ ] **User confirmation when ambiguous** — for heuristic matches (tools that might help but aren't certain), present a one-question confirmation before injecting into the subagent prompt
+- [ ] **Token-efficient injection** — capability pointers only (name + one-liner), not full agent/skill/MCP docs — validated against the < 10% overhead constraint
 
-**Phase 3 (polish — make it delightful):**
-10. Requirement traceability display on demand
-11. Context health integration prompting
-12. Complexity-based path recommendation for fresh projects
-13. Domain agent activation suggestions
+### Add After Validation (v1.x)
 
-**Defer indefinitely:**
-- Cross-project orchestration (out of scope)
-- Visual interfaces
-- Autonomous phase execution
-- Natural language intent parsing
+Features to add once the core scan + inject pipeline is proven:
+
+- [ ] **Persistent capability cache in wizard-state.json** — add `toolkit` key to wizard-state.json with scan results and `toolkit_scanned_at` timestamp; invalidate if timestamp is older than 5 minutes — prevents re-scanning on every `/wizard` invocation. Trigger: users with 90+ agents report startup latency.
+- [ ] **"Active tool" marking beyond domain agents** — mark installed MCP servers and skills as "(installed)" vs "(not installed)" in the catalog — add after scan pipeline is stable enough to trust presence detection
+- [ ] **Research phase MCP surfacing** — when wizard routes to a research-type phase, proactively mention context7 and greptile in the routing message — add after capability-to-stage mapping proves correct
+
+### Future Consideration (v2+)
+
+Features to defer until post-milestone:
+
+- [ ] **Semantic capability matching** — match agents to tasks by reading agent descriptions for semantic relevance — defer until it's proven the heuristic tag-based matching is insufficient. High cost (context); low certainty it adds enough value over tags.
+- [ ] **Capability injection for BMAD subagents** — inject tool pointers when routing to BMAD agents (/analyst, /architect, /pm). Defer because BMAD is upstream of GSD and the current milestone is focused on GSD subagent injection. Add when BMAD agent activation is shown to benefit.
+- [ ] **Per-phase tool recommendation history** — track which tools were used in which phases and surface them next time — requires persistent state across sessions beyond wizard-state.json. Complex; uncertain payoff.
+
+---
+
+## Feature Prioritization Matrix
+
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Dynamic agent scan | HIGH — 90+ agents vs 11 hardcoded is the core user pain | MEDIUM — filesystem glob + YAML parse | P1 |
+| Dynamic MCP scan | HIGH — currently zero MCP surfacing | HIGH — plugin cache format varies | P1 |
+| Subagent context injection | HIGH — the stated goal of the milestone | HIGH — requires matching logic + token-efficient format | P1 |
+| Capability-to-stage matching | HIGH — without this, injection is noise | MEDIUM — small lookup table, no ML | P1 |
+| Token-efficient injection format | HIGH — context budget constraint is hard | LOW — format decision, not implementation | P1 |
+| User confirmation when ambiguous | MEDIUM — trust contract; prevents surprise tool use | MEDIUM — adds one AskUserQuestion flow | P2 |
+| Dynamic skill scan | MEDIUM — fewer skills than agents, less critical | LOW — same pattern as agent scan | P2 |
+| Dynamic hook scan | LOW — hooks are less frequently relevant to workflows | LOW — simplest scan (no YAML, just filename) | P2 |
+| Persistent capability cache | MEDIUM — needed if 90+ agent scan is slow | MEDIUM — timestamp + mtime check in wizard-detect.sh | P2 |
+| Active tool marking | LOW — nice-to-have visual indicator | LOW — presence check already done by scan | P3 |
+| Research phase MCP surfacing | MEDIUM — high value for the GSD research phase specifically | LOW — one additional message in wizard routing | P3 |
+
+**Priority key:**
+- P1: Required for v1.1 milestone per PROJECT.md requirements
+- P2: Should have; add in v1.x when core is stable
+- P3: Nice to have; future consideration
 
 ---
 
 ## What Exists vs What Needs Building
 
-Understanding what already exists is critical for a brownfield project. Do not rebuild what works.
-
 | Feature | Exists? | Where | Needs Building |
 |---------|---------|-------|---------------|
-| State detection (4 states) | YES | project-setup-wizard Phase 1 bash block | Extract into router skill |
-| Six workflow paths (W1–W6) | YES | project-setup-wizard Phase 3 workflow library | Wire into router skill |
-| Next-command computation | YES | project-setup-wizard Phase 1 GSD state detail | Extract into router skill |
-| BMAD → GSD bridge | YES | bmad-gsd-orchestrator Operation A | Auto-trigger condition only |
-| GSD → BMAD story sync | YES | doc-shard-bridge Operation B, bmad-gsd-orchestrator Operation B | Auto-trigger condition only |
-| Phase gate validation | YES | phase-gate-validator (5 gates) | Routing to it, not reimplementing |
-| Context health monitoring | YES | context-health-monitor (5 checks) | Routing to it, prompting at right lifecycle moment |
-| IT infra detection and rules | YES | project-setup-wizard IT Infrastructure Override + it-infra-agent | Wire together, expose in router |
-| Domain detection | YES | project-setup-advisor Step 2, session-start.sh | Expose at right wizard branch points |
-| Education mode | YES | project-setup-wizard W6 Explain | Make accessible from within any state, not just startup |
-| Requirement traceability | PARTIAL | bmad-outputs/STATUS.md exists | Formatted display surface only |
-| Complexity recommendation | YES | project-setup-advisor SCENARIO D decision table | Extract and surface in fresh-project flow |
-| Context budget enforcement | NO | — | Must design; constraint is < 10% overhead |
+| Hardcoded Keystone catalog | YES | wizard.md (duplicated 4x across menus) | Replace with dynamic scan result; keep as fallback |
+| Agent YAML frontmatter with name/description | YES | All agents in ~/.claude/agents/*.md | Parse it — don't redocument it |
+| Skill SKILL.md with name/description | YES | All skills in ~/.claude/skills/*/SKILL.md | Parse it |
+| Hook scripts with filename-based names | YES | ~/.claude/hooks/*.sh | Parse filename + first comment |
+| MCP plugin cache with plugin.json | YES | ~/.claude/plugins/cache/ | Scan and parse; format is per-plugin, needs inspection |
+| wizard-detect.sh writes wizard-state.json | YES | skills/wizard-detect.sh | Extend to add `toolkit` key with scan results |
+| wizard.md routes to subagents via Task() | YES | wizard.md bmad-ready scenario Option 1 | Extend Task() prompt to include capability block |
+| Capability-to-stage mapping table | NO | — | New small lookup table; store in wizard-detect.sh or dedicated config |
+| User confirmation flow for ambiguous matches | NO | — | New AskUserQuestion path in wizard.md |
+| Token budget validation for injection | PARTIAL | wizard.md has < 10% budget check, but no injection yet | Extend validation to include injection overhead measurement |
+
+---
+
+## Scope Boundaries: v1.1 vs Future
+
+**In v1.1:**
+- Scan and surface ALL installed tools (agents, skills, hooks, MCP servers) — replace hardcoded catalog
+- Capability-to-stage mapping (lookup table, not semantic inference)
+- Lightweight pointer injection into GSD subagent Task() prompts
+- Confirmation UX for heuristic matches
+- Token-efficient injection (pointers only)
+
+**NOT in v1.1 (explicitly deferred):**
+- Replacing BMAD or GSD agents (out of scope per PROJECT.md)
+- Domain-specific logic beyond what exists in IT infra override
+- Multi-project orchestration
+- Semantic matching (too expensive, unproven value)
+- Tool installation or marketplace discovery
+- Version compatibility checking
 
 ---
 
 ## Sources
 
-- `/Users/flong/Developer/claude-code-stack/.planning/PROJECT.md` — requirements, constraints, pain points (PRIMARY)
-- `/Users/flong/Developer/claude-code-stack/agents/entry/project-setup-wizard.md` — existing wizard implementation
-- `/Users/flong/Developer/claude-code-stack/agents/entry/project-setup-advisor.md` — existing advisor implementation
-- `/Users/flong/Developer/claude-code-stack/agents/bridge/bmad-gsd-orchestrator.md` — bridge operations
-- `/Users/flong/Developer/claude-code-stack/agents/bridge/doc-shard-bridge.md` — document sharding
-- `/Users/flong/Developer/claude-code-stack/agents/bridge/phase-gate-validator.md` — phase gates
-- `/Users/flong/Developer/claude-code-stack/agents/bridge/context-health-monitor.md` — drift detection
-- `/Users/flong/Developer/claude-code-stack/docs/workflows.md` — end-to-end workflow documentation
-- `/Users/flong/Developer/claude-code-stack/docs/orchestration.md` — cross-runtime orchestration patterns
+- `/Users/flong/Developer/keystone/.planning/PROJECT.md` — v1.1 Active requirements (PRIMARY)
+- `/Users/flong/Developer/keystone/skills/wizard.md` — Phase 7 hardcoded catalog (what exists today)
+- `/Users/flong/Developer/keystone/skills/wizard-backing-agent.md` — Route B/C, Task() injection pattern
+- `/Users/flong/Developer/keystone/.claude/wizard-state.json` — current schema (toolkit key absent)
+- `~/.claude/agents/*.md` — inventory of 90+ installed global agents (direct scan, HIGH confidence)
+- `~/.claude/skills/*/SKILL.md` — inventory of 20+ installed global skills (direct glob, HIGH confidence)
+- `~/.claude/hooks/*.sh` — inventory of 20 installed hooks (direct glob, HIGH confidence)
+- `~/.claude/plugins/cache/` — MCP plugin cache inventory showing: context7, playwright, serena, greptile, Notion, Figma, Slack, Chrome DevTools, HuggingFace, TypeScript LSP, Swift LSP, superpowers, agent-sdk-dev, code-simplifier, claude-code-setup (direct glob, HIGH confidence)
+- `/Users/flong/Developer/keystone/.planning/ROADMAP.md` — Phase 7 implementation detail, v1.1 not yet phased
 
-All findings are HIGH confidence — derived from direct code/doc reading, not inferred.
+All findings HIGH confidence — derived from direct file analysis, not training data or inference.
+
+---
+*Feature research for: Dynamic toolkit discovery and capability-aware orchestration (Keystone v1.1)*
+*Researched: 2026-03-13*

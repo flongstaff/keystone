@@ -1,318 +1,372 @@
-# Technology Stack
+# Stack Research
 
-**Project:** Keystone — Wizard Orchestrator for Claude Code Stack
-**Researched:** 2026-03-11
-**Domain:** Claude Code skill + agent extension system
+**Domain:** Claude Code extension system — dynamic toolkit discovery and subagent capability injection
+**Researched:** 2026-03-13
+**Confidence:** HIGH
 
 ---
 
 ## Context
 
-This is a brownfield milestone. The project file format (Markdown with YAML frontmatter),
-deployment targets (~/.claude/skills/, ~/.claude/agents/, ~/.claude/commands/), and runtime
-(Claude Code) are fixed. The research question is: how do skills, agents, and slash commands
-work so we can build wizard/orchestrator components that fit the existing patterns precisely?
+This is a brownfield milestone. The runtime (Claude Code), file formats, and deployment targets are frozen from v1.0. The question is specifically: what techniques enable dynamic scanning of user-installed agents, skills, hooks, and MCP servers, followed by capability-to-stage matching and lightweight injection into GSD/BMAD subagent prompts?
+
+**What already exists (DO NOT re-research):**
+- Skills as `.md` files or directories in `~/.claude/skills/`
+- Agents as `.md` files with YAML frontmatter in `~/.claude/agents/`
+- Hooks registered in `~/.claude/settings.json` under `hooks:` keyed by event type
+- MCP servers from two sources: plugin `.mcp.json` files and `mcpServers` field in settings files
+- wizard-detect.sh as the established pattern for bash-based project scanning
+- Existing hardcoded catalog in `skills/wizard.md` (the 11 Keystone agents, 3 skills, 3 hooks)
 
 ---
 
-## The Claude Code Extension Model
+## The Discovery Landscape
 
-Claude Code has three extension primitives. They are distinct and compose in a specific direction.
+### Scale Problem
 
-### 1. Skills
+The user's actual `~/.claude/agents/` directory contains **160 agents**. Showing all of them is counterproductive. The v1.0 catalog hardcodes only the 11 Keystone-authored agents. The v1.1 challenge is: discover what else exists without overwhelming the wizard or subagent prompts with irrelevant capability references.
 
-**Location:** `~/.claude/skills/<skill-name>/SKILL.md`
+**Observed counts (this installation):**
+- Agents: 160 global `.md` files
+- Skills: 30 skill directories + 2 flat `.md` files (wizard.md, wizard-backing-agent.md) + 1 `.sh` file
+- Hooks: 21 `.sh` and `.js` files in `~/.claude/hooks/`; 24 registered events in `settings.json`
+- MCP servers: 2 active (context7, chrome-devtools) from plugins; 2 additional from permissions (MCP_DOCKER, mcpjungle); project-level `.mcp.json` files add more per-project
 
-**Format:**
-```yaml
+This means naive "list everything" approaches produce noise, not signal.
+
 ---
-name: skill-name
-description: What it does and when to use it (third person, specific triggers).
-user-invocable: true | false
-model: haiku | sonnet | opus
-disable-model-invocation: true | false
-context: fork (optional — fresh context window)
-allowed-tools: Read, Write, Edit, Bash, ...
----
+
+## Discovery Mechanisms
+
+### Mechanism 1: Agent Scanning (Bash, already proven in wizard-detect.sh)
+
+**Source:** `~/.claude/agents/*.md`
+
+**How it works:**
+
+```bash
+# List all agent names + descriptions in one pass
+for agent_file in ~/.claude/agents/*.md; do
+    agent_name=$(grep "^name:" "$agent_file" | head -1 | sed 's/^name: *//')
+    desc=$(grep "^description:" "$agent_file" | head -1 | sed 's/^description: *//' | cut -c1-80)
+    echo "$agent_name|$desc"
+done
 ```
 
-**Body structure:** Pure XML tags. No markdown headings in the skill body. Content uses markdown within tags. Required tags: `<objective>`, `<quick_start>`, `<success_criteria>`. Optional: `<intake>`, `<routing>`, `<process>`, `<anti_patterns>`.
+**What to extract:** `name:` (for Task/Agent invocation), `description:` (for capability matching keywords), `tools:` (to identify MCP-using agents).
 
-**File organization:** Router pattern for complex skills:
-```
-skill-name/
-├── SKILL.md              # Router + essential principles (< 500 lines)
-├── workflows/            # Step-by-step procedures (read on demand)
-├── references/           # Domain knowledge (read on demand)
-├── templates/            # Output structures to copy and fill
-└── scripts/              # Executable code run as-is
-```
+**Pattern:** wizard-detect.sh already does similar frontmatter extraction (e.g., reading `project_type` from CLAUDE.md with `grep -qi`). This is the same pattern.
 
-**Two skill types:**
-- `user-invocable: true` — user runs `/skill-name` as a slash command
-- `user-invocable: false` — preloaded into every Claude session; always active domain knowledge (e.g., git-workflow, code-standards, project-scaffolder)
+**Confidence:** HIGH — directly verified in existing agents YAML structure across 160 agents.
 
-**`context: fork`:** When present, the skill runs in a fresh context window rather than inheriting the parent session. Use for isolated sub-tasks.
+### Mechanism 2: Skill Scanning (Bash)
 
-**`disable-model-invocation: true`:** Prevents the skill from spawning its own Claude completion. The SKILL.md content is injected as context into the calling agent/session instead.
+**Source:** `~/.claude/skills/` — skills are directories (most) or flat `.md` files (rare; wizard uses flat `.md` files).
 
-**`skills:` field in agents:** When an agent's YAML lists skill names under `skills:`, Claude Code injects those skills' SKILL.md files into the agent's context at spawn time. This is the mechanism for preloading domain knowledge into a specific agent without polluting the orchestrator context.
+```bash
+# Scan skill directories
+for skill_dir in ~/.claude/skills/*/; do
+    skill_name=$(basename "$skill_dir")
+    skill_md="$skill_dir/SKILL.md"
+    if [ -f "$skill_md" ]; then
+        invocable=$(grep "^user-invocable:" "$skill_md" | head -1 | sed 's/^user-invocable: *//')
+        desc=$(grep "^description:" "$skill_md" | head -1 | sed 's/^description: *//' | cut -c1-80)
+        echo "$skill_name|$invocable|$desc"
+    fi
+done
 
-**Confidence:** HIGH — verified against existing skills in `~/.claude/skills/` (code-standards, git-workflow, project-scaffolder, gen-test, create-agent-skills) and agent YAML in `~/.claude/agents/` (code-reviewer, gsd-executor, gsd-planner).
-
-### 2. Agents
-
-**Location:** `~/.claude/agents/<agent-name>.md`
-
-**Format:**
-```yaml
----
-name: agent-name
-description: >
-  What this agent does and trigger phrases.
-  Use WHEN: [condition]. Activate when: [phrases].
-model: sonnet | opus | haiku
-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
-  - Glob
-  - Grep
-  - Task
-  - AskUserQuestion
-  - TodoWrite
-  - WebSearch
-  - WebFetch
-  - mcp__context7__*
-maxTurns: 20
-color: blue | green | yellow | orange | red | purple | cyan | magenta | white
-skills:
-  - skill-name
-memory: user
-disallowedTools: Write, Edit
----
+# Scan flat .md skill files (like wizard.md, wizard-backing-agent.md)
+for skill_file in ~/.claude/skills/*.md; do
+    skill_name=$(basename "$skill_file" .md)
+    desc=$(grep "^description:" "$skill_file" | head -1 | sed 's/^description: *//' | cut -c1-80)
+    echo "$skill_name|user-invocable|$desc"
+done
 ```
 
-**Body:** The system prompt. Markdown formatting allowed. Contains the agent's role, workflow, and behavioral instructions. No YAML frontmatter conventions in the body.
+**What to extract:** `name:`, `user-invocable:` (true = slash command, false/missing = ambient context), `description:`.
 
-**Model selection:**
-- `haiku` — lightweight detection, classification, formatting tasks
-- `sonnet` — standard implementation work (most agents use this)
-- `opus` — complex reasoning, planning, orchestration (used sparingly)
+**Confidence:** HIGH — skill directory structure directly observed across 30+ installed skills.
 
-**Tool access:** Agents only have the tools listed in their YAML. `Task` tool is required for spawning subagents. `AskUserQuestion` is required for interactive wizard-style flows.
+### Mechanism 3: Hook Discovery (settings.json parsing)
 
-**`maxTurns`:** Cap on how many turns the agent can take. Range observed: 15-40. Set higher for long-running orchestrators, lower for focused specialists.
+**Source:** `~/.claude/settings.json` → `hooks:` object + `~/.claude/hooks/*.sh`
 
-**Spawning:** Two mechanisms:
-1. Claude Code routes to an agent based on trigger phrases in the `description` field (automatic activation from conversation)
-2. Explicit spawn via `Task(subagent_type="agent-name", model="...", prompt="...")` from an orchestrating agent or slash command
+Two approaches:
 
-**Confidence:** HIGH — verified against all 11 agents in `~/.claude/agents/` and GSD workflow patterns.
-
-### 3. Slash Commands
-
-**Location:** `~/.claude/commands/<command-name>.md` or `~/.claude/commands/gsd/<command-name>.md`
-
-**Format (inline):**
-```yaml
----
-name: namespace:command-name
-description: One-line description
-argument-hint: "[arg] [--flag]"
-allowed-tools:
-  - Read
-  - Write
-  - Bash
-  - Task
-  - AskUserQuestion
----
+**Option A: Parse settings.json (authoritative — only registered hooks):**
+```bash
+python3 -c "
+import json
+with open('$HOME/.claude/settings.json') as f:
+    d = json.load(f)
+hooks = d.get('hooks', {})
+for event, entries in hooks.items():
+    for entry in entries:
+        for h in entry.get('hooks', []):
+            cmd = h.get('command', '')
+            print(f'{event}|{cmd}')
+" 2>/dev/null
 ```
 
-**Format (delegate to agent):**
-```yaml
----
-name: namespace:command-name
-description: One-line description
-agent: agent-name
-allowed-tools:
-  - Read
-  - Write
----
+**Option B: List hook scripts (broader — includes unregistered):**
+```bash
+ls ~/.claude/hooks/*.sh 2>/dev/null | xargs -I{} basename {}
 ```
 
-When `agent:` is set, the slash command delegates entirely to the named agent. The command's body provides context injected alongside the agent's system prompt.
+**Use Option A** because it shows what Claude Code actually activates (registered hooks only). Unregistered scripts in `~/.claude/hooks/` are not active hooks.
 
-**`@`-file references in command body:** The `<execution_context>` section can reference workflow files with `@/path/to/workflow.md`, which Claude Code auto-injects at invocation. This is the mechanism for keeping slash commands lean and loading heavy workflow logic on demand.
+**Observed hook events:** SessionStart, Stop, PreToolUse, PostToolUse, PostToolUseFailure, PreCompact, SubagentStop, SubagentStart, SessionEnd, ConfigChange, WorktreeCreate, WorktreeRemove, UserPromptSubmit, Notification.
 
-**`$ARGUMENTS`:** Variable for the user's arguments passed after the command name. Passed to the command body as a template variable.
+**Confidence:** HIGH — settings.json hook structure directly verified.
 
-**Confidence:** HIGH — verified against GSD command files in `~/.claude/commands/gsd/` including discuss-phase.md, execute-phase.md, plan-phase.md, new-project.md.
+### Mechanism 4: MCP Server Discovery (settings.json + plugins)
 
----
+MCP servers come from three sources, in priority order:
 
-## Composition Patterns
+**Source A: Plugin `.mcp.json` files (most common)**
 
-### Pattern 1: Slash Command → Inline Orchestrator
+```bash
+python3 -c "
+import json, os
+plugins_file = os.path.expanduser('~/.claude/plugins/installed_plugins.json')
+settings_file = os.path.expanduser('~/.claude/settings.json')
 
-**When to use:** The command itself handles orchestration logic (routing, state detection, spawning subagents). Most GSD commands use this pattern.
+with open(settings_file) as f:
+    settings = json.load(f)
+enabled_plugins = settings.get('enabledPlugins', {})
 
-```
-/wizard
-  └── commands/wizard.md    (inline orchestrator)
-        ├── reads STATE.md, .planning/config.json
-        ├── presents numbered menu (AskUserQuestion)
-        └── Task(subagent_type="wizard-backing-agent", ...)
-```
+with open(plugins_file) as f:
+    installed = json.load(f)
 
-**Why:** The slash command's allowed-tools list controls what the orchestrator can do. Task tool access is explicit. This is the pattern used by `/gsd:execute-phase`, `/gsd:new-project`.
-
-**Confidence:** HIGH — directly observed in execute-phase.md and discuss-phase.md.
-
-### Pattern 2: Slash Command → Named Agent (Delegation)
-
-**When to use:** The agent has complex interactive behavior that doesn't fit a command body. Use `agent:` field.
-
-```
-/gsd:plan-phase
-  └── commands/gsd/plan-phase.md  (uses agent: gsd-planner)
-        └── gsd-planner agent takes over
-```
-
-**Why:** Cleaner separation. The command provides argument parsing and context injection; the agent provides the full workflow. Only one agent in the existing system uses this — `gsd-planner`.
-
-**Confidence:** HIGH — directly observed in plan-phase.md.
-
-### Pattern 3: Orchestrator → Specialist Subagents (Task Tool)
-
-**When to use:** Heavy work that needs a fresh 200k context window per task. The orchestrator stays lean (10-15% context usage), spawning specialists with their full context budget.
-
-```
-Orchestrator command
-  └── Task(subagent_type="gsd-executor", model="sonnet",
-           prompt="<objective>...</objective><files_to_read>...</files_to_read>")
-        └── gsd-executor agent runs with full fresh context
+for plugin_id, versions in installed.get('plugins', {}).items():
+    if not enabled_plugins.get(plugin_id, False):
+        continue  # Skip disabled plugins
+    if not versions:
+        continue
+    mcp_file = os.path.join(versions[0].get('installPath', ''), '.mcp.json')
+    if os.path.exists(mcp_file):
+        with open(mcp_file) as f:
+            mcp = json.load(f)
+        for server_name in mcp.keys():
+            print(f'mcp__{server_name}__*|{plugin_id}')
+" 2>/dev/null
 ```
 
-**Why:** Context isolation prevents quality degradation as the session grows. Each specialist reads relevant files directly rather than inheriting a polluted context from the orchestrator.
+**Active servers on this installation:** `mcp__context7__*` (Context7 docs), `mcp__chrome-devtools__*` (Chrome DevTools).
 
-**Confidence:** HIGH — the foundational GSD pattern, directly verified in execute-phase workflow and observed across 12 subagent_type usages.
+**Source B: `mcpServers` in settings.json (explicit configuration)**
 
-### Pattern 4: Agent with Preloaded Skills
-
-**When to use:** An agent needs consistent domain knowledge (coding standards, git conventions) without consuming context reading reference files on every run.
-
-```yaml
----
-name: code-reviewer
-skills:
-  - code-standards
-  - git-workflow
----
+```bash
+python3 -c "
+import json, os
+with open(os.path.expanduser('~/.claude/settings.json')) as f:
+    d = json.load(f)
+for name, config in d.get('mcpServers', {}).items():
+    print(f'mcp__{name}__*|settings.json')
+" 2>/dev/null
 ```
 
-Claude Code injects the SKILL.md content of each listed skill into the agent's context at spawn time.
+**Source C: Project `.mcp.json` file (project-level)**
 
-**Why:** Avoids the agent having to `Read` reference files every invocation. The skill content is in context before the first tool call.
+```bash
+if [ -f ".mcp.json" ]; then
+    python3 -c "
+import json
+with open('.mcp.json') as f:
+    d = json.load(f)
+for name in d.get('mcpServers', {}).keys():
+    print(f'mcp__{name}__*|.mcp.json')
+" 2>/dev/null
+fi
+```
 
-**Confidence:** HIGH — verified in code-reviewer.md (skills: code-standards), gsd-executor.md (skills: gsd-executor-workflow), gsd-planner.md (skills: gsd-planner-workflow).
+**Naming convention (verified):** The `name` key inside `.mcp.json` maps directly to the `mcp__<name>__*` tool prefix. `"context7" -> mcp__context7__*`. This is how agents reference MCP tools in their `tools:` field.
+
+**Confidence:** HIGH — directly verified by reading plugin `.mcp.json` files and cross-referencing with agent tool declarations.
 
 ---
 
-## Wizard-Specific Stack Decisions
+## Capability-to-Stage Matching
 
-### Entry Point: Slash Command, Not Agent
+### The Problem
 
-**Decision:** The `/wizard` entry point is a slash command (`commands/wizard.md`), not an agent.
+160 agents exist. Only ~8-12 are relevant at any workflow stage. The matching must work without requiring manual tagging of existing agents. Every existing agent was written before this capability-matching feature existed — there are no tags to parse.
 
-**Why:** Slash commands are invoked explicitly by the user. Agents are triggered by conversation pattern matching, which can fire unexpectedly. A wizard entry point must be deterministic. The existing pattern-triggered entry agents (project-setup-wizard, project-setup-advisor) are useful as downstream components but not appropriate as the single `/wizard` entry.
+### Recommended Approach: Keyword Matching on Description Field
 
-**Confidence:** HIGH — confirmed by how GSD commands are structured vs how entry agents work.
+The `description:` field in agent frontmatter is written for Claude Code's auto-routing, which means it contains trigger phrases and workflow context. Use it for capability matching.
 
-### State Detection: Bash in the Slash Command
+**Stage-to-keyword mapping:**
 
-**Decision:** Run all state detection (BMAD/GSD presence, phase status, git state) via Bash in the slash command body before any user interaction. Never narrate the detection.
+```bash
+# This is a lookup table embedded in wizard-detect.sh or a new capability-scan.sh
 
-**Why:** This is exactly how project-setup-wizard works (Phase 1 — Silent Detection). The pattern is proven and can be reused. State detection via Bash is faster than spawning an agent for it.
+# Research stage keywords
+RESEARCH_KEYWORDS="research|investigate|analyze|explore|discover|study|documentation|docs|library"
 
-**Confidence:** HIGH — directly verified in project-setup-wizard.md.
+# Planning stage keywords
+PLANNING_KEYWORDS="plan|roadmap|architecture|design|structure|requirements|specification"
 
-### User Interaction: AskUserQuestion Tool
+# Execution stage keywords
+EXECUTION_KEYWORDS="execute|implement|build|code|develop|deploy|write|create|generate"
 
-**Decision:** Use `AskUserQuestion` for all wizard menu interactions.
+# Review/validation stage keywords
+REVIEW_KEYWORDS="review|validate|verify|check|audit|test|qa|quality|drift|health"
+```
 
-**Why:** This tool is designed for structured user prompts with predefined choices. It appears in every interactive GSD command: new-project, new-milestone, settings, validate-phase. It is the standard mechanism.
+For each discovered agent, grep its description against stage keywords to assign it to one or more stages.
 
-**Confidence:** HIGH — verified across 8+ GSD commands using AskUserQuestion.
+**Why this works:** Agent descriptions like "Detects architectural drift... Trigger phrases: check drift, health check, validate output" contain enough signal for keyword matching without needing new metadata.
 
-### Heavy Orchestration: Backing Agent via Task
+**Confidence:** MEDIUM — keyword approach is pragmatic and extensible, but description field content quality varies across 160 agents.
 
-**Decision:** Delegate complex routing and cross-framework orchestration to a dedicated `wizard-orchestrator` agent spawned via `Task(subagent_type="wizard-orchestrator")`.
+### Filtering for Relevance
 
-**Why:** The slash command handles UI (state display, menu), then hands off to the backing agent for the heavy work (reading BMAD docs, determining next GSD command, writing state). This keeps the slash command lean and follows the Pattern 3 composition observed throughout GSD. The slash command's context is preserved for future wizard interactions; the agent gets fresh context.
+Do NOT show all matched agents at once. Apply relevance filters:
 
-**Confidence:** HIGH — mirrors the execute-phase → gsd-executor pattern.
+1. **Stage filter:** Match only agents relevant to the current wizard scenario and GSD phase position
+2. **Source filter:** Prefer Keystone-authored agents (known categories: entry, bridge, domain, maintenance) + GSD framework agents (gsd-*) over the 100+ uncategorized agents
+3. **Active filter:** For domain agents, check `project_type` from wizard-state.json — only surface the matching domain agent
 
-### State Persistence: `.planning/` Directory
-
-**Decision:** All wizard state persists to `.planning/wizard-state.md` (or extends `.planning/STATE.md`).
-
-**Why:** `.planning/` is the GSD-managed persistent state directory, already present in any project running GSD. Writing state here survives context resets. The GSD tools binary (`gsd-tools.cjs`) provides state read/write utilities. The existing `state patch`, `state update`, and `frontmatter` commands in gsd-tools can be used directly.
-
-**Confidence:** HIGH — confirmed by `.planning/STATE.md` usage throughout GSD, and gsd-tools.cjs state management commands.
-
-### Context Budget: Router Skill Pattern
-
-**Decision:** The wizard skill uses the router pattern (SKILL.md + workflows/ + references/) to keep the invocation footprint small.
-
-**Why:** The "skills are progressive disclosure" principle from create-agent-skills: SKILL.md under 500 lines, heavy content in workflows/ loaded only when needed. A wizard has multiple distinct paths (new project, resume, bridge, continue), each needing different references. Loading everything upfront wastes context.
-
-**Confidence:** HIGH — directly from create-agent-skills reference documentation and observed in create-agent-skills skill itself.
-
-### Model Selection
-
-**Decision:** Smart router skill runs with `sonnet` (detection + routing logic). Backing agent runs with `sonnet` (orchestration work). Delegated specialists (BMAD agents, GSD agents) use their own configured models.
-
-**Why:** `opus` is not needed for state detection or routing — that is pattern matching and file reading, not complex reasoning. Sonnet handles it correctly. `haiku` is insufficient for orchestration decisions. The existing project uses sonnet for all bridge and entry agents.
-
-**Confidence:** HIGH — consistent with observed model assignments across all 11 existing agents.
+**Rule:** Surface at most 5-8 capability references per injection. More is noise.
 
 ---
 
-## Recommended Stack Components
+## Subagent Prompt Injection
 
-### Core Framework
+### Where to Inject
+
+Three injection points in the existing system:
+
+**Injection Point A: gsd-phase-researcher spawn (plan-phase workflow)**
+
+The researcher prompt already has an `<additional_context>` block:
+```
+**Project skills:** Check .claude/skills/ or .agents/skills/ directory (if either exists) —
+read SKILL.md files, research should account for project skill patterns
+```
+
+This can be extended to include discovered MCP tools:
+```
+**Available MCP tools:** {comma-separated list of active mcp__server__* prefixes}
+Use mcp__context7__* for current library documentation before asserting version-specific claims.
+```
+
+**Injection Point B: wizard.md status display (Discover tools option)**
+
+The existing "Discover tools" option (Option 4 in all menus) shows the hardcoded catalog. Extend to include dynamically discovered non-Keystone agents when relevant (e.g., code-reviewer, gsd-executor).
+
+**Injection Point C: Task() prompt for wizard-backing-agent**
+
+When spawning the backing agent via `Task(subagent_type="wizard-backing-agent", prompt="...")`, the prompt can include a `<available_tools>` section listing MCP tools discovered for the current project.
+
+### Injection Format (Token-Efficient)
+
+Do NOT inject full agent prompts. Inject pointers — name, one-liner, activation phrase.
+
+**Format for wizard menu display:**
+```
+- **context7** (MCP) — Current library docs — use via mcp__context7__resolve-library-id
+- **chrome-devtools** (MCP) — Browser debugging — use via mcp__chrome-devtools__*
+- **code-reviewer** (agent) — Code review against project standards — say "review this code"
+```
+
+**Format for subagent prompt injection:**
+```xml
+<available_tools>
+MCP servers: mcp__context7__* (library docs), mcp__chrome-devtools__* (browser debug)
+Relevant agents: code-reviewer (quality), gsd-debugger (debugging)
+</available_tools>
+```
+
+**Token budget:** A filtered 5-8 capability pointer block costs ~160-320 tokens — acceptable inside a 200k context subagent. Full agent body injection (avg 9,400 chars = ~2,350 tokens per agent) is NOT acceptable.
+
+**Confidence:** HIGH — token costs calculated from actual agent file sizes and confirmed against 10% context budget constraint.
+
+---
+
+## Integration with wizard-detect.sh
+
+### What to Add to wizard-detect.sh
+
+wizard-detect.sh is the proven mechanism for writing structured data to wizard-state.json. Extend it with a capabilities section.
+
+**Add to wizard-state.json schema:**
+
+```json
+{
+  "capabilities": {
+    "mcp_servers": ["mcp__context7__*", "mcp__chrome-devtools__*"],
+    "gsd_agents": ["gsd-executor", "gsd-planner", "gsd-phase-researcher", "gsd-debugger"],
+    "domain_agents_available": ["it-infra-agent", "godot-dev-agent"],
+    "active_domain_agent": "it-infra-agent",
+    "hooks_registered": ["SessionStart", "PostToolUse", "Stop"]
+  }
+}
+```
+
+**Why wizard-detect.sh, not a new file:** wizard-detect.sh already runs as the first step of every `/wizard` invocation. Adding capability scanning here costs one more bash block — it does not add a new file, a new invocation, or a new read step. The wizard.md already reads wizard-state.json in Step 2; capabilities would be in the same read.
+
+**What NOT to add to wizard-detect.sh:**
+- Full agent content parsing (too slow for 160 agents at startup)
+- MCP server availability testing (can't test MCP connectivity from bash)
+- Skill body parsing (the skill description in SKILL.md frontmatter is enough)
+
+**Confidence:** HIGH — wizard-detect.sh pattern is well-understood; adding a `capabilities` block to the JSON output follows the existing schema extension pattern.
+
+---
+
+## User Confirmation Flow
+
+### When Confirmation is Needed
+
+The PROJECT.md requirement "ask before using discovered tools when intent is ambiguous" applies in one scenario: when the wizard considers surfacing a non-Keystone, non-GSD agent (e.g., a user-installed code-reviewer or blockchain-security-auditor) that matches a capability keyword.
+
+**Rule:** Never ask for confirmation for:
+- Keystone-authored agents (always safe to surface)
+- GSD framework agents (gsd-executor, gsd-planner, etc.)
+- MCP servers already in the agent's `tools:` field
+
+**Ask for confirmation for:**
+- User-installed agents with keyword matches but no explicit Keystone/GSD affiliation
+- Any agent not in the wizard's known catalog
+
+**Implementation:** Add a confirmation step inside the "Discover tools" flow in wizard.md, not in wizard-detect.sh. wizard-detect.sh runs silently; interactive confirmation belongs in the wizard UI layer.
+
+**Confidence:** HIGH — consistent with the existing wizard architecture (wizard-detect.sh = silent, wizard.md = interactive).
+
+---
+
+## Recommended Stack Components for v1.1
+
+### Core Components
 
 | Component | Type | Location | Purpose |
 |-----------|------|----------|---------|
-| Slash command `/wizard` | Slash command | `commands/wizard.md` | Single user-facing entry point |
-| Smart router skill | Skill (user-invocable) | `skills/wizard-router/` | State detection, routing logic |
-| Wizard orchestrator agent | Agent | `agents/wizard/wizard-orchestrator.md` | Heavy orchestration, cross-framework work |
-| Wizard state file | File | `.planning/wizard-state.md` | Persistent state across context resets |
+| Extended wizard-detect.sh | Bash script | `skills/wizard-detect.sh` | Add `capabilities` block to JSON output |
+| Updated wizard-state.json schema | JSON schema | `.claude/wizard-state.json` | New `capabilities` object |
+| Updated wizard.md | Skill | `skills/wizard.md` | Read capabilities, inject into menus |
+| Updated wizard-backing-agent.md | Skill | `skills/wizard-backing-agent.md` | Include `<available_tools>` in Task() prompts |
 
-### Supporting Infrastructure (Already Exists — Wrap, Don't Replace)
+### No New Files Needed
 
-| Component | Location | Role in Wizard |
-|-----------|----------|----------------|
-| `gsd-tools.cjs` | `~/.claude/get-shit-done/bin/` | State read/write, phase lookup |
-| `.planning/STATE.md` | Project `.planning/` | Current GSD phase state |
-| `.planning/config.json` | Project `.planning/` | GSD project config |
-| `agents/bridge/bmad-gsd-orchestrator.md` | Project `agents/bridge/` | BMAD → GSD handoff |
-| `agents/bridge/phase-gate-validator.md` | Project `agents/bridge/` | Phase completion gating |
-| `agents/entry/project-setup-wizard.md` | Global `~/.claude/agents/` | Downstream wizard component |
-| `agents/entry/project-setup-advisor.md` | Global `~/.claude/agents/` | Downstream advisor component |
+The discovery pipeline fits entirely in:
+1. **wizard-detect.sh** — scanning + JSON write
+2. **wizard.md** — reading + menu display
+3. **wizard-backing-agent.md** — subagent prompt injection
 
-### Tools Required
+Do not create a separate `capability-scan.sh` or `discovery-agent.md`. The pattern in v1.0 (detect → write JSON → read → act) already handles this.
+
+### Supporting Tools (Already Installed)
 
 | Tool | Used By | Purpose |
 |------|---------|---------|
-| `Bash` | Slash command, orchestrator | State detection, gsd-tools CLI |
-| `Read` | All components | Read STATE.md, config.json, BMAD docs |
-| `Write` | Orchestrator | Write wizard-state.md |
-| `Task` | Slash command | Spawn orchestrator agent |
-| `AskUserQuestion` | Slash command | Interactive wizard menus |
-| `Glob`, `Grep` | Orchestrator | Document discovery |
+| `Bash` | wizard-detect.sh | File system scanning |
+| `python3` | wizard-detect.sh | JSON parsing for settings.json, installed_plugins.json |
+| `grep -qi` | wizard-detect.sh | Keyword matching on description fields |
+| `find` | wizard-detect.sh | Agent/skill file enumeration |
+
+python3 is already used in wizard-detect.sh for JSON parsing (IS_RESET detection) and infra safety injection. This is not a new dependency.
 
 ---
 
@@ -320,41 +374,54 @@ Claude Code injects the SKILL.md content of each listed skill into the agent's c
 
 | Decision | Chosen | Alternative | Why Not |
 |----------|--------|-------------|---------|
-| Entry point type | Slash command | Pattern-triggered agent | Agents fire on conversation patterns, not explicit invocation — too unpredictable for a wizard entry point |
-| State persistence | `.planning/wizard-state.md` | In-memory (conversation context) | Context resets lose state; `.planning/` survives resets |
-| Orchestration model | Backing agent via Task | Inline in slash command | Slash command context fills as the session grows; Task gives each orchestration call a fresh 200k budget |
-| Skill type | Router pattern | Single SKILL.md | Multiple wizard paths (new/resume/bridge/continue) need different references; loading all paths upfront wastes context |
-| Heavy work model | Sonnet | Opus | Routing and state detection don't need complex reasoning; opus cost not justified |
-| Existing entry agents | Downstream components | Replace with new agents | Entry agents work correctly and are well-tested; wrapping preserves modularity |
+| Discovery timing | At wizard startup (wizard-detect.sh) | On-demand when "Discover tools" selected | On-demand requires a separate bash call inside the interactive wizard, which breaks the "wizard.md does not run bash" constraint in Context Budget Discipline |
+| Agent filtering | Keyword matching on description | Explicit capability tags in agent frontmatter | 160 existing agents have no tags; adding tags requires modifying all existing agents — not feasible. Keyword matching works on unmodified agent files. |
+| MCP discovery | Parse settings.json + installed_plugins.json | Read from live MCP tool list | No bash-accessible live MCP tool inventory exists; settings.json is the authoritative source |
+| Injection depth | Capability pointers (name + one-liner) | Inject full agent SKILL.md into subagent prompt | Full injection: ~2,350 tokens per agent, 10k tokens for 4 agents — violates 10% context budget. Pointers: ~40 tokens each — negligible. |
+| Confirmation trigger | User-installed non-Keystone agents only | All discovered agents | Excessive confirmation for known Keystone/GSD agents creates friction without safety benefit |
+| Capabilities in wizard-state.json | Single JSON object | Separate capabilities.json file | wizard.md already reads wizard-state.json in Step 2; adding capabilities here costs zero extra file reads |
 
 ---
 
-## Installation / Deployment
+## What NOT to Add
 
-The wizard components install to the same locations as existing agents and skills:
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| Full agent body loading for matching | 9,400 chars avg × 160 agents = context overflow | Parse only frontmatter (first ~20 lines) |
+| MCP connectivity testing | Can't test MCP servers from bash in detect script | Trust settings.json as authoritative |
+| Dynamic capability tags in agent frontmatter | Requires modifying 160 existing agents | Keyword match on existing description field |
+| A new `capability-discovery` agent | Adds agent spawn overhead to detection path | Extend wizard-detect.sh (already runs at startup) |
+| Showing all 160 agents to user | Creates noise, not signal | Filter to ≤8 relevant capabilities per stage |
+| Injecting agent body content into subagent prompts | Destroys context budget | Inject name + one-liner pointer only |
+| Trying to discover project-level `.claude/agents/` | Projects may have local agents — pattern is unverified and out-of-scope for v1.1 | Scan global `~/.claude/agents/` only |
 
-```bash
-# Skills (global — available in all projects)
-cp -r skills/wizard-router ~/.claude/skills/
+---
 
-# Agents (global — available in all projects)
-cp agents/wizard/wizard-orchestrator.md ~/.claude/agents/
+## Version Compatibility
 
-# Slash command (global)
-cp commands/wizard.md ~/.claude/commands/
-```
-
-All three components are added to the existing `install-runtime-support.sh` script alongside the current 11 agents.
+| Component | Requirement | Notes |
+|-----------|-------------|-------|
+| `~/.claude/settings.json` | Must exist (Claude Code ≥ 1.0) | Always present for any Claude Code installation |
+| `~/.claude/plugins/installed_plugins.json` | Present if any plugins installed | Fallback gracefully when absent |
+| `python3` | Already used in wizard-detect.sh | No new dependency |
+| Agent YAML frontmatter | `name:` + `description:` fields | All 160 observed agents have both; safe to parse |
+| Skill SKILL.md frontmatter | `name:` + `description:` + `user-invocable:` | Present in all observed skill directories |
 
 ---
 
 ## Sources
 
-- Directly observed: `~/.claude/agents/*.md` — all 11 agent YAML frontmatter fields and body patterns (HIGH confidence)
-- Directly observed: `~/.claude/skills/create-agent-skills/SKILL.md` and references — skill structure specification (HIGH confidence)
-- Directly observed: `~/.claude/skills/code-standards/SKILL.md`, `git-workflow/SKILL.md` — preloaded skill pattern with `user-invocable: false` (HIGH confidence)
-- Directly observed: `~/.claude/skills/gen-test/SKILL.md` — `context: fork`, `disable-model-invocation: true` patterns (HIGH confidence)
-- Directly observed: `~/.claude/commands/gsd/*.md` — slash command YAML format, `agent:` delegation, `@`-file injection, `AskUserQuestion` usage (HIGH confidence)
-- Directly observed: `~/.claude/get-shit-done/workflows/execute-phase.md` — Task spawning pattern with `subagent_type`, `model`, fresh context budget (HIGH confidence)
-- Directly observed: `.planning/codebase/ARCHITECTURE.md`, `.planning/codebase/STACK.md` — existing project architecture and stack (HIGH confidence)
-- Directly observed: `.planning/PROJECT.md` — wizard requirements and constraints (HIGH confidence)
+- Directly observed: `~/.claude/agents/` — 160 agents with YAML frontmatter, description fields, and tool lists (HIGH confidence)
+- Directly observed: `~/.claude/skills/` — 30 skill directories + 2 flat `.md` files + 1 `.sh` file; SKILL.md structure (HIGH confidence)
+- Directly observed: `~/.claude/settings.json` — hooks schema (14 event types, 24 registered hooks), enabledPlugins dict, permissions (HIGH confidence)
+- Directly observed: `~/.claude/plugins/installed_plugins.json` — plugin registry; 27 plugins installed, 6 with `.mcp.json` MCP servers (HIGH confidence)
+- Directly observed: `~/.claude/plugins/cache/claude-plugins-official/context7/*/mcp.json` — `.mcp.json` server naming convention: `{"context7": {...}}` → `mcp__context7__*` (HIGH confidence)
+- Directly observed: `skills/wizard-detect.sh` — established pattern for bash scanning, JSON write, python3 usage (HIGH confidence)
+- Directly observed: `~/.claude/get-shit-done/workflows/plan-phase.md` — `<additional_context>` injection point in gsd-phase-researcher spawn prompt (HIGH confidence)
+- Directly observed: `~/.claude/get-shit-done/workflows/execute-phase.md` — Task() prompt structure for gsd-executor; `<objective>` + `<execution_context>` pattern (HIGH confidence)
+- Directly observed: `.planning/PROJECT.md` — v1.1 requirements for dynamic discovery (HIGH confidence)
+- Token cost calculation: avg agent file size 9,417 chars × 6 observed samples; pointer estimate 80 chars each (MEDIUM confidence — sample size limited)
+
+---
+*Stack research for: Dynamic toolkit discovery and subagent capability injection*
+*Researched: 2026-03-13*

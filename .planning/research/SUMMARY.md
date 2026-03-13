@@ -1,204 +1,211 @@
 # Project Research Summary
 
-**Project:** Keystone — Wizard Orchestrator for Claude Code Stack
-**Domain:** Claude Code slash command + agent + skill orchestration layer (brownfield)
-**Researched:** 2026-03-11
+**Project:** Keystone v1.1 — Dynamic Toolkit Discovery
+**Domain:** Claude Code extension system — dynamic agent/skill/hook/MCP discovery and subagent capability injection
+**Researched:** 2026-03-13
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Keystone is a brownfield orchestration layer that provides a single `/wizard` entry point over two existing, well-tested frameworks: BMAD (planning) and GSD (execution). The research domain is unusual in that there are no external libraries to choose — the "stack" is the Claude Code extension model itself (skills, agents, slash commands), and all source material comes from direct code analysis of the existing codebase. This gives the research an exceptionally high confidence level: every architectural decision is validated against working code, not documentation or community consensus.
+Keystone v1.1 is a brownfield capability milestone on top of a fully-shipped v1.0 wizard orchestrator. The problem it solves is concrete and measured: the Phase 7 catalog hardcodes 11 agents, 3 skills, and 3 hooks, while the user's actual `~/.claude/` installation contains 160 agents, 33 skills, 24 hooks, and 15+ MCP plugin servers. Every one of those 149+ undiscovered agents is invisible to the wizard and to any subagent the wizard spawns. The milestone's job is to close that gap — discover what is installed, map it to workflow stages, and inject lightweight capability pointers into subagent prompts — without breaking the wizard's hard constraint of less than 10% context budget overhead.
 
-The recommended architecture is a three-component chain: a thin router skill that performs state detection in a single bash block, a wizard skill that presents scenario-appropriate menus and captures user intent, and a backing agent that does the heavy orchestration work by dispatching to existing agents. The central engineering constraint is a context budget of under 10% overhead — the wizard must cost less context than it saves. This rules out rich interactive flows, verbose explanations, and redundant file reads across components. The pattern is proven: the existing `execute-phase` command follows an identical slash command → backing agent structure.
+The recommended approach is a two-level discovery architecture. A new shell script (`toolkit-discovery.sh`) runs a TTL-gated scan at wizard startup and writes two outputs: a full catalog (`toolkit-registry.json`, read only on "Discover tools" selection) and a compact stage-tagged summary embedded in the existing `wizard-state.json` (read on every `/wizard` call). This two-level split is the key architectural decision — it is what makes dynamic discovery budget-safe. The wizard reads only the compact summary on every startup (~600 bytes additional); the full registry is only loaded when the user explicitly requests the catalog. Capability pointers injected into GSD subagent Task() prompts are drawn from the compact summary filtered to the current workflow stage — at most 5-8 tool references totaling ~200 tokens, well within budget.
 
-The key risk is dual-failure-mode complexity: the wizard can fail by doing too much (context bloat that makes it slower than running commands directly) or by doing too little (silently dropping BMAD requirements at the handoff to GSD). Both failure modes are documented in the existing codebase's own concern files and are addressable with specific, testable constraints: cap the router skill at one bash block reading at most three files, and require traceability assertions at the BMAD→GSD bridge.
+The primary risk is context budget overrun from doing too much in a single injection pass. Research identified eight critical pitfalls, all centering on the same root cause: discovery outputs routed through context rather than through files. The mitigation is strict — all discovery output is written to files, never printed to the terminal or embedded in prose; injection uses name-and-one-liner pointers only, never full agent bodies; confirmation UX is batched to at most one question per `/wizard` invocation; and the hardcoded Phase 7 catalog remains as a fallback until the dynamic catalog passes parity tests. Build order enforces this: `toolkit-discovery.sh` ships and is validated before anything in `wizard-detect.sh` or `wizard.md` is touched.
 
 ## Key Findings
 
 ### Recommended Stack
 
-This is a brownfield project with fixed runtime targets. The "stack" is the Claude Code extension model: three primitive types compose in a specific direction (slash commands delegate to agents, agents preload skills, skills fork or inject context). All components install to `~/.claude/` directories alongside the existing 11 agents and 5 skills.
+The runtime environment is frozen — Claude Code, bash, python3, and the existing `~/.claude/` directory structure are not choices to make. All discovery logic runs in bash (filesystem scanning) and python3 (JSON parsing of `settings.json` and `installed_plugins.json`). Python3 is already used in `wizard-detect.sh` for JSON operations — no new dependency. MCP server discovery reads from two sources: the plugin registry at `~/.claude/plugins/installed_plugins.json` (for Claude Code plugin-installed MCP servers) and `mcpServers` in `~/.claude/settings.json` (for explicitly configured servers). The `mcp__<name>__*` tool naming convention is directly observed and confirmed as the authoritative naming pattern.
 
 **Core technologies:**
-
-- **Slash command (`commands/wizard.md`):** User-facing entry point — chosen over pattern-triggered agents because slash commands activate on explicit invocation, not conversation matching, giving the wizard deterministic behavior
-- **Router skill (`skills/wizard-router/`):** State detection and scenario classification — implemented as a router-pattern skill (SKILL.md + workflows/ subdirectory) to keep invocation footprint small; the `user-invocable: true` flag makes it callable via `/wizard`
-- **Wizard skill (`skills/wizard-interactive/`):** Interactive menu presentation and intent capture using `AskUserQuestion` — verified across 8+ existing GSD commands as the standard interaction mechanism
-- **Backing agent (`agents/wizard/wizard-orchestrator.md`):** Spawned via `Task(subagent_type="wizard-orchestrator")` for all heavy orchestration; gets a fresh 200k context window; dispatches to existing agents rather than reimplementing their logic
-- **`wizard-state.json` (`.planning/wizard-state.json`):** File-mediated communication between components; survives context resets because it is a file, not memory; uses `gsd-tools.cjs` for read/write utilities
-
-**Model selection:** `sonnet` for both the router skill and backing agent. Routing and state detection do not require complex reasoning; all 11 existing agents use sonnet for comparable work. Opus is not justified.
-
-**Critical version note:** The Claude Code agent YAML `skills:` field injects named skill SKILL.md files into agent context at spawn time — this is the mechanism for preloading domain knowledge. `context: fork` creates a fresh context window. `disable-model-invocation: true` prevents a skill from spawning its own completion. These fields are verified against the existing codebase.
+- Bash: filesystem scanning and JSON writes — already the pattern in `wizard-detect.sh`; no performance concern at 200 files
+- python3: JSON parsing of `settings.json`, `installed_plugins.json`, and `.mcp.json` files — already used, no new dependency
+- `wizard-state.json`: extended with a `toolkit{}` compact summary section — additive only, no schema breaking change
+- `toolkit-registry.json`: new full catalog cache with 5-minute TTL — prevents re-scanning on every `/wizard` invocation
+- `toolkit-discovery.sh`: new shell script encapsulating all scan logic — callable from `wizard-detect.sh` without changing detection logic
 
 ### Expected Features
 
-The wizard wraps existing functionality. 80% of required features already exist in the codebase and need extraction or wiring, not implementation from scratch.
+**Must have (v1.1 table stakes — per PROJECT.md):**
+- Dynamic agent scan — replace hardcoded 11-agent catalog with live scan of `~/.claude/agents/*.md`; parse YAML frontmatter `name:` and `description:` fields
+- Dynamic MCP scan — read plugin registry and `settings.json` for active MCP servers; add MCP section to discovery catalog (currently absent)
+- Subagent context injection — append lightweight capability block to Task() spawns for GSD subagents; stage-filtered, 5-8 pointers max
+- Capability-to-stage matching — lookup table mapping research/planning/execution/review stages to tool categories; drives injection filtering
+- Token-efficient injection format — name + one-liner only, never full agent body; validated against 10% overhead constraint
+- User confirmation when ambiguous — batched at most once per invocation; non-confirmation for Keystone/GSD/read-only MCP tools
 
-**Must have (table stakes):**
-
-- State detection across four scenarios (A: neither / B: GSD-only / C: BMAD-only / D: full-stack) — logic exists in `project-setup-wizard.md` Phase 1; extract it
-- Next-command computation from file state (read `STATE.md`, `*-PLAN*.md`, `*-UAT.md` to determine exact next command) — logic exists; extract it
-- Single `/wizard` entry point routing to the right recommendation
-- State persistence via cold reads of `.planning/` files — no in-memory state; survives context resets
-- Unambiguous output: "Run `/gsd:discuss-phase 3`" not "you could discuss the next phase"
-
-**Should have (differentiators):**
-
-- Automatic BMAD → GSD bridge trigger when BMAD docs are complete and GSD is uninitialized — highest user pain point per PROJECT.md
-- UAT failure short-circuit: surface `phase-gate-validator` results plus the exact repair command
-- IT infrastructure detection and auto-inject safety rules (`auto_advance: false`, dry-run requirements)
-- Inline education mode accessible from any state branch, not just startup
+**Should have (v1.x post-validation):**
+- Dynamic skill scan — `~/.claude/skills/*/SKILL.md` (lower priority than agents/MCP; same pattern)
+- Dynamic hook scan — `~/.claude/hooks/*.sh` filename + first comment; simplest scan
+- Persistent capability cache — TTL invalidation in `wizard-state.json`; needed once 90+ agent scan latency is measured
+- Active tool marking — "(installed)" vs "(configured — availability may vary)" visual indicators
 
 **Defer (v2+):**
-
-- Requirement traceability display (formatted surface of `bmad-outputs/STATUS.md` — partial infrastructure exists)
-- Context health integration prompting (advisory, non-blocking)
-- Complexity-based path recommendation for fresh projects
-- Domain agent activation suggestions
-
-**Anti-features (never build):**
-
-- Replacing BMAD or GSD commands — wrap existing; never reimplement
-- Autonomous phase execution without human checkpoints (`auto_advance: false` is a hard project constraint)
-- Natural language intent parsing for routing (non-deterministic; use file-system state detection instead)
-- State storage outside `.planning/` files (context rot problem GSD was built to solve)
+- Semantic capability matching — LLM-based classification over 160 agent bodies; too expensive, unproven value over keyword matching
+- BMAD subagent injection — out of scope for this milestone; add after GSD injection is proven
+- Per-phase tool recommendation history — requires persistent cross-session state; uncertain payoff
 
 ### Architecture Approach
 
-The architecture is a three-component pipeline with file-mediated communication. Each component has a strict size budget enforced by the 10% overhead constraint: router skill under 100 lines, wizard skill under 200 lines, backing agent under 400 lines. Components communicate exclusively through `wizard-state.json` — the schema for this file is the interface contract between all three and must be defined and frozen in Phase 1 before any other component is built.
+The architecture is an additive layer on the existing three-component wizard stack (`wizard-detect.sh` → `wizard-state.json` → `wizard.md`). A new `toolkit-discovery.sh` script is inserted between detection and state write, producing two artifacts: a full `toolkit-registry.json` and a compact summary embedded in `wizard-state.json`. `wizard.md` gains Step 2.5 to extract stage-relevant pointers from the compact summary and append them to Task() prompts. The hardcoded catalog in `wizard.md` is replaced by a dynamic read from `toolkit-registry.json` when "Discover tools" is selected. `wizard-backing-agent.md` is untouched — injection happens at the Task() call site in `wizard.md`, not in the backing agent.
 
 **Major components:**
-
-1. **Smart router skill** (`~/.claude/skills/wizard-router/`) — runs one bash block detecting scenario A/B/C/D; cross-validates markers (BMAD requires directory AND at least one doc file, not just directory); writes `wizard-state.json`; must not present UI or read more than 3 files
-2. **Wizard skill** (`~/.claude/skills/wizard-interactive/`) — reads `wizard-state.json`; presents scenario-appropriate numbered menu; writes user intent back to `wizard-state.json`; spawns backing agent via `Task()`
-3. **Backing agent** (`~/.claude/agents/wizard/wizard-orchestrator.md`) — gets fresh 200k context; reads `wizard-state.json`; routes to existing agents (bmad-gsd-orchestrator, phase-gate-validator, project-setup-wizard, etc.) without reimplementing their logic; emits exact next command; updates `wizard-state.json` with outcome
+1. `toolkit-discovery.sh` (NEW) — scans all toolkit locations, applies stage tag matching, writes full registry and compact summary; TTL-gated to skip rescan when cache is fresh
+2. `toolkit-registry.json` (NEW) — full discovered catalog with all metadata; only loaded when "Discover tools" is explicitly selected
+3. `wizard-state.json toolkit{}` (SCHEMA EXTENSION) — compact stage-relevant pointers plus discovery counts; read on every wizard startup but adds only ~600 bytes
+4. `wizard-detect.sh` (MODIFIED) — calls `toolkit-discovery.sh` and embeds compact summary; all existing detection logic untouched
+5. `wizard.md` (MODIFIED) — reads toolkit summary at Step 2.5, injects into Task() prompts, replaces hardcoded catalog with dynamic read, adds confirmation UX
 
 ### Critical Pitfalls
 
-1. **Orchestrator costs more context than it saves** — the 10% overhead budget (<20k tokens in a 200k window) is a hard constraint, not a guideline. Test with large realistic projects (PRD >500 lines, 8+ phases, 20+ stories). Enforce this as a pass/fail criterion in every phase's definition of done.
+1. **Discovery output becomes context sink** — All scan output must go to files only; nothing printed to terminal; wizard-state.json must not grow beyond ~600 bytes for the toolkit section; measure startup token usage before and after scanner is added and confirm no change
 
-2. **Requirements silently drop at the BMAD→GSD handoff** — the existing `bmad-gsd-orchestrator` does not assert that every BMAD acceptance criterion appears in a GSD phase context file. The wizard must add this traceability check at the bridge step; otherwise requirements silently vanish and only surface at final QA.
+2. **Injecting into every Task() spawn regardless of stage** — Filter to current stage only (research/planning/execution/review); inject at most 5-8 pointers per spawn; test that GSD subagent turn count does not increase with injection enabled
 
-3. **State detection produces contradictory results** — marker presence does not equal framework presence. `_bmad/` directory can exist empty; `.planning/` can exist without a `config.json` phases array. Cross-validate all markers: BMAD "present" requires directory AND at least one `docs/prd-*.md` or `docs/architecture-*.md`. Add a STATE.AMBIGUOUS case for cross-validation failures.
+3. **Hardcoded catalog removed before dynamic catalog works** — Keep Phase 7 hardcoded catalog as a fallback until dynamic catalog passes parity tests; never delete hardcoded text in the same commit that wires up dynamic reading; fresh install must work without toolkit-registry.json
 
-4. **Wizard diverges from existing agents over time** — "wrapping" must mean "calling the underlying agent," not "reimplementing the same logic in a new layer." Any scenario-specific logic added to the wizard skill should be added to the existing entry agents instead; the wizard stays as a thin dispatcher.
+4. **MCP discovery returns stale/environment-specific results** — All MCP recommendations must use conditional language ("if available"); toolkit-registry.json must be gitignored (machine-specific MCP configuration must not be committed); distinguish "configured" from "verified available"
 
-5. **Wizard state drifts from GSD state** — the wizard must derive its state read-only from GSD's existing files (`STATE.md`, `config.json`, `*-UAT.md`). Writing a new `wizard-state.json` is acceptable for wizard-specific UI state (last menu position, user intent), but the current phase and milestone must always be sourced from GSD's canonical files, never from a wizard-maintained copy.
+5. **Injection breaks GSD Task() prompt contracts** — Read GSD internal prompt templates (`~/.claude/get-shit-done/workflows/`) before specifying injection format; injection must use clearly non-instructional syntax (XML comments or a labeled optional section); verify that removing injection does not change subagent first tool call
+
+6. **Confirmation UX accumulates questions** — Cap AskUserQuestion for capability confirmation at one batched question per invocation; Keystone/GSD agents and read-only MCPs like context7 inject without confirmation
 
 ## Implications for Roadmap
 
-Based on research, the architecture research file explicitly recommends a four-phase build order driven by component dependencies. The features research confirms this ordering via its dependency tree (state detection is the root of every other feature). Both align on the same sequence.
+The architecture research already proposed a 6-phase build order based on component dependencies. That order is the correct one — follow it. Each phase has a clear pass/fail test, low regression risk to preceding phases, and maps directly to the pitfall prevention requirements.
 
-### Phase 1: State Persistence Foundation
+### Phase 1: toolkit-discovery.sh — Core Scanner
 
-**Rationale:** `wizard-state.json` schema is the interface contract for all three components. Building any other component before the schema is stable guarantees a rebuild. The router skill's state detection is the only input to the schema, so it must exist first. Pitfall 3 (contradictory detection) and Pitfall 4 (divergence from existing agents) both manifest here — they must be addressed in design, not retrofitted.
+**Rationale:** Everything downstream is blocked on this script producing valid JSON. It can be built and tested in complete isolation before touching any existing component. This is the foundation that all injection and display logic depends on.
 
-**Delivers:** Frozen `wizard-state.json` schema (v1) + smart router skill that correctly classifies all four scenarios under the constraint of one bash block, three file reads max, and cross-validated markers. Tests: invoke `/wizard` against projects in each of the four scenarios and verify correct JSON output.
+**Delivers:** `skills/toolkit-discovery.sh` — scans agents, skills, hooks, MCP servers; applies stage tagging via keyword matching on description fields; writes `toolkit-registry.json` (full) and emits compact summary JSON; TTL-gated to skip rescan when cache is fresh.
 
-**Addresses (from FEATURES.md):** State detection, state persistence via cold reads, STATE.AMBIGUOUS case.
+**Addresses:** Dynamic agent scan, dynamic MCP scan, capability-to-stage matching, persistent capability cache, token-efficient format (the compact summary format is frozen here)
 
-**Avoids (from PITFALLS.md):** Pitfall 3 (contradictory markers), Pitfall 4 (divergence), Pitfall 8 (context budget test from day one).
+**Avoids:** Pitfall 1 (context sink) — all output to files; Pitfall 6 (name-based matching) — description-field keyword matching specified here; Pitfall 5 (startup latency) — TTL gate implemented here
 
-**Research flag:** No additional research needed. Detection logic exists verbatim in `project-setup-wizard.md` Phase 1 and must be extracted, not rewritten.
+**Test:** `bash skills/toolkit-discovery.sh | python3 -m json.tool` produces valid JSON with non-empty counts matching `ls ~/.claude/agents/ | wc -l`
 
-### Phase 2: Wizard Skill UI
+**Research flag:** SKIP phase research — patterns are fully documented in STACK.md and ARCHITECTURE.md. Build from those specs.
 
-**Rationale:** Depends on Phase 1 schema. Can be built and tested in isolation using a stub backing agent. The UI layer determines the user experience quality but cannot be tested meaningfully until state detection produces correct input. The menu design must enforce the two-turn maximum to reach a workflow (Pitfall 7).
+### Phase 2: wizard-detect.sh Integration
 
-**Delivers:** Interactive wizard skill with four scenario menus (A/B/C/D), intent capture, and `wizard-state.json` update. Maximum 2 turns from `/wizard` invocation to backing agent spawn. Stub backing agent confirms intent received.
+**Rationale:** Depends on Phase 1 existing. This is a small additive change — one new section calling `toolkit-discovery.sh` and one new `toolkit{}` field in the JSON write. All existing detection logic is untouched. Regression risk is LOW.
 
-**Implements (from ARCHITECTURE.md):** Wizard skill component; `Task()` invocation pattern; scenario-based menu routing (Pattern 2).
+**Delivers:** Modified `skills/wizard-detect.sh` — invokes `toolkit-discovery.sh` and embeds compact summary in `wizard-state.json`
 
-**Avoids (from PITFALLS.md):** Pitfall 7 (too many questions), Pitfall 6 (redundant state reads in the wizard layer).
+**Addresses:** wizard-state.json schema extension (additive only)
 
-**Research flag:** No additional research needed. `AskUserQuestion` usage is verified across 8+ existing GSD commands. Menu structure maps directly to the four documented scenarios.
+**Avoids:** Pitfall 2 (schema bloat) — compact summary only in wizard-state.json; full registry stays in toolkit-registry.json
 
-### Phase 3: Backing Agent Routing
+**Test:** `bash skills/wizard-detect.sh` → inspect `.claude/wizard-state.json` for `toolkit{}` section with correct counts and stage_relevant pointers
 
-**Rationale:** Depends on Phases 1 and 2. Should be implemented one intent route at a time, verifying end-to-end before adding the next. The "resume" route is the simplest (emits a command string, no agent invocation) and should be implemented first. The "bridge-to-gsd" route addresses the highest user pain point and should be second. Traceability assertions for Pitfall 2 must be added at the bridge route step, not deferred.
+**Research flag:** SKIP phase research — integration is mechanical; ARCHITECTURE.md has exact insertion points.
 
-**Delivers:** `wizard-orchestrator` agent routing these intents in order: (1) resume → emit GSD command, (2) bridge-to-gsd → invoke bmad-gsd-orchestrator with traceability check, (3) validate-phase → invoke phase-gate-validator, (4) check-drift → invoke context-health-monitor, (5) start-new-project → delegate to project-setup-wizard.
+### Phase 3: wizard.md — Task() Injection and MCP Recommendations
 
-**Addresses (from FEATURES.md):** Automatic BMAD→GSD bridge trigger, UAT failure short-circuit, full lifecycle coverage.
+**Rationale:** Depends on Phase 2 (wizard-state.json must contain toolkit data before wizard.md can read it). This is the highest-risk change because wizard.md is the user-facing UI. Build injection in sub-steps: add Step 2.5 read-only first, then wire to backing-agent spawns, then to drift-check/validate-phase Agent() calls, then MCP recommendation moments, then confirmation UX.
 
-**Avoids (from PITFALLS.md):** Pitfall 1 (fresh context for heavy work via Task), Pitfall 2 (traceability check at bridge), Pitfall 4 (dispatch to existing agents, no reimplementation), Pitfall 5 (derive phase state read-only from GSD files).
+**Delivers:** Modified `skills/wizard.md` with Step 2.5 toolkit hint extraction, stage-filtered capability suffix appended to Task() prompts, MCP surfacing at relevant workflow moments, batched confirmation UX for ambiguous tools
 
-**Research flag:** The traceability check design (how to assert BMAD criteria appear in phase context files) may need a brief design spike. The data exists in `bmad-outputs/STATUS.md`; the assertion format needs to be defined.
+**Addresses:** Subagent context injection, user confirmation when ambiguous, token-efficient injection format
 
-### Phase 4: Context Reset Recovery and Polish
+**Avoids:** Pitfall 2 (injection to wrong stage) — stage-filtered from compact summary; Pitfall 7 (confirmation friction) — one batched question max; Pitfall 8 (breaking GSD prompt contracts) — read GSD templates first; Anti-pattern 3 (inject into Skill() calls) — Task()/Agent() only
 
-**Rationale:** Non-blocking. `wizard-state.json` survives context resets from Phase 1 onward. Phase 4 adds the UX layer: detecting prior session state and presenting a continuity message. Also includes IT infrastructure detection wiring, inline education mode accessibility from within any state (not just startup), and context budget validation against realistic large projects.
+**Test:** Run `/wizard` mid-execution, select "Check drift" — verify context-health-monitor receives injected suffix; verify suffix does not appear as user-visible output; verify GSD subagent first tool call is NOT a Read of an injected agent file
 
-**Delivers:** Context continuity message on `/wizard` after reset; IT safety rule injection; education mode from any branch point; validated <10% context overhead on a worst-case project (PRD >500 lines, 8+ phases, 20+ BMAD stories).
+**Research flag:** NEEDS attention before implementation — read `~/.claude/get-shit-done/workflows/` templates to confirm injection format is safe for GSD prompt contracts before writing any injection code.
 
-**Addresses (from FEATURES.md):** IT infrastructure detection and override, inline education mode, context health integration prompting, complexity-based path recommendation.
+### Phase 4: Dynamic "Discover tools" Display
 
-**Avoids (from PITFALLS.md):** Pitfall 1 (production context budget test), Pitfall 8 (large project testing), Pitfall 9 (legacy BMAD version `.bmad/` detection), Pitfall 10 (stale command names covered by stack-update-watcher), Pitfall 11 (trigger phrase overlap audit).
+**Rationale:** Depends on Phase 1 (toolkit-registry.json must exist). Isolated change — only the catalog rendering logic in wizard.md changes. Hardcoded catalog text is replaced by dynamic read from toolkit-registry.json WITH the hardcoded catalog as fallback when the registry is absent or malformed.
 
-**Research flag:** No additional research needed. All polish features use existing detection logic (IT infra: `project-setup-wizard.md`; domain detection: `session-start.sh`; education mode: W6 workflow in `project-setup-wizard.md`).
+**Delivers:** "Discover tools" option reads toolkit-registry.json and displays grouped results (by stage relevance, then by category); hardcoded Phase 7 catalog remains as fallback
+
+**Addresses:** Dynamic skill scan, dynamic hook scan, active tool marking
+
+**Avoids:** Pitfall 4 (catalog removed too early) — hardcoded fallback is explicit and tested; parity test required before fallback can be removed
+
+**Test:** Run `/wizard`, select "Discover tools" — count shown matches `ls ~/.claude/agents/ | wc -l`; every Phase 7 hardcoded entry appears in dynamic output; fresh install (no toolkit-registry.json) shows hardcoded fallback without errors
+
+**Research flag:** SKIP phase research — patterns are standard; FEATURES.md has the grouping and display spec.
+
+### Phase 5: Global Deployment Sync
+
+**Rationale:** All previous phases develop and test in the Keystone project-local `skills/` directory. This phase syncs verified files to `~/.claude/skills/` following the established v1.0 Phases 9 and 11 deployment pattern.
+
+**Delivers:** `~/.claude/skills/` updated with new `toolkit-discovery.sh`, modified `wizard-detect.sh`, and modified `wizard.md`; `toolkit-registry.json` confirmed gitignored
+
+**Avoids:** Pitfall — MCP state committed to git — gitignore confirmation is a pass/fail criterion here
+
+**Test:** Run `/wizard` in a different project — verify discovery runs against global `~/.claude/agents/` correctly; verify no toolkit-registry.json appears in `git status`
+
+**Research flag:** SKIP — deployment pattern is identical to v1.0.
 
 ### Phase Ordering Rationale
 
-The ordering is dependency-driven, not priority-driven. The schema is the root dependency — it blocks everything. The router skill produces the schema content — it must precede the wizard UI. The wizard UI captures intent — it must precede the backing agent. Context reset recovery is purely additive and has no blockers, making it correctly last.
-
-This ordering also minimizes rework risk: each phase can be tested in isolation before the next begins. The backing agent in Phase 3 can use a stub for phases not yet routed. The wizard UI in Phase 2 can use a stub backing agent. None of the stubs need to be removed; they are replaced incrementally.
-
-The pitfalls that matter most (Pitfalls 1, 3, 4) all manifest in Phase 1 design decisions. Addressing them in Phase 1 means they cannot silently undermine Phase 2 or 3.
+- **Scanner before integration:** toolkit-discovery.sh must be independently testable before anything in the wizard depends on it. This prevents debugging two components simultaneously.
+- **Detection integration before UI injection:** wizard-state.json must carry the toolkit data before wizard.md's Step 2.5 can read it. The read depends on the write.
+- **Injection before catalog display:** Both use toolkit data, but injection is the core value proposition of v1.1. Catalog display is the user-visible surface but injection is what powers subagent awareness. Get injection right first.
+- **Keep hardcoded catalog until Phase 4 parity is proven:** This is an explicit constraint from the pitfalls research. The fallback is the safety net for the transition.
+- **Gitignore before global deployment:** toolkit-registry.json contains machine-specific MCP state. If committed accidentally, it will be wrong on every other machine.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
+Phases needing deeper attention before implementation:
 
-- **Phase 3 (traceability check):** The format for asserting BMAD acceptance criteria coverage in GSD phase context files is not defined anywhere in the existing codebase. A brief design spike is needed before the bridge route is implemented. This is a small, bounded design question, not a full research phase.
+- **Phase 3 (wizard.md injection):** Read GSD internal prompt templates in `~/.claude/get-shit-done/workflows/` before writing a single line of injection code. The GSD Task() prompt structure is a contract that injection must not break. The format choice (XML comment, labeled optional section, or description-field-only) depends on what GSD subagents treat as instructions vs. hints.
 
-Phases with standard patterns (skip research-phase):
+Phases with standard patterns (no research needed):
 
-- **Phase 1:** State detection logic is ready to extract from `project-setup-wizard.md`. Schema design follows the established `.planning/` JSON conventions.
-- **Phase 2:** `AskUserQuestion` and scenario menu patterns are verified across 8+ existing commands. No novel patterns needed.
-- **Phase 4:** All features reuse existing detection and wiring logic. No new patterns.
+- **Phase 1 (toolkit-discovery.sh):** Fully specified in STACK.md and ARCHITECTURE.md with exact bash and python3 code patterns. Build from specs.
+- **Phase 2 (wizard-detect.sh integration):** Mechanical additive change; exact insertion point documented in ARCHITECTURE.md.
+- **Phase 4 (Discover tools display):** Grouping and display format specified in FEATURES.md; fallback pattern is standard.
+- **Phase 5 (global deployment):** Identical to established v1.0 pattern.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All components verified against working code in `~/.claude/agents/`, `~/.claude/skills/`, `~/.claude/commands/` — no external libraries or docs required |
-| Features | HIGH | Derived from direct reading of 9 existing agents and PROJECT.md; 80% of features already exist in codebase and need extraction |
-| Architecture | HIGH | Three-component design is directly described in PROJECT.md and validated against the execute-phase → gsd-executor pattern used throughout GSD |
-| Pitfalls | HIGH | Sourced from CONCERNS.md (codebase's own documented fragile areas), PROJECT.md constraints, and analysis of existing agent edge cases |
+| Stack | HIGH | All components directly observed in the running installation; no inference required. python3 + bash is not a choice — it is what exists. |
+| Features | HIGH | Derived from PROJECT.md v1.1 requirements plus direct inventory of `~/.claude/` contents. Feature list is not hypothetical — it closes the gap between the hardcoded catalog (11 agents) and the installed reality (160 agents). |
+| Architecture | HIGH | All components are readable first-party source files. The two-level (registry + compact summary) design is derived directly from the 10% budget constraint and the measured agent count (160). No external architecture references needed. |
+| Pitfalls | HIGH | Eight critical pitfalls all derived from first-principles analysis of the existing wizard architecture and the budget constraint math. Token cost estimates are calculated from measured agent file sizes. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Traceability assertion format:** How to machine-check that every BMAD acceptance criterion appears in a GSD phase context file. The data exists; the assertion schema does not. Address in Phase 3 planning before the bridge route is implemented. Options: a `## Acceptance Criteria (from BMAD story N)` header convention in phase context files, or a validation step in `gsd-tools.cjs`.
+- **GSD internal Task() prompt format:** ARCHITECTURE.md and PITFALLS.md both flag that the injection format must be validated against GSD's internal prompt templates before implementation. These templates live in `~/.claude/get-shit-done/workflows/`. Resolution: read those files at the start of Phase 3 before writing injection code.
 
-- **Context budget measurement tooling:** No existing test measures token usage of the router + wizard + backing agent chain. The 10% constraint (<20k tokens in a 200k window) needs a measurement approach defined in Phase 1 and applied in every subsequent phase. One option: use `gsd-tools.cjs` to emit a token estimate after each component runs; another: manual review against a canonical large-project fixture.
+- **MCP availability vs. configuration distinction:** The data model for what to record in `toolkit-registry.json` for MCP servers must distinguish "configured in settings.json" from "verified available in current session." The research recommends conditional language in all MCP recommendations, but the exact field schema for this distinction is not specified. Resolution: settle the schema in Phase 1 when designing the compact summary format.
 
-- **Stub backing agent for Phase 2 testing:** The wizard skill testing plan depends on a stub backing agent that confirms intent receipt. This is a small implementation detail but needs to be explicit in Phase 2 planning to avoid blocking the UI layer test cycle.
+- **Keyword matching false positive rate:** Capability-to-stage matching uses keyword matching on description fields. Description field quality varies across 160 agents. Resolution: test the classifier against all 160 agents in Phase 1 and measure the false positive rate before committing to the algorithm.
 
 ## Sources
 
-### Primary (HIGH confidence)
+### Primary (HIGH confidence — direct first-party analysis)
 
-All findings are derived from first-party codebase analysis. No external sources were required or available.
-
-- `~/.claude/agents/*.md` — all 11 agent YAML frontmatter fields and body patterns (verified: STACK.md)
-- `~/.claude/skills/create-agent-skills/SKILL.md` — skill structure specification, router pattern, progressive disclosure (verified: STACK.md)
-- `~/.claude/commands/gsd/*.md` — slash command YAML format, `agent:` delegation, `AskUserQuestion` usage (verified: STACK.md)
-- `agents/entry/project-setup-wizard.md` — state detection Phase 1 bash block, W1–W6 workflows, IT infra override (verified: FEATURES.md, ARCHITECTURE.md)
-- `agents/bridge/bmad-gsd-orchestrator.md` — BMAD→GSD handoff Operations A+B (verified: FEATURES.md)
-- `agents/bridge/phase-gate-validator.md` — five phase gates, UAT validation (verified: FEATURES.md, ARCHITECTURE.md)
-- `agents/bridge/context-health-monitor.md` — five drift checks (verified: FEATURES.md)
-- `.planning/PROJECT.md` — requirements, constraints, pain points, wizard scenarios (verified: all research files)
-- `.planning/codebase/CONCERNS.md` — documented fragile areas and technical debt (verified: PITFALLS.md)
-- `.planning/codebase/ARCHITECTURE.md` — existing system structure and data flow (verified: ARCHITECTURE.md)
-- `docs/workflows.md`, `docs/orchestration.md` — end-to-end workflow documentation (verified: FEATURES.md)
+- `/Users/flong/Developer/keystone/skills/wizard.md` — Phase 7 hardcoded catalog, menu structure, all spawn patterns
+- `/Users/flong/Developer/keystone/skills/wizard-detect.sh` — established scan pattern, JSON write format, python3 usage
+- `/Users/flong/Developer/keystone/skills/wizard-backing-agent.md` — Task() invocation pattern, Route B/C routing
+- `/Users/flong/Developer/keystone/.claude/wizard-state.json` — live schema as written by wizard-detect.sh
+- `/Users/flong/Developer/keystone/.planning/PROJECT.md` — v1.1 active requirements and constraints
+- `~/.claude/agents/` — 160 installed global agents with YAML frontmatter (direct observation)
+- `~/.claude/skills/` — 33 installed global skills with SKILL.md structure (direct observation)
+- `~/.claude/hooks/` — 24 hook scripts and registered events (direct observation)
+- `~/.claude/settings.json` — hook schema, enabledPlugins, mcpServers (direct observation)
+- `~/.claude/plugins/installed_plugins.json` — 27 installed plugins, 6 with MCP servers (direct observation)
+- `~/.claude/plugins/cache/` — MCP plugin cache with `.mcp.json` naming convention confirmed (direct observation)
+- `~/.claude/get-shit-done/workflows/plan-phase.md` — `<additional_context>` injection point in researcher spawn (direct observation)
 
 ### Secondary (MEDIUM confidence)
 
-- Claude Code agent system patterns (training data, August 2025 cutoff) — used to validate `context: fork`, `disable-model-invocation: true`, and `Task()` spawning patterns; all verified against first-party code
+- Token cost calculation for capability pointer injection — estimated from avg agent file size (9,417 chars over 6 sampled agents); pointer estimate (80 chars each); sample size limited but directionally correct
+- Keyword matching false positive rate — not measured against all 160 agents; estimated from description field patterns in the subset inspected
 
 ---
-*Research completed: 2026-03-11*
+*Research completed: 2026-03-13*
 *Ready for roadmap: yes*
