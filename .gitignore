@@ -20,6 +20,10 @@ Thumbs.db
 # Backups (contain personal config)
 backups/
 
+# Planning and BMAD output (local only)
+.planning/
+_bmad-output/
+
 # Sessions
 sessions/
 
@@ -29,3 +33,6 @@ node_modules/
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Toolkit discovery (machine-specific)
+toolkit-registry.json
