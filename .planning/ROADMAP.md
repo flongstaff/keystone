@@ -224,7 +224,7 @@ Plans:
 - [x] **Phase 13: State Integration** - Wire toolkit-discovery.sh into wizard-detect.sh so every wizard startup embeds a compact toolkit summary in wizard-state.json (completed 2026-03-13)
 - [x] **Phase 14: Subagent Injection and Confirmation UX** - Inject stage-filtered capability pointers into GSD and BMAD subagent Task() spawns; add batched confirmation flow for unknown tools; implement lazy full-registry loading (completed 2026-03-13)
 - [x] **Phase 15: Dynamic Catalog Display** - Replace hardcoded Phase 7 catalog with dynamic registry-backed display grouped by stage and category, with hardcoded fallback when registry is absent (completed 2026-03-13)
-- [ ] **Phase 16: Global Deployment Sync** - Sync verified toolkit-discovery.sh, wizard-detect.sh, and wizard.md to ~/.claude/skills/; confirm toolkit-registry.json is gitignored
+- [x] **Phase 16: Global Deployment Sync** - Sync verified toolkit-discovery.sh, wizard-detect.sh, and wizard.md to ~/.claude/skills/; confirm toolkit-registry.json is gitignored (completed 2026-03-13)
 
 ## Phase Details
 
@@ -300,7 +300,7 @@ Plans:
   3. `~/.claude/skills/wizard.md` matches project-local `skills/wizard.md` (includes Step 2.5 injection block and dynamic catalog read)
   4. Running `/wizard` from a project outside the Keystone directory correctly discovers tools from `~/.claude/agents/` (global path, not project-local path)
   5. `toolkit-registry.json` appears in `.gitignore` and does not appear in `git status` output
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 16-01-PLAN.md -- Deploy 4 v1.1 skill files to ~/.claude/skills/, verify sync and cross-project path resolution, confirm gitignore
@@ -318,4 +318,4 @@ Note: Phase 14 and Phase 15 both depend on Phase 12 and could be built in parall
 | 13. State Integration | 1/1 | Complete    | 2026-03-13 | - |
 | 14. Subagent Injection and Confirmation UX | 2/2 | Complete    | 2026-03-13 | - |
 | 15. Dynamic Catalog Display | 1/1 | Complete    | 2026-03-13 | - |
-| 16. Global Deployment Sync | v1.1 | 0/1 | Planning | - |
+| 16. Global Deployment Sync | 1/1 | Complete   | 2026-03-13 | - |

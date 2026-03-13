@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dynamic Toolkit Discovery
 status: planning
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-13T22:56:06.583Z"
+stopped_at: Completed 16-01-PLAN.md — all v1.1 skill files deployed globally
+last_updated: "2026-03-13T23:22:05.685Z"
 last_activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
 progress:
   total_phases: 17
-  completed_phases: 16
-  total_plans: 22
-  completed_plans: 22
+  completed_phases: 17
+  total_plans: 23
+  completed_plans: 23
   percent: 0
 ---
 
@@ -65,6 +65,7 @@ Recent decisions affecting current work:
 - [Phase 14-01]: Never read toolkit-registry.json from wizard files — only wizard-state.json toolkit.by_stage (PERF-03)
 - [Phase 15-01]: Keystone tools section hardcoded in Display Catalog (not registry-sourced) -- 4/11 agents and 4/4 skills absent from toolkit-registry.json due to parity gap
 - [Phase 15-01]: Display Catalog uses prose redirect pattern ('Go to ## Display Catalog, then re-present this SAME [menu] menu') to enable single shared block serving 4 option handlers
+- [Phase 16-global-deployment-sync]: All 4 v1.1 skill files deployed globally via cp -p; toolkit-discovery.sh verified cross-project via SCRIPT_DIR from /tmp
 
 ### Pending Todos
 
@@ -76,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T22:56:06.578Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-global-deployment-sync/16-CONTEXT.md
+Last session: 2026-03-13T23:22:05.682Z
+Stopped at: Completed 16-01-PLAN.md — all v1.1 skill files deployed globally
+Resume file: None
