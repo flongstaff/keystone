@@ -91,9 +91,9 @@ Create these files:
   "description": "[one-line from PRD]",
   "tech_stack": "[from architecture doc]",
   "bmad_source": {
-    "prd": "docs/prd-[name].md",
-    "architecture": "docs/architecture-[name].md",
-    "stories_dir": "docs/stories/"
+    "prd": "[actual path where PRD was found in Step 1]",
+    "architecture": "[actual path where architecture doc was found in Step 1]",
+    "stories_dir": "[directory where story files were found in Step 1, or null if none]"
   },
   "phases": [
     {
@@ -145,8 +145,8 @@ Create these files:
 [from PRD]
 
 ## BMAD Source Docs
-- PRD: docs/prd-[name].md
-- Architecture: docs/architecture-[name].md
+- PRD: [actual path from Step 1]
+- Architecture: [actual path from Step 1]
 ```
 
 **`.planning/context/phase-N-context.md`** (one per epic/phase):
@@ -216,7 +216,11 @@ Triggered when: phase-gate-validator reports a phase passed, or user says
 
 ### Steps:
 1. Read the phase's UAT file: `.planning/phases/[N]-UAT.md`
-2. Read the corresponding BMAD story: `docs/stories/story-[N].md`
+2. Find the corresponding BMAD story file using dual-path search (matches wizard-detect.sh pattern):
+   ```bash
+   STORY_FILE=$(find docs/stories _bmad-output/stories -maxdepth 1 -name "story-[N].md" 2>/dev/null | head -1)
+   ```
+   Where `[N]` is the phase number extracted from the UAT filename. If no story file found, skip steps 3-4 and log "No story file found for phase [N]".
 3. Update story status from "In Progress" to "Done"
 4. Add completion summary to story file
 5. Update `bmad-outputs/STATUS.md` table
