@@ -23,6 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit) (completed 2026-03-13)
 - [x] **Phase 9: Global Deployment Sync** - Redeploy project-local skill files to ~/.claude/skills/ and delete orphaned wizard-router directory (Gap closure from audit) (completed 2026-03-13)
 - [x] **Phase 10: Code & Documentation Tech Debt** - Fix Route C ladder divergence, orchestrator Operation B path hardcoding, and ROADMAP staleness (Gap closure from audit) (completed 2026-03-13)
+- [ ] **Phase 11: Final Global Deployment Sync** - Fix Option 3 label, redeploy 3 skill files to ~/.claude/skills/, verify zero diff (Gap closure from audit)
 
 ## Phase Details
 
@@ -193,10 +194,26 @@ Plans:
 Plans:
 - [x] 10-01-PLAN.md -- Fix Route C ladder alignment, Operation B dual-path, config.json dynamic paths, and ROADMAP checkboxes
 
+### Phase 11: Final Global Deployment Sync
+**Goal**: Global skill files in ~/.claude/skills/ match project-local versions after Phase 10 changes, and the stale Option 3 cross-reference label is fixed
+**Depends on**: Phase 10
+**Requirements**: None (deployment sync — closes integration gap #14 and flow gap from v1.0 final audit)
+**Gap Closure:** Closes 1 integration gap + 1 flow gap + 1 tech debt item from v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `wizard.md` gsd-only non-uat-passing Option 3 cross-reference says "Option 3" (not "Option 4")
+  2. `~/.claude/skills/wizard-detect.sh` matches project-local `skills/wizard-detect.sh` (includes VERIFICATION.md ladder step)
+  3. `~/.claude/skills/wizard.md` matches project-local `skills/wizard.md` (includes Option 3 fix + complete status handling)
+  4. `~/.claude/skills/wizard-backing-agent.md` matches project-local `skills/wizard-backing-agent.md`
+  5. Diff between global and project-local skill files shows zero differences
+**Plans:** 0/0 plans complete
+
+Plans:
+- (none yet — run `/gsd:plan-phase 11`)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes. Phase 8 is a gap closure phase that can execute any time after Phase 4.1 (independent of 5-7). Phases 9-10 are gap closure phases from the final milestone audit.
 
@@ -213,3 +230,4 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |
 | 9. Global Deployment Sync | 1/1 | Complete   | 2026-03-13 |
 | 10. Code & Documentation Tech Debt | 1/1 | Complete    | 2026-03-13 |
+| 11. Final Global Deployment Sync | 0/0 | Not Started | - |
