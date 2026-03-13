@@ -159,32 +159,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-01 | — | Pending |
-| DISC-02 | — | Pending |
-| DISC-03 | — | Pending |
-| DISC-04 | — | Pending |
-| DISC-05 | — | Pending |
-| MATCH-01 | — | Pending |
-| MATCH-02 | — | Pending |
-| INJ-01 | — | Pending |
-| INJ-02 | — | Pending |
-| INJ-03 | — | Pending |
-| INJ-04 | — | Pending |
-| CONF-01 | — | Pending |
-| CONF-02 | — | Pending |
-| CONF-03 | — | Pending |
-| CAT-01 | — | Pending |
-| CAT-02 | — | Pending |
-| CAT-03 | — | Pending |
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| PERF-03 | — | Pending |
+| DISC-01 | Phase 12 | Pending |
+| DISC-02 | Phase 12 | Pending |
+| DISC-03 | Phase 12 | Pending |
+| DISC-04 | Phase 12 | Pending |
+| DISC-05 | Phase 12 | Pending |
+| MATCH-01 | Phase 12 | Pending |
+| MATCH-02 | Phase 12 | Pending |
+| PERF-01 | Phase 12 | Pending |
+| PERF-02 | Phase 13 | Pending |
+| INJ-01 | Phase 14 | Pending |
+| INJ-02 | Phase 14 | Pending |
+| INJ-03 | Phase 14 | Pending |
+| INJ-04 | Phase 14 | Pending |
+| CONF-01 | Phase 14 | Pending |
+| CONF-02 | Phase 14 | Pending |
+| CONF-03 | Phase 14 | Pending |
+| PERF-03 | Phase 14 | Pending |
+| CAT-01 | Phase 15 | Pending |
+| CAT-02 | Phase 15 | Pending |
+| CAT-03 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20 ⚠️
+- Mapped to phases: 20
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-13 after v1.1 milestone requirements definition*
+*Last updated: 2026-03-13 after v1.1 roadmap creation*

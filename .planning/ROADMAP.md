@@ -1,10 +1,14 @@
 # Roadmap: Keystone
 
-## Overview
+## Milestones
 
-Keystone is a thin orchestration layer that makes BMAD planning and GSD execution feel like one continuous workflow through a single `/wizard` entry point. The build sequence is dependency-driven: the wizard-state.json schema is the interface contract for all three components and must be frozen first. The router skill that writes it comes next. The wizard UI layer reads it. The backing agent processes it. Recovery and polish come last because they are purely additive. Each phase can be tested in isolation before the next begins.
+- ✅ **v1.0 Wizard Orchestrator** - Phases 1-11 (shipped 2026-03-13)
+- 🚧 **v1.1 Dynamic Toolkit Discovery** - Phases 12-16 (in progress)
 
 ## Phases
+
+<details>
+<summary>✅ v1.0 Wizard Orchestrator (Phases 1-11) — SHIPPED 2026-03-13</summary>
 
 **Phase Numbering:**
 - Integer phases (1, 2, 3): Planned milestone work
@@ -24,8 +28,6 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: Global Deployment Sync** - Redeploy project-local skill files to ~/.claude/skills/ and delete orphaned wizard-router directory (Gap closure from audit) (completed 2026-03-13)
 - [x] **Phase 10: Code & Documentation Tech Debt** - Fix Route C ladder divergence, orchestrator Operation B path hardcoding, and ROADMAP staleness (Gap closure from audit) (completed 2026-03-13)
 - [x] **Phase 11: Final Global Deployment Sync** - Fix Option 3 label, redeploy 3 skill files to ~/.claude/skills/, verify zero diff (Gap closure from audit) (completed 2026-03-13)
-
-## Phase Details
 
 ### Phase 1: Schema and State Detection
 **Goal**: Users invoking `/wizard` get a correctly classified project state in under one bash block, with the result persisted to wizard-state.json
@@ -198,7 +200,7 @@ Plans:
 **Goal**: Global skill files in ~/.claude/skills/ match project-local versions after Phase 10 changes, and the stale Option 3 cross-reference label is fixed
 **Depends on**: Phase 10
 **Requirements**: None (deployment sync — closes integration gap #14 and flow gap from v1.0 final audit)
-**Gap Closure:** Closes 1 integration gap + 1 flow gap + 1 tech debt item from v1.0 milestone audit
+**Gap Closure:** Closes 1 integration gap + 1 flow gap + 1 tech debt item from v1.0 final audit
 **Success Criteria** (what must be TRUE):
   1. `wizard.md` gsd-only non-uat-passing Option 3 cross-reference says "Option 3" (not "Option 4")
   2. `~/.claude/skills/wizard-detect.sh` matches project-local `skills/wizard-detect.sh` (includes VERIFICATION.md ladder step)
@@ -208,26 +210,98 @@ Plans:
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 11-01-PLAN.md -- Fix Option 3 label in wizard.md and redeploy all 3 skill files to ~/.claude/skills/
+- [x] 11-01-PLAN.md -- Fix Option 3 label in wizard.md and redeploy all 3 skill files to ~/.claude/skills/
+
+</details>
+
+---
+
+### 🚧 v1.1 Dynamic Toolkit Discovery (In Progress)
+
+**Milestone Goal:** Make the wizard and all subagents aware of the user's full toolkit — agents, skills, tools, hooks, and MCP servers — so every workflow stage leverages the best available capabilities with user confirmation when ambiguous.
+
+- [ ] **Phase 12: Core Discovery Scanner** - Build toolkit-discovery.sh to scan all installed agents, skills, hooks, and MCP servers; apply stage tagging; write full registry and emit compact summary with TTL caching
+- [ ] **Phase 13: State Integration** - Wire toolkit-discovery.sh into wizard-detect.sh so every wizard startup embeds a compact toolkit summary in wizard-state.json
+- [ ] **Phase 14: Subagent Injection and Confirmation UX** - Inject stage-filtered capability pointers into GSD and BMAD subagent Task() spawns; add batched confirmation flow for unknown tools; implement lazy full-registry loading
+- [ ] **Phase 15: Dynamic Catalog Display** - Replace hardcoded Phase 7 catalog with dynamic registry-backed display grouped by stage and category, with hardcoded fallback when registry is absent
+- [ ] **Phase 16: Global Deployment Sync** - Sync verified toolkit-discovery.sh, wizard-detect.sh, and wizard.md to ~/.claude/skills/; confirm toolkit-registry.json is gitignored
+
+## Phase Details
+
+### Phase 12: Core Discovery Scanner
+**Goal**: A standalone script scans the user's full installed toolkit and produces a well-formed registry that all downstream injection and display logic can depend on
+**Depends on**: Phase 11 (v1.0 complete)
+**Requirements**: DISC-01, DISC-02, DISC-03, DISC-04, DISC-05, MATCH-01, MATCH-02, PERF-01
+**Research flag**: SKIP — patterns fully documented in STACK.md and ARCHITECTURE.md; build from those specs
+**Success Criteria** (what must be TRUE):
+  1. Running `bash skills/toolkit-discovery.sh` produces valid JSON (passes `python3 -m json.tool`) with non-empty agent/skill/hook/mcp counts matching `ls ~/.claude/agents/ | wc -l`
+  2. Every discovered tool entry carries a `stages` array containing at least one of research/planning/execution/review, derived from keyword matching on its description field
+  3. `toolkit-registry.json` is written to disk and contains the full catalog; compact summary JSON is emitted to stdout with all counts and stage-relevant pointers
+  4. Re-running the script within the TTL window skips rescan and returns the cached registry (observable: second run completes in under 0.1 seconds)
+  5. Running the script when `~/.claude/agents/` does not exist produces a valid empty-catalog JSON (no error exit code)
+**Plans**: TBD
+
+### Phase 13: State Integration
+**Goal**: Every `/wizard` invocation automatically carries a compact toolkit summary so the wizard has stage-relevant tool awareness from the first line of execution, with no startup latency increase
+**Depends on**: Phase 12
+**Requirements**: PERF-02
+**Research flag**: SKIP — integration is mechanical; exact insertion point documented in ARCHITECTURE.md
+**Success Criteria** (what must be TRUE):
+  1. After running `bash skills/wizard-detect.sh`, the resulting `wizard-state.json` contains a `toolkit` object with discovery counts and stage-relevant pointer arrays
+  2. The `toolkit` section adds no more than ~600 bytes to `wizard-state.json` (measure with `wc -c`)
+  3. All existing wizard-state.json fields (scenario, project_type, next_command, etc.) are unchanged — the `toolkit` addition is purely additive
+  4. Running wizard-detect.sh on a machine where toolkit-discovery.sh has never run produces a valid wizard-state.json with an empty `toolkit` object (no crash, no missing fields)
+**Plans**: TBD
+
+### Phase 14: Subagent Injection and Confirmation UX
+**Goal**: GSD and BMAD subagents spawned via Task() receive a compact, stage-filtered block of capability pointers so they can leverage the user's installed toolkit without the user having to manually reference tools
+**Depends on**: Phase 13
+**Requirements**: INJ-01, INJ-02, INJ-03, INJ-04, CONF-01, CONF-02, CONF-03, PERF-03
+**Research flag**: NEEDS — read `~/.claude/get-shit-done/workflows/` GSD Task() prompt templates before writing any injection code; injection format must not break GSD subagent first-tool-call behavior
+**Success Criteria** (what must be TRUE):
+  1. Running `/wizard` mid-execution and selecting "Check drift" causes context-health-monitor to receive a capability suffix; the suffix does not appear as user-visible output in the wizard turn
+  2. The injected capability block contains at most 5-8 pointers and totals no more than ~200 tokens (verify with token count before/after)
+  3. Keystone/GSD agents and read-only MCPs (e.g., context7) inject without triggering a confirmation prompt; at most one batched confirmation question appears per `/wizard` invocation for unknown tools
+  4. Capability pointers are appended only to Task()/Agent() spawn calls — Skill() invocations receive no injection (verify by text search)
+  5. MCP recommendations in the injected block use conditional language ("configured — availability may vary"), not definitive language ("available")
+  6. "Discover tools" is not selected (not triggered by a menu action) — the full registry is not loaded; wizard startup token cost is unchanged (verify by measuring context window before/after injection is added)
+**Plans**: TBD
+
+### Phase 15: Dynamic Catalog Display
+**Goal**: "Discover tools" shows the user's actual installed toolkit from the live registry rather than a hardcoded snapshot, grouped by stage relevance and category, with the hardcoded Phase 7 catalog as a fallback for fresh installs
+**Depends on**: Phase 12
+**Requirements**: CAT-01, CAT-02, CAT-03
+**Research flag**: SKIP — grouping and display format specified in FEATURES.md; fallback pattern is standard
+**Success Criteria** (what must be TRUE):
+  1. Selecting "Discover tools" and having a valid `toolkit-registry.json` present displays tool count matching `ls ~/.claude/agents/ | wc -l` — not the hardcoded 11-agent count
+  2. Tools are grouped first by stage relevance (research / planning / execution / review) and then by category within each stage
+  3. On a fresh install where `toolkit-registry.json` does not exist, "Discover tools" shows the hardcoded Phase 7 catalog without errors or missing sections
+  4. Every tool entry in the hardcoded Phase 7 catalog appears in the dynamic output when the registry is present (parity check passes before hardcoded text can be removed)
+**Plans**: TBD
+
+### Phase 16: Global Deployment Sync
+**Goal**: Verified v1.1 skill files are live for all projects and machine-specific toolkit data is confirmed gitignored before closing the milestone
+**Depends on**: Phase 15
+**Requirements**: None (deployment sync — makes all v1.1 changes available globally and closes machine-specific data leak risk)
+**Success Criteria** (what must be TRUE):
+  1. `~/.claude/skills/toolkit-discovery.sh` exists and matches project-local `skills/toolkit-discovery.sh`
+  2. `~/.claude/skills/wizard-detect.sh` matches project-local `skills/wizard-detect.sh` (includes toolkit discovery call and `toolkit{}` JSON write)
+  3. `~/.claude/skills/wizard.md` matches project-local `skills/wizard.md` (includes Step 2.5 injection block and dynamic catalog read)
+  4. Running `/wizard` from a project outside the Keystone directory correctly discovers tools from `~/.claude/agents/` (global path, not project-local path)
+  5. `toolkit-registry.json` appears in `.gitignore` and does not appear in `git status` output
+**Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 4.1 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
+Phases execute in numeric order: 12 → 13 → 14 → 15 → 16
 
-Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 is a gap closure phase that fixes Phase 4 regression before Phase 5 adds more routes. Phase 8 is a gap closure phase that can execute any time after Phase 4.1 (independent of 5-7). Phases 9-10 are gap closure phases from the final milestone audit.
+Note: Phase 14 and Phase 15 both depend on Phase 12 and could be built in parallel, but Phase 14 (injection) is the core value proposition of v1.1 and should be completed and validated before Phase 15 (display). Phase 16 executes last after both are verified.
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Schema and State Detection | 2/2 | Complete   | 2026-03-12 |
-| 2. Wizard UI Layer | 1/1 | Complete   | 2026-03-12 |
-| 3. New Project Routing | 1/1 | Complete   | 2026-03-12 |
-| 4. Core Backing Agent Routes | 2/2 | Complete   | 2026-03-12 |
-| 4.1. Rewire Backing Agent | 1/1 | Complete   | 2026-03-12 |
-| 5. Full Agent Routing | 2/2 | Complete   | 2026-03-12 |
-| 6. Recovery, Safety, and Polish | 2/2 | Complete   | 2026-03-12 |
-| 7. Agent, Skill, Tool and Hook Discovery | 1/1 | Complete   | 2026-03-12 |
-| 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |
-| 9. Global Deployment Sync | 1/1 | Complete   | 2026-03-13 |
-| 10. Code & Documentation Tech Debt | 1/1 | Complete    | 2026-03-13 |
-| 11. Final Global Deployment Sync | 1/1 | Complete    | 2026-03-13 |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 12. Core Discovery Scanner | v1.1 | 0/? | Not started | - |
+| 13. State Integration | v1.1 | 0/? | Not started | - |
+| 14. Subagent Injection and Confirmation UX | v1.1 | 0/? | Not started | - |
+| 15. Dynamic Catalog Display | v1.1 | 0/? | Not started | - |
+| 16. Global Deployment Sync | v1.1 | 0/? | Not started | - |

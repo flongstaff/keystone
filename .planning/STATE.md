@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: Defining requirements
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-13T13:40:15.834Z"
-last_activity: 2026-03-13 — Milestone v1.1 started
+milestone: v1.1
+milestone_name: Dynamic Toolkit Discovery
+status: Ready to plan
+stopped_at: Roadmap created — ready to plan Phase 12
+last_updated: "2026-03-13"
+last_activity: 2026-03-13 — v1.1 roadmap created, 5 phases (12-16), 20 requirements mapped
 progress:
-  total_phases: 12
-  completed_phases: 12
-  total_plans: 17
-  completed_plans: 17
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** At any point in a project, one command (`/wizard`) tells the user exactly where they are and does the next right thing.
-**Current focus:** Defining requirements for v1.1
+**Current focus:** Phase 12 — Core Discovery Scanner
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-13 — Milestone v1.1 started
+Phase: 12 of 16 (Core Discovery Scanner)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
 
 Progress: ░░░░░░░░░░ 0%
 
 ## Performance Metrics
 
-**v1.0 Summary:** 11 phases, 16 plans, 23 requirements — all complete
+**v1.0 Summary:** 11 phases (+ 1 decimal), 17 plans, 23 requirements — all complete (shipped 2026-03-13)
 
 **v1.1 Velocity:**
 - Total plans completed: 0
@@ -48,56 +48,11 @@ Progress: ░░░░░░░░░░ 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [Pre-Phase 1]: Wrap existing agents, don't replace — preserves modularity
-- [Pre-Phase 1]: Three-component architecture: router skill + wizard skill + backing agent
-- [Pre-Phase 1]: wizard-state.json schema is the interface contract — must be frozen in Phase 1 before any other component
-- [Pre-Phase 1]: State detection cross-validates markers: BMAD "present" requires directory AND at least one doc file, not just directory
-- [Phase 01-02]: Schema is frozen: wizard-state.json shape validated by human + JSON type assertions; safe for Phase 2 to depend on it
-- [Phase 01-02]: BMAD detection must check _bmad-output/planning-artifacts/ path — the real artifacts directory, not just _bmad/docs/
-- [Phase 02-01]: wizard.md delegates ALL detection to wizard-router.md — maintains clean separation between silent router and interactive wizard
-- [Phase 02-01]: full-stack and gsd-only are 0-turn: auto-invoke immediately after status box, no pre-invocation menu
-- [Phase 02-01]: Secondary options (drift check, progress, traceability) deferred to Phase 5 — wizard responds they are coming in a future update
-- [Phase 03-01]: Open-source type detection is a fallback only — placed after all other type checks to preserve priority order
-- [Phase 03-01]: RECOMMENDED_PATH defaults to gsd-only so unclassifiable projects get a safe default
-- [Phase 03-01]: Domain agent banner is informational text at bridge moments — never AskUserQuestion, never an interactive turn
-- [Phase 04-01]: Route B prompts user before bridging — preserves user agency even when BMAD is fully complete
-- [Phase 04-01]: Route B delegates to bmad-gsd-orchestrator via Task() — never reimplements Operation A logic
-- [Phase 04-01]: Traceability assertion searches all .planning/ files (cast wide) — AC anywhere counts as covered
-- [Phase 04-01]: DEFERRED-CRITERIA.md tracks deferred and acknowledged ACs — no criterion is silently dropped
-- [Phase 04-01]: Bridge does not auto-invoke /gsd:discuss-phase 1 — user decides when to proceed (auto_advance: false)
-- [Phase Phase 04-02]: wizard.md invokes backing agent via Skill('wizard-backing-agent') with read-and-follow fallback
-- [Phase Phase 04-02]: Status box in full-stack and gsd-only preserved — backing agent adds orientation after status box
-- [Phase Phase 04-02]: bmad-only Option 2 (Continue BMAD) left unchanged — lightweight inline suggestions do not need backing agent
-- [Phase 04.1-01]: wizard.md bmad-ready block uses Task(wizard-backing-agent) not Skill('gsd:new-project') — traceability assertion now runs on every bridge
-- [Phase 04.1-01]: Route A removed from backing agent — detection and resume logic lives in wizard.md inline and wizard-detect.sh
-- [Phase 04.1-01]: Route Dispatch labels updated to bmad-ready/bmad-incomplete — matches wizard-detect.sh scenario values, supersedes bmad-only
-- [Phase 05-01]: Post-status menu loop: secondary options re-present same menu after completion — user stays in wizard context until Continue selected
-- [Phase 05-01]: Agent tool pass-through: wizard never summarizes or reformats context-health-monitor or phase-gate-validator output
-- [Phase 05-01]: Route C dispatch condition placed first in Route Dispatch — prompt-based before state-based (Pitfall 7 fix)
-- [Phase 05-01]: Agent tool added to wizard.md YAML frontmatter (Pitfall 8 fix); Task tool confirmed in wizard-backing-agent.md YAML
-- [Phase Phase 05-02]: Continue invokes Skill(next_command) directly — Route A was deliberately removed in Phase 4.1 and should not be re-routed through the backing agent
-- [Phase 06-recovery-safety-and-polish]: IS_RESET placement is safety-critical: reads old wizard-state.json BEFORE JSON WRITE overwrites detected_at — ordering invariant enforced
-- [Phase 06-recovery-safety-and-polish]: Infra config write uses python3 json merge + [ -f ] guard — preserves existing keys, idempotent, never creates config.json
-- [Phase 06-recovery-safety-and-polish]: uat-passing menu collapses Check drift into Run health check — same agent (context-health-monitor), lossless, keeps menu at 4 options max
-- [Phase 06-recovery-safety-and-polish]: Token budget is 48.2% utilized (~9,658 tokens of 20k) — no trimming needed; ~10,342 tokens headroom remaining
-- [Phase 06-recovery-safety-and-polish]: wizard-backing-agent.md is NOT counted in the always-loaded budget — it runs in separate Task() context
-- [Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations]: Catalog lives inline in wizard.md -- static text display does not justify Task() round-trip overhead for a lightweight read-only operation
-- [Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations]: Discover tools added as last option in all 4 post-status menu variants -- power-user feature placed last so Continue (Recommended) stays primary
-- [Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations]: project_type reused from Step 2's wizard-state.json parse -- no second file read needed, consistent with Context Budget Discipline
-- [Phase 08-02]: settings.local.json force-committed despite gitignore rule — plan explicitly requires this file to be tracked for audit purposes
-- [Phase 08-bridge-path-fix-and-cleanup]: Dual-path find pattern in orchestrator must match wizard-detect.sh exactly — ls docs/ was causing false BLOCKED errors for _bmad-output/ projects
-- [Phase 08-bridge-path-fix-and-cleanup]: Backing agent fallback replaces invalid slash command with valid file path + /wizard re-run — no new slash commands, existing /wizard handles recovery
-- [Phase 08-bridge-path-fix-and-cleanup]: wizard-router.md deleted outright — orphaned with no active flow references, replaced by wizard-detect.sh + inline wizard.md logic
-- [Phase 08-02]: VALIDATION.md Route A manual-only row marked SUPERSEDED, not deleted — preserves audit trail per Pitfall 5
-- [Phase 09-global-deployment-sync]: ORCH-01 regression check (/bmad-gsd-orchestrator grep) is a false positive on Phase 8 backing agent — diff exits 0 is the authoritative sync confirmation; file path references to agent are valid
-- [Phase 10-code-and-documentation-tech-debt]: VERIFICATION.md added as top-of-ladder check in wizard-detect.sh — TOTAL_RAW duplicated in both branches intentionally to keep each self-contained
-- [Phase 10-code-and-documentation-tech-debt]: wizard.md menus handle both 'uat-passing' and 'complete' with health-check-first menu; question text simplified to 'Phase execution is complete. Ready to proceed?'
-- [Phase 10-code-and-documentation-tech-debt]: Operation B dual-path reads docs/stories and _bmad-output/stories; write target bmad-outputs/STATUS.md remains single-path
-- [Phase 11-final-global-deployment-sync]: Fix project-local wizard.md first, then copy all files — ensures global gets the patched version (not the stale one)
-
-### Roadmap Evolution
-
-- Phase 7 added: Agent, skill, tool and hook discovery and recommendations
+- [v1.1 Roadmap]: Two-level discovery architecture — full registry (toolkit-registry.json) + compact summary in wizard-state.json; keeps startup token cost flat
+- [v1.1 Roadmap]: TTL-gated caching in toolkit-discovery.sh — skip rescan when registry is fresh; critical for 160-agent install
+- [v1.1 Roadmap]: Phase 14 research flag is ACTIVE — read ~/.claude/get-shit-done/workflows/ before writing any injection code; GSD Task() prompt contracts must not break
+- [v1.1 Roadmap]: Hardcoded Phase 7 catalog is the fallback for Phase 15 — never remove it until parity test passes
+- [v1.1 Roadmap]: toolkit-registry.json must be gitignored before Phase 16 global deployment — machine-specific MCP state must not be committed
 
 ### Pending Todos
 
@@ -105,11 +60,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 4]: Traceability assertion format not yet defined — how to machine-check every BMAD acceptance criterion appears in a GSD phase context file. Design spike needed before bridge route implementation.
-- [All phases]: Context budget measurement tooling does not exist yet — define approach in Phase 1, apply in every phase.
+- [Phase 14]: GSD internal Task() prompt format must be read before implementation — injection format (XML comment vs labeled section) is unspecified until templates are reviewed. This is the highest-risk phase in v1.1.
 
 ## Session Continuity
 
-Last session: 2026-03-13T13:37:18.260Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-13
+Stopped at: Roadmap created — Phase 12 ready to plan
 Resume file: None
