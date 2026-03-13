@@ -3,11 +3,13 @@ phase: 4
 slug: core-backing-agent-routes
 status: audited
 nyquist_compliant: false
+automated_pass: 6
+manual_only: 1
 wave_0_complete: true
 created: 2026-03-12
 last_audit: 2026-03-12
-automated_pass: 5
-manual_only: 2
+automated_pass: 6
+manual_only: 1
 ---
 
 # Phase 4 — Validation Strategy
@@ -46,7 +48,7 @@ manual_only: 2
 | 04-01-03 | 01 | 1 | ORCH-03 | structural | `grep -q "bmad.stories_approved" skills/wizard-backing-agent.md && grep -q "bmad.prd" skills/wizard-backing-agent.md && echo PASS` | ✅ green |
 | 04-01-04 | 01 | 1 | TRACE-01 | manual-only | See Manual-Only table | ⚠️ manual |
 | 04-01-05 | 01 | 1 | TRACE-02 | structural | `grep -q "Acceptance Criteria" skills/wizard-backing-agent.md && grep -q "AskUserQuestion" skills/wizard-backing-agent.md && echo PASS` | ✅ green |
-| 04-02-01 | 02 | 1 | ORCH-01 | manual-only | See Manual-Only table | ⚠️ manual |
+| 04-02-01 | 02 | 1 | ORCH-01 | structural | `grep -q "wizard-backing-agent" skills/wizard.md && grep -q "Route B" skills/wizard.md && echo PASS` | ✅ green |
 | 04-02-02 | 02 | 1 | ORCH-01 | structural | `grep -q "next_command" skills/wizard-backing-agent.md && echo PASS` | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ manual · ⚠️ flaky*
@@ -72,7 +74,7 @@ manual_only: 2
 | Bridge invokes bmad-gsd-orchestrator in fresh Task() context | ORCH-02 | Requires Task() runtime — cannot verify delegation behavior structurally | 1. Set up controlled project with approved BMAD stories 2. Invoke Route B 3. Verify .planning/ files created by orchestrator |
 | Traceability assertion presents gaps interactively | TRACE-02 | Requires AskUserQuestion interaction with real gap data | 1. Set up project with story AC not in context files 2. Invoke Route B 3. Verify each gap is surfaced and user can map/defer |
 | Bridge produces .planning/CONTEXT.md execution artifact | TRACE-01 | Runtime artifact created by bmad-gsd-orchestrator bridge — depends on actual bridge execution, not backing agent code | 1. Run Route B on a project with complete BMAD docs 2. After bridge Task() completes 3. Verify `.planning/config.json` and `.planning/CONTEXT.md` exist |
-| wizard.md invokes backing agent for bridge and resume routes | ORCH-01 | Implementation reverted in `357e5af` — sonnet skips "read file and follow" instructions. Deferred to Phase 4.1 (rewire backing agent) | 1. Complete Phase 4.1 rewire 2. Verify `grep -q "wizard-backing-agent" skills/wizard.md` passes |
+| ~~wizard.md invokes backing agent for bridge and resume routes~~ | ORCH-01 | RESOLVED: Phase 4.1 (`6da7782`) rewired wizard.md with Task()-based invocation. Promoted to automated structural check. | ~~Deferred~~ → now automated: `grep -q "wizard-backing-agent" skills/wizard.md && grep -q "Route B" skills/wizard.md` |
 
 ---
 
@@ -83,9 +85,9 @@ manual_only: 2
 - [x] Wave 0 covers all MISSING references
 - [x] No watch-mode flags
 - [x] Feedback latency < 2s
-- [ ] `nyquist_compliant: true` set in frontmatter (blocked: 2 manual-only items)
+- [ ] `nyquist_compliant: true` set in frontmatter (blocked: 1 manual-only item — runtime dependency)
 
-**Approval:** partial — 5/7 automated, 2 manual-only (1 runtime dependency, 1 deferred to Phase 4.1)
+**Approval:** partial — 6/7 automated, 1 manual-only (runtime dependency: bridge produces .planning/CONTEXT.md)
 
 ---
 
@@ -140,3 +142,16 @@ manual_only: 2
 - Quick-run command was permanently false-negative: checked for "Route A" which was removed in Phase 4.1. Updated to check Route B + Route C.
 - Sampling rate, Wave 0, and manual-only table also referenced Route A — all updated to reflect current architecture.
 - Per Pitfall 5: Route A manual-only row marked as SUPERSEDED, not deleted, to preserve audit history.
+
+## Validation Audit 2026-03-13 (Nyquist re-audit)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 1 |
+| Resolved | 1 |
+| Escalated | 0 |
+
+**Audit notes:**
+- 04-02-01 (ORCH-01): wizard.md wiring was deferred to Phase 4.1, which has since been completed (`6da7782`). Promoted from manual-only to automated structural check: `grep -q "wizard-backing-agent" skills/wizard.md && grep -q "Route B" skills/wizard.md`.
+- Updated: 6/7 automated, 1 manual-only (TRACE-01: runtime artifact — bridge produces .planning/CONTEXT.md).
+- Remaining manual-only item (TRACE-01) is still justified — cannot structurally verify runtime file creation without executing the bridge.
