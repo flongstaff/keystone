@@ -54,16 +54,16 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 
 ### Discovery
 
-- [ ] **DISC-01**: Wizard dynamically scans `~/.claude/agents/` for all installed agents, parsing YAML frontmatter name and description
-- [ ] **DISC-02**: Wizard dynamically scans MCP servers from `settings.json` mcpServers and `installed_plugins.json`
-- [ ] **DISC-03**: Wizard dynamically scans `~/.claude/skills/` for all installed skills with SKILL.md metadata
-- [ ] **DISC-04**: Wizard dynamically scans `~/.claude/hooks/` for all registered hooks
-- [ ] **DISC-05**: Discovery writes full catalog to `toolkit-registry.json` (machine-specific, gitignored)
+- [x] **DISC-01**: Wizard dynamically scans `~/.claude/agents/` for all installed agents, parsing YAML frontmatter name and description
+- [x] **DISC-02**: Wizard dynamically scans MCP servers from `settings.json` mcpServers and `installed_plugins.json`
+- [x] **DISC-03**: Wizard dynamically scans `~/.claude/skills/` for all installed skills with SKILL.md metadata
+- [x] **DISC-04**: Wizard dynamically scans `~/.claude/hooks/` for all registered hooks
+- [x] **DISC-05**: Discovery writes full catalog to `toolkit-registry.json` (machine-specific, gitignored)
 
 ### Matching
 
-- [ ] **MATCH-01**: Wizard maps discovered tools to workflow stages (research/planning/execution/review) via keyword matching on description fields
-- [ ] **MATCH-02**: Stage filtering caps injected pointers at 5-8 per spawn to prevent context bloat
+- [x] **MATCH-01**: Wizard maps discovered tools to workflow stages (research/planning/execution/review) via keyword matching on description fields
+- [x] **MATCH-02**: Stage filtering caps injected pointers at 5-8 per spawn to prevent context bloat
 
 ### Injection
 
@@ -86,7 +86,7 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 
 ### Performance
 
-- [ ] **PERF-01**: Discovery uses TTL-gated caching (skip rescan when `toolkit-registry.json` is fresh)
+- [x] **PERF-01**: Discovery uses TTL-gated caching (skip rescan when `toolkit-registry.json` is fresh)
 - [ ] **PERF-02**: `wizard-state.json` carries compact toolkit summary (~600 bytes) for lightweight startup reads
 - [ ] **PERF-03**: Full registry loaded only when "Discover tools" is explicitly selected
 
@@ -159,14 +159,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-01 | Phase 12 | Pending |
-| DISC-02 | Phase 12 | Pending |
-| DISC-03 | Phase 12 | Pending |
-| DISC-04 | Phase 12 | Pending |
-| DISC-05 | Phase 12 | Pending |
-| MATCH-01 | Phase 12 | Pending |
-| MATCH-02 | Phase 12 | Pending |
-| PERF-01 | Phase 12 | Pending |
+| DISC-01 | Phase 12 | Complete |
+| DISC-02 | Phase 12 | Complete |
+| DISC-03 | Phase 12 | Complete |
+| DISC-04 | Phase 12 | Complete |
+| DISC-05 | Phase 12 | Complete |
+| MATCH-01 | Phase 12 | Complete |
+| MATCH-02 | Phase 12 | Complete |
+| PERF-01 | Phase 12 | Complete |
 | PERF-02 | Phase 13 | Pending |
 | INJ-01 | Phase 14 | Pending |
 | INJ-02 | Phase 14 | Pending |

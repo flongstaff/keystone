@@ -220,7 +220,7 @@ Plans:
 
 **Milestone Goal:** Make the wizard and all subagents aware of the user's full toolkit — agents, skills, tools, hooks, and MCP servers — so every workflow stage leverages the best available capabilities with user confirmation when ambiguous.
 
-- [ ] **Phase 12: Core Discovery Scanner** - Build toolkit-discovery.sh to scan all installed agents, skills, hooks, and MCP servers; apply stage tagging; write full registry and emit compact summary with TTL caching
+- [x] **Phase 12: Core Discovery Scanner** - Build toolkit-discovery.sh to scan all installed agents, skills, hooks, and MCP servers; apply stage tagging; write full registry and emit compact summary with TTL caching (completed 2026-03-13)
 - [ ] **Phase 13: State Integration** - Wire toolkit-discovery.sh into wizard-detect.sh so every wizard startup embeds a compact toolkit summary in wizard-state.json
 - [ ] **Phase 14: Subagent Injection and Confirmation UX** - Inject stage-filtered capability pointers into GSD and BMAD subagent Task() spawns; add batched confirmation flow for unknown tools; implement lazy full-registry loading
 - [ ] **Phase 15: Dynamic Catalog Display** - Replace hardcoded Phase 7 catalog with dynamic registry-backed display grouped by stage and category, with hardcoded fallback when registry is absent
@@ -239,7 +239,10 @@ Plans:
   3. `toolkit-registry.json` is written to disk and contains the full catalog; compact summary JSON is emitted to stdout with all counts and stage-relevant pointers
   4. Re-running the script within the TTL window skips rescan and returns the cached registry (observable: second run completes in under 0.1 seconds)
   5. Running the script when `~/.claude/agents/` does not exist produces a valid empty-catalog JSON (no error exit code)
-**Plans**: TBD
+**Plans:** 1/1 plans complete
+
+Plans:
+- [ ] 12-01-PLAN.md -- Create toolkit-discovery.sh with full scanning, stage tagging, registry write, compact summary, and TTL caching
 
 ### Phase 13: State Integration
 **Goal**: Every `/wizard` invocation automatically carries a compact toolkit summary so the wizard has stage-relevant tool awareness from the first line of execution, with no startup latency increase
@@ -300,7 +303,7 @@ Note: Phase 14 and Phase 15 both depend on Phase 12 and could be built in parall
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 12. Core Discovery Scanner | v1.1 | 0/? | Not started | - |
+| 12. Core Discovery Scanner | 1/1 | Complete    | 2026-03-13 | - |
 | 13. State Integration | v1.1 | 0/? | Not started | - |
 | 14. Subagent Injection and Confirmation UX | v1.1 | 0/? | Not started | - |
 | 15. Dynamic Catalog Display | v1.1 | 0/? | Not started | - |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dynamic Toolkit Discovery
-status: Ready to plan
-stopped_at: Roadmap created — ready to plan Phase 12
-last_updated: "2026-03-13"
-last_activity: 2026-03-13 — v1.1 roadmap created, 5 phases (12-16), 20 requirements mapped
+status: planning
+stopped_at: Completed 12-core-discovery-scanner plan 01
+last_updated: "2026-03-13T15:38:14.943Z"
+last_activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 17
+  completed_phases: 13
+  total_plans: 18
+  completed_plans: 18
   percent: 0
 ---
 
@@ -53,6 +53,9 @@ Recent decisions affecting current work:
 - [v1.1 Roadmap]: Phase 14 research flag is ACTIVE — read ~/.claude/get-shit-done/workflows/ before writing any injection code; GSD Task() prompt contracts must not break
 - [v1.1 Roadmap]: Hardcoded Phase 7 catalog is the fallback for Phase 15 — never remove it until parity test passes
 - [v1.1 Roadmap]: toolkit-registry.json must be gitignored before Phase 16 global deployment — machine-specific MCP state must not be committed
+- [Phase 12-core-discovery-scanner]: toolkit-discovery.sh: files without YAML frontmatter included with filename-as-name so agent count matches filesystem
+- [Phase 12-core-discovery-scanner]: Stage list cap is 6 per stage (not 8) to satisfy <800B summary size constraint with real-world 176-agent toolkit
+- [Phase 12-core-discovery-scanner]: Hook scanning uses unique commands from settings.json registrations (24 unique) not top-level entry count (23)
 
 ### Pending Todos
 
@@ -64,6 +67,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13
-Stopped at: Roadmap created — Phase 12 ready to plan
+Last session: 2026-03-13T15:32:19.264Z
+Stopped at: Completed 12-core-discovery-scanner plan 01
 Resume file: None
