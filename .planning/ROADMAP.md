@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Full Agent Routing** - Add validate-phase, drift-check, and on-demand traceability display routes (completed 2026-03-12)
 - [x] **Phase 6: Recovery, Safety, and Polish** - Add context-reset continuity, IT safety injection, health-monitor prompt, and budget validation (completed 2026-03-12)
 - [ ] **Phase 7: Agent, Skill, Tool and Hook Discovery** - Add on-demand Discover tools option to wizard post-status menus with hardcoded catalog of all Keystone agents, skills, and hooks
-- [ ] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit)
+- [x] **Phase 8: Bridge Path Fix & Infrastructure Cleanup** - Fix orchestrator path mismatch, clean orphaned files, stale labels, and false-negative validation (Gap closure from audit) (completed 2026-03-13)
 
 ## Phase Details
 
@@ -151,7 +151,11 @@ Plans:
   5. `wizard-detect.sh` line 2 comment no longer references orphaned `wizard-router.md`
   6. Phase 4 `VALIDATION.md` quick-run command produces a valid result (not permanently false-negative)
   7. Duplicate global path `~/.claude/skills/wizard-router/wizard-detect.sh` is removed
-**Plans**: TBD
+**Plans:** 2/2 plans complete
+
+Plans:
+- [ ] 08-01-PLAN.md -- Fix orchestrator dual-path scanning, backing agent fallback, and delete orphaned wizard-router.md
+- [ ] 08-02-PLAN.md -- Clean stale settings.local.json entries and fix Phase 4 VALIDATION.md false-negative
 
 ## Progress
 
@@ -170,4 +174,4 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 5. Full Agent Routing | 2/2 | Complete   | 2026-03-12 |
 | 6. Recovery, Safety, and Polish | 2/2 | Complete   | 2026-03-12 |
 | 7. Agent, Skill, Tool and Hook Discovery | 0/1 | Not started | - |
-| 8. Bridge Path Fix & Infrastructure Cleanup | 0/TBD | Not started | - |
+| 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |

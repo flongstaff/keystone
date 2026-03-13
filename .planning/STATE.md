@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 07-agent-skill-tool-and-hook-discovery-and-recommendations-01-PLAN.md
-last_updated: "2026-03-13T00:13:57.608Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-13T10:17:55.233Z"
 last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
 progress:
   total_phases: 9
-  completed_phases: 8
-  total_plans: 12
-  completed_plans: 12
+  completed_phases: 9
+  total_plans: 14
+  completed_plans: 14
   percent: 100
 ---
 
@@ -61,6 +61,8 @@ Progress: [██████████] 100%
 | Phase 06-recovery-safety-and-polish P01 | 2 | 2 tasks | 2 files |
 | Phase 06-recovery-safety-and-polish P02 | 2 | 1 tasks | 0 files |
 | Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations P01 | 3 | 2 tasks | 1 files |
+| Phase 08-bridge-path-fix-and-cleanup P01 | 2 | 2 tasks | 4 files |
+| Phase 08-bridge-path-fix-and-cleanup P02 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -105,6 +107,11 @@ Recent decisions affecting current work:
 - [Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations]: Catalog lives inline in wizard.md -- static text display does not justify Task() round-trip overhead for a lightweight read-only operation
 - [Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations]: Discover tools added as last option in all 4 post-status menu variants -- power-user feature placed last so Continue (Recommended) stays primary
 - [Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations]: project_type reused from Step 2's wizard-state.json parse -- no second file read needed, consistent with Context Budget Discipline
+- [Phase 08-02]: settings.local.json force-committed despite gitignore rule — plan explicitly requires this file to be tracked for audit purposes
+- [Phase 08-bridge-path-fix-and-cleanup]: Dual-path find pattern in orchestrator must match wizard-detect.sh exactly — ls docs/ was causing false BLOCKED errors for _bmad-output/ projects
+- [Phase 08-bridge-path-fix-and-cleanup]: Backing agent fallback replaces invalid slash command with valid file path + /wizard re-run — no new slash commands, existing /wizard handles recovery
+- [Phase 08-bridge-path-fix-and-cleanup]: wizard-router.md deleted outright — orphaned with no active flow references, replaced by wizard-detect.sh + inline wizard.md logic
+- [Phase 08-02]: VALIDATION.md Route A manual-only row marked SUPERSEDED, not deleted — preserves audit trail per Pitfall 5
 
 ### Roadmap Evolution
 
@@ -121,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T00:10:21.330Z
-Stopped at: Completed 07-agent-skill-tool-and-hook-discovery-and-recommendations-01-PLAN.md
+Last session: 2026-03-13T10:17:55.231Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
