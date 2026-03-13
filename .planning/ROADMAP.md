@@ -313,5 +313,5 @@ Note: Phase 14 and Phase 15 both depend on Phase 12 and could be built in parall
 | 12. Core Discovery Scanner | 1/1 | Complete    | 2026-03-13 | - |
 | 13. State Integration | 1/1 | Complete    | 2026-03-13 | - |
 | 14. Subagent Injection and Confirmation UX | 2/2 | Complete    | 2026-03-13 | - |
-| 15. Dynamic Catalog Display | 1/1 | Complete   | 2026-03-13 | - |
+| 15. Dynamic Catalog Display | 1/1 | Complete    | 2026-03-13 | - |
 | 16. Global Deployment Sync | v1.1 | 0/? | Not started | - |
