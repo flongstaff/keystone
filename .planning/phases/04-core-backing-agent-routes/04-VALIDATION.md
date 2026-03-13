@@ -22,7 +22,7 @@ manual_only: 2
 |----------|-------|
 | **Framework** | None — markdown skill project, structural grep checks only |
 | **Config file** | None — no test runner config |
-| **Quick run command** | `test -f skills/wizard-backing-agent.md && grep -q "Route A" skills/wizard-backing-agent.md && grep -q "Route B" skills/wizard-backing-agent.md && echo PASS` |
+| **Quick run command** | `test -f skills/wizard-backing-agent.md && grep -q "Route B" skills/wizard-backing-agent.md && grep -q "Route C" skills/wizard-backing-agent.md && echo PASS` |
 | **Full suite command** | Manual: invoke backing agent in both routes on controlled project state |
 | **Estimated runtime** | ~2 seconds (structural checks) |
 
@@ -31,7 +31,7 @@ manual_only: 2
 ## Sampling Rate
 
 - **After every task commit:** Run `test -f skills/wizard-backing-agent.md && echo "PASS: file exists" || echo FAIL`
-- **After every plan wave:** Manual: route A on this project (full-stack scenario), route B on a controlled project with known stories
+- **After every plan wave:** Manual: route B on a controlled project with known BMAD stories, route C on a project with existing .planning/ phases
 - **Before `/gsd:verify-work`:** All 5 requirements verified manually
 - **Max feedback latency:** 2 seconds
 
@@ -55,7 +55,7 @@ manual_only: 2
 
 ## Wave 0 Requirements
 
-- [x] `skills/wizard-backing-agent.md` — the new backing agent file (Route A + Route B)
+- [x] `skills/wizard-backing-agent.md` — backing agent file (Route B + Route C; Route A superseded by Phase 4.1)
 - [ ] `skills/wizard.md` — update to invoke backing agent (deferred to Phase 4.1)
 - [x] `~/.claude/skills/wizard-backing-agent.md` — deployed copy (verified: matches local)
 - [ ] Controlled project state for Route B smoke test
@@ -68,7 +68,7 @@ manual_only: 2
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Resume route displays orientation context and emits correct next command | ORCH-01 | Requires interactive wizard flow with real project state | 1. Run wizard-detect.sh on this project 2. Invoke backing agent Route A 3. Verify phase name, last activity, and next command are correct |
+| Resume route displays orientation context and emits correct next command | ORCH-01 | Requires interactive wizard flow with real project state — SUPERSEDED: Route A removed in Phase 4.1; resume logic now lives in wizard.md inline | 1. Run wizard-detect.sh on this project 2. Invoke backing agent Route A 3. Verify phase name, last activity, and next command are correct |
 | Bridge invokes bmad-gsd-orchestrator in fresh Task() context | ORCH-02 | Requires Task() runtime — cannot verify delegation behavior structurally | 1. Set up controlled project with approved BMAD stories 2. Invoke Route B 3. Verify .planning/ files created by orchestrator |
 | Traceability assertion presents gaps interactively | TRACE-02 | Requires AskUserQuestion interaction with real gap data | 1. Set up project with story AC not in context files 2. Invoke Route B 3. Verify each gap is surfaced and user can map/defer |
 | Bridge produces .planning/CONTEXT.md execution artifact | TRACE-01 | Runtime artifact created by bmad-gsd-orchestrator bridge — depends on actual bridge execution, not backing agent code | 1. Run Route B on a project with complete BMAD docs 2. After bridge Task() completes 3. Verify `.planning/config.json` and `.planning/CONTEXT.md` exist |
@@ -127,3 +127,16 @@ manual_only: 2
 - `wizard-backing-agent.md` unchanged since `1f0c7de`; `wizard.md` wiring still reverted per `357e5af`/`9265dc3`.
 - Manual-only items stable: TRACE-01 (runtime artifact), ORCH-01 (Phase 4.1 deferral).
 - No path to `nyquist_compliant: true` until Phase 4.1 resolves the wizard.md wiring.
+
+## Validation Audit 2026-03-13 (Phase 8 cleanup)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 1 |
+| Resolved | 1 |
+| Escalated | 0 |
+
+**Audit notes:**
+- Quick-run command was permanently false-negative: checked for "Route A" which was removed in Phase 4.1. Updated to check Route B + Route C.
+- Sampling rate, Wave 0, and manual-only table also referenced Route A — all updated to reflect current architecture.
+- Per Pitfall 5: Route A manual-only row marked as SUPERSEDED, not deleted, to preserve audit history.
