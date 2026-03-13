@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dynamic Toolkit Discovery
 status: planning
-stopped_at: Completed 12-core-discovery-scanner plan 01
-last_updated: "2026-03-13T15:38:14.943Z"
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-13T16:11:04.295Z"
 last_activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
 progress:
   total_phases: 17
-  completed_phases: 13
-  total_plans: 18
-  completed_plans: 18
+  completed_phases: 14
+  total_plans: 19
+  completed_plans: 19
   percent: 0
 ---
 
@@ -56,6 +56,8 @@ Recent decisions affecting current work:
 - [Phase 12-core-discovery-scanner]: toolkit-discovery.sh: files without YAML frontmatter included with filename-as-name so agent count matches filesystem
 - [Phase 12-core-discovery-scanner]: Stage list cap is 6 per stage (not 8) to satisfy <800B summary size constraint with real-world 176-agent toolkit
 - [Phase 12-core-discovery-scanner]: Hook scanning uses unique commands from settings.json registrations (24 unique) not top-level entry count (23)
+- [Phase 13-state-integration]: TOOLKIT_DISCOVERY section inserted before JSON WRITE so TOOLKIT_JSON variable is shared between heredoc and status box display
+- [Phase 13-state-integration]: Python3 stdin pipe used for TOOLKIT_LINE extraction to prevent JSON special character shell interpolation issues
 
 ### Pending Todos
 
@@ -67,6 +69,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T15:32:19.264Z
-Stopped at: Completed 12-core-discovery-scanner plan 01
+Last session: 2026-03-13T16:11:04.293Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None

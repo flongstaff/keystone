@@ -87,7 +87,7 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 ### Performance
 
 - [x] **PERF-01**: Discovery uses TTL-gated caching (skip rescan when `toolkit-registry.json` is fresh)
-- [ ] **PERF-02**: `wizard-state.json` carries compact toolkit summary (~600 bytes) for lightweight startup reads
+- [x] **PERF-02**: `wizard-state.json` carries compact toolkit summary (~600 bytes) for lightweight startup reads
 - [ ] **PERF-03**: Full registry loaded only when "Discover tools" is explicitly selected
 
 ## v2 Requirements
@@ -167,7 +167,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATCH-01 | Phase 12 | Complete |
 | MATCH-02 | Phase 12 | Complete |
 | PERF-01 | Phase 12 | Complete |
-| PERF-02 | Phase 13 | Pending |
+| PERF-02 | Phase 13 | Complete |
 | INJ-01 | Phase 14 | Pending |
 | INJ-02 | Phase 14 | Pending |
 | INJ-03 | Phase 14 | Pending |
