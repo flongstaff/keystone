@@ -80,9 +80,9 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 
 ### Catalog
 
-- [ ] **CAT-01**: "Discover tools" reads `toolkit-registry.json` for dynamic display
-- [ ] **CAT-02**: Catalog displays tools grouped by stage relevance and category
-- [ ] **CAT-03**: Hardcoded Phase 7 catalog remains as fallback when registry is absent or malformed
+- [x] **CAT-01**: "Discover tools" reads `toolkit-registry.json` for dynamic display
+- [x] **CAT-02**: Catalog displays tools grouped by stage relevance and category
+- [x] **CAT-03**: Hardcoded Phase 7 catalog remains as fallback when registry is absent or malformed
 
 ### Performance
 
@@ -176,9 +176,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONF-02 | Phase 14 | Complete |
 | CONF-03 | Phase 14 | Complete |
 | PERF-03 | Phase 14 | Complete |
-| CAT-01 | Phase 15 | Pending |
-| CAT-02 | Phase 15 | Pending |
-| CAT-03 | Phase 15 | Pending |
+| CAT-01 | Phase 15 | Complete |
+| CAT-02 | Phase 15 | Complete |
+| CAT-03 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 20 total

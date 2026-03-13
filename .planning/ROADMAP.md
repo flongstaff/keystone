@@ -223,7 +223,7 @@ Plans:
 - [x] **Phase 12: Core Discovery Scanner** - Build toolkit-discovery.sh to scan all installed agents, skills, hooks, and MCP servers; apply stage tagging; write full registry and emit compact summary with TTL caching (completed 2026-03-13)
 - [x] **Phase 13: State Integration** - Wire toolkit-discovery.sh into wizard-detect.sh so every wizard startup embeds a compact toolkit summary in wizard-state.json (completed 2026-03-13)
 - [x] **Phase 14: Subagent Injection and Confirmation UX** - Inject stage-filtered capability pointers into GSD and BMAD subagent Task() spawns; add batched confirmation flow for unknown tools; implement lazy full-registry loading (completed 2026-03-13)
-- [ ] **Phase 15: Dynamic Catalog Display** - Replace hardcoded Phase 7 catalog with dynamic registry-backed display grouped by stage and category, with hardcoded fallback when registry is absent
+- [x] **Phase 15: Dynamic Catalog Display** - Replace hardcoded Phase 7 catalog with dynamic registry-backed display grouped by stage and category, with hardcoded fallback when registry is absent (completed 2026-03-13)
 - [ ] **Phase 16: Global Deployment Sync** - Sync verified toolkit-discovery.sh, wizard-detect.sh, and wizard.md to ~/.claude/skills/; confirm toolkit-registry.json is gitignored
 
 ## Phase Details
@@ -286,7 +286,7 @@ Plans:
   2. Tools are grouped first by stage relevance (research / planning / execution / review) and then by category within each stage
   3. On a fresh install where `toolkit-registry.json` does not exist, "Discover tools" shows the hardcoded Phase 7 catalog without errors or missing sections
   4. Every tool entry in the hardcoded Phase 7 catalog appears in the dynamic output when the registry is present (parity check passes before hardcoded text can be removed)
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 15-01-PLAN.md -- Consolidate 4 duplicate catalog blocks into shared Display Catalog section with dynamic registry rendering and hardcoded fallback
@@ -313,5 +313,5 @@ Note: Phase 14 and Phase 15 both depend on Phase 12 and could be built in parall
 | 12. Core Discovery Scanner | 1/1 | Complete    | 2026-03-13 | - |
 | 13. State Integration | 1/1 | Complete    | 2026-03-13 | - |
 | 14. Subagent Injection and Confirmation UX | 2/2 | Complete    | 2026-03-13 | - |
-| 15. Dynamic Catalog Display | v1.1 | 0/1 | Planned | - |
+| 15. Dynamic Catalog Display | 1/1 | Complete   | 2026-03-13 | - |
 | 16. Global Deployment Sync | v1.1 | 0/? | Not started | - |

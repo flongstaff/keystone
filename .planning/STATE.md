@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dynamic Toolkit Discovery
 status: planning
-stopped_at: Phase 15 context gathered
-last_updated: "2026-03-13T20:11:14.024Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-13T20:57:56.210Z"
 last_activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
 progress:
   total_phases: 17
-  completed_phases: 15
-  total_plans: 21
-  completed_plans: 21
+  completed_phases: 16
+  total_plans: 22
+  completed_plans: 22
   percent: 0
 ---
 
@@ -63,6 +63,8 @@ Recent decisions affecting current work:
 - [Phase 14-01]: Confirmation guard lives inside 'Build Capability Block' helper, not Step 2.5 — fires at spawn sites only when TOOLS_CONFIRMED is nil
 - [Phase 14-01]: TOOLS_CONFIRMED is ephemeral (local variable only) — never written to wizard-state.json; resets each /wizard invocation
 - [Phase 14-01]: Never read toolkit-registry.json from wizard files — only wizard-state.json toolkit.by_stage (PERF-03)
+- [Phase 15-01]: Keystone tools section hardcoded in Display Catalog (not registry-sourced) -- 4/11 agents and 4/4 skills absent from toolkit-registry.json due to parity gap
+- [Phase 15-01]: Display Catalog uses prose redirect pattern ('Go to ## Display Catalog, then re-present this SAME [menu] menu') to enable single shared block serving 4 option handlers
 
 ### Pending Todos
 
@@ -74,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T20:11:14.022Z
-Stopped at: Phase 15 context gathered
-Resume file: .planning/phases/15-dynamic-catalog-display/15-CONTEXT.md
+Last session: 2026-03-13T20:57:56.207Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: None
