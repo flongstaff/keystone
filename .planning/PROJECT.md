@@ -1,8 +1,8 @@
-# Wizard Orchestrator
+# Keystone — Wizard Orchestrator
 
 ## What This Is
 
-A unified wizard system for the Claude Code Stack that makes BMAD planning and GSD execution feel like one continuous workflow. Instead of manually running separate commands and bridging frameworks, users interact with a single guided wizard that detects project state, preserves context between stages, and drives from idea to working code with minimal typing.
+A unified wizard system for Keystone that makes BMAD planning and GSD execution feel like one continuous workflow. Instead of manually running separate commands and bridging frameworks, users interact with a single guided wizard that detects project state, preserves context between stages, and drives from idea to working code with minimal typing.
 
 ## Core Value
 
@@ -19,17 +19,23 @@ At any point in a project, one command (`/wizard`) tells the user exactly where 
 - ✓ Session hooks show project status on startup — existing
 - ✓ Phase gate validation between GSD phases — existing
 - ✓ Context sharding for large BMAD documents — existing
+- ✓ Smart router skill that detects project state and routes to the right action — v1.0
+- ✓ Guided wizard skill with step-by-step choices and smart defaults — v1.0
+- ✓ Backing agent for heavy orchestration work behind the scenes — v1.0
+- ✓ Requirement traceability from BMAD docs through GSD phases — v1.0
+- ✓ Context-efficient orchestration (< 10% context budget) — v1.0
+- ✓ Flexible entry — start fresh, resume mid-BMAD, bridge to GSD, or continue GSD phases — v1.0
+- ✓ Full lifecycle support — idea → BMAD planning → bridge → GSD execution → completion — v1.0
+- ✓ State persistence across context resets — v1.0
 
 ### Active
 
-- [ ] Smart router skill that detects project state and routes to the right action
-- [ ] Guided wizard skill with step-by-step choices and smart defaults
-- [ ] Backing agent for heavy orchestration work behind the scenes
-- [ ] Requirement traceability from BMAD docs through GSD phases (no lost requirements)
-- [ ] Context-efficient orchestration (minimize tokens spent on plumbing, maximize for actual work)
-- [ ] Flexible entry — start fresh, resume mid-BMAD, bridge to GSD, or continue GSD phases
-- [ ] Full lifecycle support — idea → BMAD planning → bridge → GSD execution → completion
-- [ ] State persistence across context resets (wizard always knows where you are)
+- [ ] Dynamic discovery of all user-installed agents, skills, tools, hooks, and MCP servers
+- [ ] Capability matching — map discovered tools to workflow stages (research, planning, execution, review)
+- [ ] Subagent context injection — GSD/BMAD subagents receive relevant tool references in their prompts
+- [ ] MCP-aware recommendations — surface configured MCP servers at appropriate workflow moments
+- [ ] User confirmation flow — ask before using discovered tools when intent is ambiguous
+- [ ] Token-efficient injection — lightweight capability pointers, not full agent prompts in context
 
 ### Out of Scope
 
@@ -38,9 +44,21 @@ At any point in a project, one command (`/wizard`) tells the user exactly where 
 - Domain-specific logic (infra, game dev, etc.) — domain agents handle that separately
 - Multi-project orchestration — one project at a time
 
+## Current Milestone: v1.1 Dynamic Toolkit Discovery
+
+**Goal:** Make the wizard and all subagents aware of the user's full toolkit — agents, skills, tools, hooks, and MCP servers — so every workflow stage leverages the best available capabilities with user confirmation when ambiguous.
+
+**Target features:**
+- Dynamic scanning of user's installed agents, skills, hooks, and MCP servers
+- Capability-to-stage matching (which tools help at which workflow moments)
+- Subagent prompt injection (GSD researchers/planners/executors told about relevant tools)
+- MCP server awareness and recommendations
+- Confirmation UX when tool usage isn't clear-cut
+- Token-efficient injection (pointers, not full prompts)
+
 ## Context
 
-This is a brownfield project. The Claude Code Stack already has 11 agents across 4 categories (entry, bridge, domain, maintenance), lifecycle hooks, and install/restore scripts. BMAD and GSD are installed via npm and work independently.
+This is a brownfield project. Keystone already has 11 agents across 4 categories (entry, bridge, domain, maintenance), lifecycle hooks, and install/restore scripts. BMAD and GSD are installed via npm and work independently.
 
 **Current pain points the wizard solves:**
 - Requirements get lost between BMAD planning output and GSD phase execution
@@ -79,4 +97,4 @@ This is a brownfield project. The Claude Code Stack already has 11 agents across
 | State persisted to `.planning/` | Survives context resets, consistent with GSD conventions | — Pending |
 
 ---
-*Last updated: 2026-03-11 after initialization*
+*Last updated: 2026-03-13 after v1.1 milestone start*

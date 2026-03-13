@@ -1,70 +1,45 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
+milestone: v1.1
+milestone_name: Dynamic Toolkit Discovery
 status: planning
-stopped_at: Completed 10-code-and-documentation-tech-debt-10-01-PLAN.md
-last_updated: "2026-03-13T12:49:34.316Z"
-last_activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
+stopped_at: —
+last_updated: "2026-03-13"
+last_activity: 2026-03-13 — Milestone v1.1 started
 progress:
-  total_phases: 11
-  completed_phases: 11
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-11)
+See: .planning/PROJECT.md (updated 2026-03-13)
 
 **Core value:** At any point in a project, one command (`/wizard`) tells the user exactly where they are and does the next right thing.
-**Current focus:** Phase 1 — Schema and State Detection
+**Current focus:** Defining requirements for v1.1
 
 ## Current Position
 
-Phase: 1 of 6 (Schema and State Detection)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — Roadmap created, all 23 v1 requirements mapped across 6 phases
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-13 — Milestone v1.1 started
 
-Progress: [██████████] 100%
+Progress: ░░░░░░░░░░ 0%
 
 ## Performance Metrics
 
-**Velocity:**
+**v1.0 Summary:** 11 phases, 16 plans, 23 requirements — all complete
+
+**v1.1 Velocity:**
 - Total plans completed: 0
 - Average duration: —
 - Total execution time: 0 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| - | - | - | - |
-
-**Recent Trend:**
-- Last 5 plans: —
-- Trend: —
-
-*Updated after each plan completion*
-| Phase 01 P02 | 10 | 1 tasks | 1 files |
-| Phase 02-wizard-ui-layer P01 | 2 | 2 tasks | 2 files |
-| Phase 03-new-project-routing P01 | 3 | 2 tasks | 2 files |
-| Phase 04-core-backing-agent-routes P01 | 2 | 1 tasks | 1 files |
-| Phase 04 P02 | 1 | 2 tasks | 1 files |
-| Phase 04.1-rewire-backing-agent P01 | 3 | 2 tasks | 2 files |
-| Phase 05-full-agent-routing P01 | 25 | 3 tasks | 4 files |
-| Phase 05-full-agent-routing P02 | 2 | 1 tasks | 1 files |
-| Phase 06-recovery-safety-and-polish P01 | 2 | 2 tasks | 2 files |
-| Phase 06-recovery-safety-and-polish P02 | 2 | 1 tasks | 0 files |
-| Phase 07-agent-skill-tool-and-hook-discovery-and-recommendations P01 | 3 | 2 tasks | 1 files |
-| Phase 08-bridge-path-fix-and-cleanup P01 | 2 | 2 tasks | 4 files |
-| Phase 08-bridge-path-fix-and-cleanup P02 | 2 | 2 tasks | 2 files |
-| Phase 09-global-deployment-sync P01 | 3 | 2 tasks | 1 files |
-| Phase 10-code-and-documentation-tech-debt P01 | 4 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
