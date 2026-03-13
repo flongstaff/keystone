@@ -67,10 +67,10 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 
 ### Injection
 
-- [ ] **INJ-01**: GSD subagent Task() prompts receive stage-filtered capability pointers (name + one-liner format)
+- [x] **INJ-01**: GSD subagent Task() prompts receive stage-filtered capability pointers (name + one-liner format)
 - [ ] **INJ-02**: BMAD subagent prompts receive stage-filtered capability pointers at appropriate lifecycle points
-- [ ] **INJ-03**: Injection uses token-efficient format (~40 tokens per pointer, ~200 total per spawn)
-- [ ] **INJ-04**: Injection targets Task()/Agent() spawns only, never Skill() invocations
+- [x] **INJ-03**: Injection uses token-efficient format (~40 tokens per pointer, ~200 total per spawn)
+- [x] **INJ-04**: Injection targets Task()/Agent() spawns only, never Skill() invocations
 
 ### Confirmation
 
@@ -88,7 +88,7 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 
 - [x] **PERF-01**: Discovery uses TTL-gated caching (skip rescan when `toolkit-registry.json` is fresh)
 - [x] **PERF-02**: `wizard-state.json` carries compact toolkit summary (~600 bytes) for lightweight startup reads
-- [ ] **PERF-03**: Full registry loaded only when "Discover tools" is explicitly selected
+- [x] **PERF-03**: Full registry loaded only when "Discover tools" is explicitly selected
 
 ## v2 Requirements
 
@@ -168,14 +168,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATCH-02 | Phase 12 | Complete |
 | PERF-01 | Phase 12 | Complete |
 | PERF-02 | Phase 13 | Complete |
-| INJ-01 | Phase 14 | Pending |
+| INJ-01 | Phase 14 | Complete |
 | INJ-02 | Phase 14 | Pending |
-| INJ-03 | Phase 14 | Pending |
-| INJ-04 | Phase 14 | Pending |
+| INJ-03 | Phase 14 | Complete |
+| INJ-04 | Phase 14 | Complete |
 | CONF-01 | Phase 14 | Pending |
 | CONF-02 | Phase 14 | Pending |
 | CONF-03 | Phase 14 | Pending |
-| PERF-03 | Phase 14 | Pending |
+| PERF-03 | Phase 14 | Complete |
 | CAT-01 | Phase 15 | Pending |
 | CAT-02 | Phase 15 | Pending |
 | CAT-03 | Phase 15 | Pending |
