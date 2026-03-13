@@ -33,6 +33,86 @@ After the script runs, IMMEDIATELY continue to Step 2. Do NOT stop. Do NOT displ
 
 After the router completes, use the Read tool to load `.claude/wizard-state.json`. Parse the JSON. You now have the `scenario` field and all detection details.
 
+## Step 2.5: Classify Toolkit
+
+**Graceful skip guard:** If `toolkit` is missing, empty (`{}`), or `by_stage` is absent from wizard-state.json (already loaded in Step 2): set TOOLKIT_AVAILABLE = false and proceed to Step 3. Skip all sub-steps below.
+
+**Trust classification:** Collect all unique tool names across all `toolkit.by_stage` arrays. Split into two buckets:
+
+KNOWN_SAFE allowlist (hardcoded):
+```
+gsd-executor, gsd-phase-researcher, gsd-planner, gsd-plan-checker, gsd-verifier,
+gsd-roadmapper, gsd-codebase-mapper, gsd-debugger, gsd-nyquist-auditor,
+gsd-context-monitor, gsd-project-researcher, gsd-research-synthesizer,
+bmad-gsd-orchestrator, context-health-monitor, doc-shard-bridge,
+phase-gate-validator, project-setup-wizard, stack-update-watcher,
+context7, deepwiki, open-source-agent, it-infra-agent, godot-dev-agent,
+admin-docs-agent
+```
+
+- KNOWN_SAFE bucket: tool names found in the allowlist above
+- UNKNOWN bucket: tool names NOT in the allowlist
+
+**Set initial state:**
+- If UNKNOWN bucket is empty: set TOOLS_CONFIRMED = "all" (auto-approve, zero friction)
+- If UNKNOWN bucket is non-empty: set TOOLS_CONFIRMED = nil (unconfirmed — spawn sites will trigger the prompt)
+- Set TOOLKIT_AVAILABLE = true
+
+**Note:** TOOLS_CONFIRMED is held as a local variable for the duration of this wizard invocation. It is NOT written to wizard-state.json (wizard-detect.sh owns writes).
+
+---
+
+### Build Capability Block
+
+When a spawn point says "build capability block for stage {STAGE}":
+
+0. **Confirmation guard (fires at most once per invocation):**
+   - If TOOLKIT_AVAILABLE is false: skip — no block, proceed with spawn.
+   - If TOOLS_CONFIRMED is "all" or "safe-only": already confirmed, skip to step 1.
+   - If TOOLS_CONFIRMED is nil (unknown tools exist, not yet confirmed):
+     Present AskUserQuestion ONCE:
+
+     Question: "New tools in toolkit"
+     Body: "Your toolkit includes tools outside the Keystone/GSD standard set. Include them in capability hints sent to subagents?\n\nUnknown tools: {comma-separated list from UNKNOWN bucket}"
+     Options:
+       - "Allow all -- include {N} unknown tool(s) this session"
+       - "Skip unknown tools -- Keystone/GSD tools only"
+       - "Cancel -- don't proceed with action"
+
+     - If "Allow all": set TOOLS_CONFIRMED = "all"
+     - If "Skip unknown tools": set TOOLS_CONFIRMED = "safe-only"
+     - If "Cancel": set TOOLS_CONFIRMED = "cancel" — do NOT execute this spawn. Re-present the scenario menu. Stop here.
+
+   - If TOOLS_CONFIRMED is "cancel": do not build block, do not spawn. Re-present menu.
+   - Subsequent spawn points within same invocation reuse the stored TOOLS_CONFIRMED — no repeat prompts.
+
+1. Read `toolkit.by_stage.{STAGE}` from wizard-state.json (already in context from Step 2)
+2. If `by_stage.{STAGE}` is empty or missing: skip — do not append any block
+3. If TOOLS_CONFIRMED is "safe-only": filter the array to only KNOWN_SAFE names
+4. For each tool name in the filtered array:
+   - If name matches a known MCP tool (context7, deepwiki, or any non-agent/non-skill/non-hook):
+     format as: `- {name} (configured -- availability may vary) -- MCP server for {name}`
+   - Otherwise: format as: `- {name} -- {tool name as identifier}`
+5. Wrap in XML block with stage-appropriate preamble:
+
+```xml
+<capabilities>
+{preamble for stage}
+{pointer lines}
+</capabilities>
+```
+
+Stage preambles:
+  - review: "Use these for validation and checking:"
+  - planning: "Reference these during planning if relevant:"
+  - execution: "Use these during implementation if relevant:"
+  - research: "Query these before investigating unknowns:"
+
+6. Append this block to the Agent()/Task() prompt string, after any `<files_to_read>` section.
+7. Do NOT display the capabilities block to the user — it is internal to the spawn prompt.
+
+---
+
 ## Step 3: Branch on scenario
 
 Read the scenario from wizard-state.json and follow ONLY the matching block below.
@@ -80,8 +160,8 @@ Read `gsd.phase_status` from wizard-state.json.
 You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 **After selection:**
-- **Option 1 (Run health check):** Read `gsd.current_phase` from wizard-state.json. Use the Agent tool:
-  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format."
+- **Option 1 (Run health check):** Read `gsd.current_phase` from wizard-state.json. Before spawning, build capability block for stage 'review' and append to the Agent prompt string. (This triggers the confirmation guard if TOOLS_CONFIRMED is nil.) Use the Agent tool:
+  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format.{capability_block_if_built}"
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present this SAME menu but with Continue promoted to option 1 (Recommended) and Run health check demoted to option 2:
   1. "Continue (Recommended)" -- Proceed to {next_command}
@@ -160,13 +240,13 @@ You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 - **Option 1 (Continue):** Read `next_command` from wizard-state.json. Invoke the command directly using `Skill('{skill_name}')` where skill_name is derived from next_command (strip leading `/`, take command name before any space). Pass any arguments (text after the command name) as the Skill prompt. If Skill tool unavailable, display `Run: {next_command}` and stop.
 
-- **Option 2 (Check drift):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number (e.g. "check drift phase 2"), extract that number instead. Use the Agent tool:
-  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format."
+- **Option 2 (Check drift):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number (e.g. "check drift phase 2"), extract that number instead. Before spawning, build capability block for stage 'review' and append to the Agent prompt string. (This triggers the confirmation guard if TOOLS_CONFIRMED is nil.) Use the Agent tool:
+  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format.{capability_block_if_built}"
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present the SAME AskUserQuestion menu above.
 
-- **Option 3 (Validate phase):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number, extract that number instead. Use the Agent tool:
-  - prompt: "Read agents/bridge/phase-gate-validator.md and run gate validation for phase {N}. Report results using the agent's standard output format."
+- **Option 3 (Validate phase):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number, extract that number instead. Before spawning, build capability block for stage 'review' and append to the Agent prompt string. (This triggers the confirmation guard if TOOLS_CONFIRMED is nil.) Use the Agent tool:
+  - prompt: "Read agents/bridge/phase-gate-validator.md and run gate validation for phase {N}. Report results using the agent's standard output format.{capability_block_if_built}"
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present the SAME AskUserQuestion menu above.
 
@@ -241,8 +321,8 @@ Read `gsd.phase_status` from wizard-state.json.
 4. "Discover tools" -- Browse available Keystone agents, skills, and hooks
 
 **After selection:**
-- **Option 1 (Run health check):** Read `gsd.current_phase` from wizard-state.json. Use the Agent tool:
-  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format."
+- **Option 1 (Run health check):** Read `gsd.current_phase` from wizard-state.json. Before spawning, build capability block for stage 'review' and append to the Agent prompt string. (This triggers the confirmation guard if TOOLS_CONFIRMED is nil.) Use the Agent tool:
+  - prompt: "Read agents/bridge/context-health-monitor.md and run a full context health check for phase {N}. Report results using the agent's standard output format.{capability_block_if_built}"
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present this SAME menu but with Continue promoted to option 1 (Recommended) and Run health check demoted to option 2:
   1. "Continue (Recommended)" -- Proceed to {next_command}
@@ -464,9 +544,10 @@ Present a menu via AskUserQuestion:
 
 **After selection:**
 - **Option 1 (Bridge):**
+  Before spawning, build capability block for stage 'planning' and append to the Task prompt string. (This triggers the confirmation guard if TOOLS_CONFIRMED is nil.)
   Use the Task tool to invoke the backing agent in a fresh context:
   - description: "Bridge BMAD planning to GSD execution"
-  - prompt: "Read skills/wizard-backing-agent.md (or ~/.claude/skills/wizard-backing-agent.md if not found) and follow Route B — bridge to GSD."
+  - prompt: "Read skills/wizard-backing-agent.md (or ~/.claude/skills/wizard-backing-agent.md if not found) and follow Route B — bridge to GSD.{capability_block_if_built}"
 
   If the Task tool is not available, display: "Run: /wizard-backing-agent (Route B)" and stop.
 
@@ -580,3 +661,4 @@ After the explanation, call AskUserQuestion again with the SAME options but WITH
 - Do NOT run bash yourself — bash runs via the detection script (wizard-detect.sh) in Step 1.
 - The only files this skill reads directly are: `.claude/wizard-state.json` (to read state).
 - Keep your responses focused: status box, menu, action. No lengthy preambles.
+- The only toolkit data source is wizard-state.json toolkit.by_stage (already loaded in Step 2). Never read toolkit-registry.json from wizard.md.
