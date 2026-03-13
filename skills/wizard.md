@@ -318,7 +318,7 @@ Present a menu via AskUserQuestion:
 
 - **Option 2 (Check drift):** Same as full-stack Option 2 above.
 
-- **Option 3 (Validate phase):** Same as full-stack Option 4 above.
+- **Option 3 (Validate phase):** Same as full-stack Option 3 above.
 
 - **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
 
