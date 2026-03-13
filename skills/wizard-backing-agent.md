@@ -99,6 +99,8 @@ Or re-run /wizard to restart the bridge flow.
 ```
 Then STOP.
 
+If bridge succeeded (BRIDGE_COMPLETE=true): display "Bridge files created successfully." and **continue immediately to Step 5** below. Do NOT stop here — traceability assertion is a required part of the bridge flow.
+
 ### Step 5 — Traceability Assertion
 
 Find all story files:
@@ -250,18 +252,23 @@ for PHASE_DIR in $PHASE_DIRS; do
     if [ "$HAS_VERIFICATION" -gt 0 ]; then
         STATUS="complete"
     elif [ "$HAS_UAT" -gt 0 ]; then
-        STATUS="executing"
+        FAIL_COUNT=$(grep -c "FAIL\|fail" "$PHASE_DIR"/*-UAT.md 2>/dev/null || echo 0)
+        if [ "$FAIL_COUNT" -gt 0 ]; then
+            STATUS="uat-failing"
+        else
+            STATUS="uat-passing"
+        fi
     elif [ "$HAS_PLAN" -gt 0 ]; then
-        STATUS="plans ready"
+        STATUS="plans-ready"
     elif [ "$HAS_CONTEXT" -gt 0 ]; then
-        STATUS="planning"
+        STATUS="context-ready"
     else
         STATUS="not started"
     fi
 done
 ```
 
-Note: This ladder is copied from wizard-detect.sh. If wizard-detect.sh changes its ladder, this must be updated to match.
+Note: This ladder syncs with wizard-detect.sh (same labels: complete, plans-ready, context-ready, uat-failing, uat-passing). Both ladders check VERIFICATION.md as top-of-ladder "complete". One intentional difference remains: Route C uses "not started" for empty phase dirs — detect.sh uses "executing".
 
 Also read phase names from ROADMAP.md:
 ```bash

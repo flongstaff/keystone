@@ -67,16 +67,17 @@ If project_type is null or "web" (no dedicated domain agent), skip the banner en
 
 Read `gsd.phase_status` from wizard-state.json.
 
-**If phase_status is "uat-passing":** present health-check-first menu:
+**If phase_status is "uat-passing" or "complete":** present health-check-first menu:
 
-**Question:** "Phase execution is complete and UAT is passing. Ready to proceed?"
+**Question:** "Phase execution is complete. Ready to proceed?"
 
 **Options:**
 1. "Run health check (Recommended)" -- Check for drift before moving on
 2. "Continue" -- Proceed to {next_command from wizard-state.json}
-3. "Show traceability" -- See BMAD criteria mapped to GSD phases
-4. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
-5. "Discover tools" -- Browse available Keystone agents, skills, and hooks
+3. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
+4. "Discover tools" -- Browse available Keystone agents, skills, and hooks
+
+You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 **After selection:**
 - **Option 1 (Run health check):** Read `gsd.current_phase` from wizard-state.json. Use the Agent tool:
@@ -85,14 +86,15 @@ Read `gsd.phase_status` from wizard-state.json.
   After the agent completes, re-present this SAME menu but with Continue promoted to option 1 (Recommended) and Run health check demoted to option 2:
   1. "Continue (Recommended)" -- Proceed to {next_command}
   2. "Run health check" -- Re-run drift check
-  3. "Show traceability" -- See BMAD criteria mapped to GSD phases
-  4. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
-  5. "Discover tools" -- Browse available Keystone agents, skills, and hooks
+  3. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
+  4. "Discover tools" -- Browse available Keystone agents, skills, and hooks
+
+  You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 - **Option 2 (Continue):** Same as existing Continue logic (read next_command, invoke Skill).
-- **Option 3 (Show traceability):** Same as existing Show traceability logic. After completion, re-present the SAME uat-passing menu.
-- **Option 4 (Validate phase):** Same as existing Validate phase logic. After completion, re-present the SAME uat-passing menu.
-- **Option 5 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
+- **Option 3 (Validate phase):** Same as existing Validate phase logic. After completion, re-present the SAME uat-passing menu.
+- **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
+- **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` and follow Route C instructions. After completion, re-present the SAME uat-passing menu.
 
   Display:
 
@@ -140,7 +142,7 @@ Read `gsd.phase_status` from wizard-state.json.
 
   After displaying the catalog, re-present this SAME uat-passing menu.
 
-**If phase_status is not "uat-passing":** present existing menu (unchanged):
+**If phase_status is not "uat-passing" and not "complete":** present existing menu (unchanged):
 
 Present a menu via AskUserQuestion:
 
@@ -149,9 +151,10 @@ Present a menu via AskUserQuestion:
 **Options:**
 1. "Continue (Recommended)" -- Proceed to {next_command from wizard-state.json}
 2. "Check drift" -- Run context-health-monitor for phase {gsd.current_phase}
-3. "Show traceability" -- See BMAD criteria mapped to GSD phases
-4. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
-5. "Discover tools" -- Browse available Keystone agents, skills, and hooks
+3. "Validate phase" -- Run phase-gate-validator for phase {gsd.current_phase}
+4. "Discover tools" -- Browse available Keystone agents, skills, and hooks
+
+You can also type "show traceability" to see BMAD criteria mapped to GSD phases.
 
 **After selection:**
 
@@ -162,16 +165,14 @@ Present a menu via AskUserQuestion:
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present the SAME AskUserQuestion menu above.
 
-- **Option 3 (Show traceability):** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status."
-  If Skill tool unavailable, read `skills/wizard-backing-agent.md` and follow Route C instructions.
-  After the skill completes, re-present the SAME AskUserQuestion menu above.
-
-- **Option 4 (Validate phase):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number, extract that number instead. Use the Agent tool:
+- **Option 3 (Validate phase):** Read `gsd.current_phase` from wizard-state.json. If user provided free text with a different number, extract that number instead. Use the Agent tool:
   - prompt: "Read agents/bridge/phase-gate-validator.md and run gate validation for phase {N}. Report results using the agent's standard output format."
   Display the agent's output as-is. Do not summarize, reformat, or truncate.
   After the agent completes, re-present the SAME AskUserQuestion menu above.
 
-- **Option 5 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
+- **Option 4 (Discover tools):** Read `project_type` from wizard-state.json (already loaded in Step 2). Display the catalog below, marking the domain agent whose `project_type` matches with " (active)" appended to its entry. If `project_type` is null or "web", no domain agent is marked active.
+
+- **If user types "show traceability":** Invoke `Skill('wizard-backing-agent')` with prompt: "Route C: show traceability status." If Skill tool unavailable, read `skills/wizard-backing-agent.md` and follow Route C instructions. After completion, re-present the SAME non-uat-passing menu.
 
   Display:
 
@@ -229,9 +230,9 @@ The detection script already displayed orientation context (phase name, last act
 
 Read `gsd.phase_status` from wizard-state.json.
 
-**If phase_status is "uat-passing":** present health-check-first menu:
+**If phase_status is "uat-passing" or "complete":** present health-check-first menu:
 
-**Question:** "Phase execution is complete and UAT is passing. Ready to proceed?"
+**Question:** "Phase execution is complete. Ready to proceed?"
 
 **Options:**
 1. "Run health check (Recommended)" -- Check for drift before moving on
@@ -299,7 +300,7 @@ Read `gsd.phase_status` from wizard-state.json.
 
   After displaying the catalog, re-present this SAME uat-passing menu.
 
-**If phase_status is not "uat-passing":** present existing menu (unchanged):
+**If phase_status is not "uat-passing" and not "complete":** present existing menu (unchanged):
 
 Present a menu via AskUserQuestion:
 

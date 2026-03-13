@@ -184,7 +184,10 @@ Plans:
   2. bmad-gsd-orchestrator.md Operation B Step 2 scans both `docs/stories/` and `_bmad-output/` paths
   3. bmad-gsd-orchestrator.md config.json template uses dynamic bmad_source paths (not hardcoded `docs/`)
   4. ROADMAP.md Phase 1 and Phase 7 checkboxes and progress table reflect completed status; all plan checkboxes for completed phases are checked
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 10-01-PLAN.md -- Fix Route C ladder alignment, Operation B dual-path, config.json dynamic paths, and ROADMAP checkboxes
 
 ## Progress
 
@@ -205,4 +208,4 @@ Note: Phase 3 and Phase 4 both depend on Phase 2 (not on each other). Phase 4.1 
 | 7. Agent, Skill, Tool and Hook Discovery | 1/1 | Complete   | 2026-03-12 |
 | 8. Bridge Path Fix & Infrastructure Cleanup | 2/2 | Complete   | 2026-03-13 |
 | 9. Global Deployment Sync | 1/1 | Complete   | 2026-03-13 |
-| 10. Code & Documentation Tech Debt | 0/TBD | Not started | - |
+| 10. Code & Documentation Tech Debt | 0/1 | Not started | - |

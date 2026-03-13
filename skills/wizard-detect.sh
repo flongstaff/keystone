@@ -70,8 +70,19 @@ if [ "$GSD_ROADMAP" = "true" ]; then
         HAS_CONTEXT=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-CONTEXT.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
         HAS_PLAN=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-PLAN*.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
         HAS_UAT=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-UAT.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
+        HAS_VERIFICATION=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-VERIFICATION.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
 
-        if [ "$HAS_UAT" -gt 0 ]; then
+        if [ "$HAS_VERIFICATION" -gt 0 ]; then
+            # Phase is verified complete — same advance logic as uat-passing
+            TOTAL_RAW=$(grep -c "^### Phase" .planning/ROADMAP.md 2>/dev/null || echo 0)
+            if [ "$PHASE_NUM" -ge "$TOTAL_RAW" ] && [ "$TOTAL_RAW" -gt 0 ]; then
+                GSD_NEXT_CMD="/gsd:complete-milestone"
+            else
+                NEXT_NUM=$((PHASE_NUM + 1))
+                GSD_NEXT_CMD="/gsd:discuss-phase $NEXT_NUM"
+            fi
+            GSD_PHASE_STATUS="complete"
+        elif [ "$HAS_UAT" -gt 0 ]; then
             FAIL_COUNT=$(grep -c "FAIL\|fail" "$LATEST_PHASE_DIR"/*-UAT.md 2>/dev/null || echo 0)
             if [ "$FAIL_COUNT" -gt 0 ]; then
                 GSD_NEXT_CMD="/gsd:execute-phase $PHASE_NUM"
@@ -260,7 +271,7 @@ except Exception:
 " 2>/dev/null)
     if [ -n "$PREV_DETECTED" ]; then
         # macOS: date -j -f; Linux: date -d; fallback: 0
-        PREV_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$PREV_DETECTED" "+%s" 2>/dev/null || \
+        PREV_EPOCH=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$PREV_DETECTED" "+%s" 2>/dev/null || \
                      date -d "$PREV_DETECTED" "+%s" 2>/dev/null || echo 0)
         NOW_EPOCH=$(date -u +%s)
         ELAPSED=$((NOW_EPOCH - PREV_EPOCH))
