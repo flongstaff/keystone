@@ -123,7 +123,6 @@ Read `gsd.phase_status` from wizard-state.json.
 - **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
 - **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
 - **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-- **wizard-router** -- Silent entry point that routes to wizard -- `/wizard`
 
 ### Hooks
 - **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
@@ -203,7 +202,6 @@ Present a menu via AskUserQuestion:
 - **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
 - **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
 - **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-- **wizard-router** -- Silent entry point that routes to wizard -- `/wizard`
 
 ### Hooks
 - **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
@@ -284,7 +282,6 @@ Read `gsd.phase_status` from wizard-state.json.
 - **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
 - **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
 - **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-- **wizard-router** -- Silent entry point that routes to wizard -- `/wizard`
 
 ### Hooks
 - **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
@@ -353,7 +350,6 @@ Present a menu via AskUserQuestion:
 - **wizard** -- Interactive wizard: detects project state, presents next action -- `/wizard`
 - **wizard-backing-agent** -- Bridge coordinator: BMAD-to-GSD bridge and traceability display -- invoked by wizard
 - **wizard-detect** -- Shell detection script: computes project state, writes wizard-state.json -- invoked by wizard
-- **wizard-router** -- Silent entry point that routes to wizard -- `/wizard`
 
 ### Hooks
 - **session-start** -- Shows project state, GSD phase, BMAD status, and update banner at session start -- install via install-runtime-support.sh
