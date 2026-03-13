@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dynamic Toolkit Discovery
 status: planning
-stopped_at: Completed 14-subagent-injection-confirmation-ux-02-PLAN.md
-last_updated: "2026-03-13T19:16:21.086Z"
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-13T19:17:05.972Z"
 last_activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
 progress:
   total_phases: 17
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 21
-  completed_plans: 20
+  completed_plans: 21
   percent: 0
 ---
 
@@ -60,6 +60,9 @@ Recent decisions affecting current work:
 - [Phase 13-state-integration]: Python3 stdin pipe used for TOOLKIT_LINE extraction to prevent JSON special character shell interpolation issues
 - [Phase 14-subagent-injection-confirmation-ux]: wizard-state.json is sole data source for capability injection; toolkit-registry.json never read (PERF-03)
 - [Phase 14-subagent-injection-confirmation-ux]: Capability blocks use <capabilities> XML tag matching existing GSD prompt conventions; injected after <files_to_read> and before <output>/<success_criteria>
+- [Phase 14-01]: Confirmation guard lives inside 'Build Capability Block' helper, not Step 2.5 — fires at spawn sites only when TOOLS_CONFIRMED is nil
+- [Phase 14-01]: TOOLS_CONFIRMED is ephemeral (local variable only) — never written to wizard-state.json; resets each /wizard invocation
+- [Phase 14-01]: Never read toolkit-registry.json from wizard files — only wizard-state.json toolkit.by_stage (PERF-03)
 
 ### Pending Todos
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-13T19:16:21.084Z
-Stopped at: Completed 14-subagent-injection-confirmation-ux-02-PLAN.md
+Last session: 2026-03-13T19:17:05.971Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None

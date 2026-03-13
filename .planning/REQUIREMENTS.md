@@ -68,15 +68,15 @@ Requirements for Dynamic Toolkit Discovery milestone. Each maps to roadmap phase
 ### Injection
 
 - [x] **INJ-01**: GSD subagent Task() prompts receive stage-filtered capability pointers (name + one-liner format)
-- [ ] **INJ-02**: BMAD subagent prompts receive stage-filtered capability pointers at appropriate lifecycle points
+- [x] **INJ-02**: BMAD subagent prompts receive stage-filtered capability pointers at appropriate lifecycle points
 - [x] **INJ-03**: Injection uses token-efficient format (~40 tokens per pointer, ~200 total per spawn)
 - [x] **INJ-04**: Injection targets Task()/Agent() spawns only, never Skill() invocations
 
 ### Confirmation
 
-- [ ] **CONF-01**: Known-safe tools (Keystone/GSD agents, read-only MCPs) auto-inject without confirmation
-- [ ] **CONF-02**: Unknown user-installed tools get one batched confirmation per `/wizard` invocation
-- [ ] **CONF-03**: MCP recommendations use conditional language ("configured — availability may vary")
+- [x] **CONF-01**: Known-safe tools (Keystone/GSD agents, read-only MCPs) auto-inject without confirmation
+- [x] **CONF-02**: Unknown user-installed tools get one batched confirmation per `/wizard` invocation
+- [x] **CONF-03**: MCP recommendations use conditional language ("configured — availability may vary")
 
 ### Catalog
 
@@ -169,12 +169,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-01 | Phase 12 | Complete |
 | PERF-02 | Phase 13 | Complete |
 | INJ-01 | Phase 14 | Complete |
-| INJ-02 | Phase 14 | Pending |
+| INJ-02 | Phase 14 | Complete |
 | INJ-03 | Phase 14 | Complete |
 | INJ-04 | Phase 14 | Complete |
-| CONF-01 | Phase 14 | Pending |
-| CONF-02 | Phase 14 | Pending |
-| CONF-03 | Phase 14 | Pending |
+| CONF-01 | Phase 14 | Complete |
+| CONF-02 | Phase 14 | Complete |
+| CONF-03 | Phase 14 | Complete |
 | PERF-03 | Phase 14 | Complete |
 | CAT-01 | Phase 15 | Pending |
 | CAT-02 | Phase 15 | Pending |
