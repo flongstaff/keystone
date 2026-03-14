@@ -2,23 +2,16 @@
 
 ## What This Is
 
-A unified wizard system for Keystone that makes BMAD planning and GSD execution feel like one continuous workflow. Instead of manually running separate commands and bridging frameworks, users interact with a single guided wizard that detects project state, preserves context between stages, and drives from idea to working code with minimal typing.
+A unified wizard system for Keystone that makes BMAD planning and GSD execution feel like one continuous workflow. Users interact with a single guided wizard that detects project state, discovers the full installed toolkit, injects relevant capabilities into subagent spawns, and drives from idea to working code with minimal typing.
 
 ## Core Value
 
-At any point in a project, one command (`/wizard`) tells the user exactly where they are and does the next right thing — whether that's starting BMAD planning, bridging to GSD, or continuing execution.
+At any point in a project, one command (`/wizard`) tells the user exactly where they are and does the next right thing — whether that's starting BMAD planning, bridging to GSD, or continuing execution — with awareness of the user's full toolkit.
 
 ## Requirements
 
 ### Validated
 
-- ✓ BMAD planning framework installed and functional — existing
-- ✓ GSD execution framework installed and functional — existing
-- ✓ Bridge agents connect BMAD output to GSD input — existing
-- ✓ Entry agents detect project state (BMAD/GSD presence) — existing
-- ✓ Session hooks show project status on startup — existing
-- ✓ Phase gate validation between GSD phases — existing
-- ✓ Context sharding for large BMAD documents — existing
 - ✓ Smart router skill that detects project state and routes to the right action — v1.0
 - ✓ Guided wizard skill with step-by-step choices and smart defaults — v1.0
 - ✓ Backing agent for heavy orchestration work behind the scenes — v1.0
@@ -27,15 +20,17 @@ At any point in a project, one command (`/wizard`) tells the user exactly where 
 - ✓ Flexible entry — start fresh, resume mid-BMAD, bridge to GSD, or continue GSD phases — v1.0
 - ✓ Full lifecycle support — idea → BMAD planning → bridge → GSD execution → completion — v1.0
 - ✓ State persistence across context resets — v1.0
+- ✓ Dynamic discovery of all user-installed agents, skills, hooks, and MCP servers — v1.1
+- ✓ Capability-to-stage matching (research/planning/execution/review) — v1.1
+- ✓ Subagent context injection with stage-filtered capability pointers — v1.1
+- ✓ Trust classification with batched confirmation for unknown tools — v1.1
+- ✓ Token-efficient injection (~200 tokens per spawn) — v1.1
+- ✓ Dynamic catalog display with hardcoded fallback — v1.1
+- ✓ TTL-gated caching for toolkit discovery — v1.1
 
 ### Active
 
-- [ ] Dynamic discovery of all user-installed agents, skills, tools, hooks, and MCP servers
-- [ ] Capability matching — map discovered tools to workflow stages (research, planning, execution, review)
-- [ ] Subagent context injection — GSD/BMAD subagents receive relevant tool references in their prompts
-- [ ] MCP-aware recommendations — surface configured MCP servers at appropriate workflow moments
-- [ ] User confirmation flow — ask before using discovered tools when intent is ambiguous
-- [ ] Token-efficient injection — lightweight capability pointers, not full agent prompts in context
+(None — next milestone not yet defined)
 
 ### Out of Scope
 
@@ -43,41 +38,33 @@ At any point in a project, one command (`/wizard`) tells the user exactly where 
 - Changing BMAD or GSD internals — work with their existing APIs and outputs
 - Domain-specific logic (infra, game dev, etc.) — domain agents handle that separately
 - Multi-project orchestration — one project at a time
-
-## Current Milestone: v1.1 Dynamic Toolkit Discovery
-
-**Goal:** Make the wizard and all subagents aware of the user's full toolkit — agents, skills, tools, hooks, and MCP servers — so every workflow stage leverages the best available capabilities with user confirmation when ambiguous.
-
-**Target features:**
-- Dynamic scanning of user's installed agents, skills, hooks, and MCP servers
-- Capability-to-stage matching (which tools help at which workflow moments)
-- Subagent prompt injection (GSD researchers/planners/executors told about relevant tools)
-- MCP server awareness and recommendations
-- Confirmation UX when tool usage isn't clear-cut
-- Token-efficient injection (pointers, not full prompts)
+- Semantic capability matching via LLM — keyword matching is sufficient
+- BMAD internal agent modification — v1.1 injects at spawn time, never modifies internals
 
 ## Context
 
-This is a brownfield project. Keystone already has 11 agents across 4 categories (entry, bridge, domain, maintenance), lifecycle hooks, and install/restore scripts. BMAD and GSD are installed via npm and work independently.
+Shipped v1.1 with 1,864 LOC across skills/*.sh and skills/*.md.
+Tech stack: Bash (detection + discovery scripts), Markdown (skill/agent definitions), Python3 (JSON processing in shell).
+Three-component architecture: smart router (wizard-detect.sh) → wizard UI (wizard.md) → backing agent (wizard-backing-agent.md).
+Discovery layer: toolkit-discovery.sh scans 176 agents, 28 skills, 24 hooks, and MCP servers with 1h TTL cache.
+All skill files deployed globally to ~/.claude/skills/ for cross-project access.
 
-**Current pain points the wizard solves:**
-- Requirements get lost between BMAD planning output and GSD phase execution
-- Too much context window is spent on orchestration overhead (typing commands, reading agent instructions) instead of actual implementation work
-- Users don't know which command to run next — multiple slash commands across two frameworks
-- Manual bridging steps between BMAD completion and GSD initialization
+## Key Decisions
 
-**Existing infrastructure to wrap:**
-- `agents/bridge/bmad-gsd-orchestrator.md` — translates BMAD docs to GSD structure
-- `agents/bridge/doc-shard-bridge.md` — splits docs into phase-sized contexts
-- `agents/bridge/phase-gate-validator.md` — validates phase completion
-- `agents/bridge/context-health-monitor.md` — detects architectural drift
-- `agents/entry/project-setup-wizard.md` — detects project state
-- `agents/entry/project-setup-advisor.md` — recommends next action
-
-**Technical form:** Three components working together:
-1. **Smart router skill** — detects state, delegates to right BMAD/GSD command
-2. **Wizard skill** — guided UI for the full pipeline
-3. **Backing agent** — handles orchestration heavy lifting
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Wrap existing agents, don't replace | Preserves modularity, avoids rewriting working code | ✓ Good |
+| Three-component architecture (router + wizard + agent) | Router handles detection, wizard handles UI, agent handles work — clean separation | ✓ Good |
+| Single `/wizard` entry point | Reduces cognitive load — one command to remember | ✓ Good |
+| State persisted to `.planning/` | Survives context resets, consistent with GSD conventions | ✓ Good |
+| Two-level discovery (full registry + compact summary) | Keeps startup token cost flat while enabling detailed catalog display | ✓ Good |
+| TTL-gated caching (1h) | Cached discovery completes in ~23ms; prevents rescan on every invocation | ✓ Good |
+| wizard-state.json as sole injection data source | PERF-03 compliance — full registry only loaded for catalog display | ✓ Good |
+| `<capabilities>` XML tag for injection | Matches existing GSD prompt conventions; consistent format across agents | ✓ Good |
+| Hardcoded KNOWN_SAFE allowlist | Keystone/GSD agents auto-inject; unknown tools get batched confirmation | ✓ Good |
+| Hardcoded Phase 7 catalog as fallback | Fresh installs show useful catalog even without toolkit-discovery.sh | ✓ Good |
+| Stage cap at 6 per stage (not 8) | Satisfies <800B summary constraint with real-world 176-agent toolkit | ✓ Good |
+| GSD workflow files are global-only | Phase 14-02 modifies ~/.claude/get-shit-done/workflows/ directly — re-clone needs reapply | ⚠️ Revisit |
 
 ## Constraints
 
@@ -86,15 +73,7 @@ This is a brownfield project. Keystone already has 11 agents across 4 categories
 - **Compatibility**: Must work with current BMAD (`bmad-method`) and GSD (`get-shit-done-cc`) npm packages
 - **Runtime**: Claude Code primary target (skills + agents system)
 - **File conventions**: Skills as `.md` in skills directory, agents as `.md` with YAML frontmatter in `agents/`
-
-## Key Decisions
-
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Wrap existing agents, don't replace | Preserves modularity, avoids rewriting working code | — Pending |
-| Three-component architecture (router + wizard + agent) | Router handles detection, wizard handles UI, agent handles work — clean separation | — Pending |
-| Single `/wizard` entry point | Reduces cognitive load — one command to remember | — Pending |
-| State persisted to `.planning/` | Survives context resets, consistent with GSD conventions | — Pending |
+- **Discovery**: toolkit-registry.json is machine-specific (gitignored) — never committed
 
 ---
-*Last updated: 2026-03-13 after v1.1 milestone start*
+*Last updated: 2026-03-14 after v1.1 milestone*

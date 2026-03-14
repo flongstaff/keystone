@@ -2,81 +2,58 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Dynamic Toolkit Discovery
-status: planning
-stopped_at: Completed 16-01-PLAN.md — all v1.1 skill files deployed globally
-last_updated: "2026-03-13T23:25:13.662Z"
-last_activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
+status: complete
+stopped_at: v1.1 milestone archived
+last_updated: "2026-03-14T00:00:00.000Z"
+last_activity: 2026-03-14 — v1.1 milestone completed and archived
 progress:
   total_phases: 17
   completed_phases: 17
   total_plans: 23
   completed_plans: 23
-  percent: 0
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-13)
+See: .planning/PROJECT.md (updated 2026-03-14)
 
 **Core value:** At any point in a project, one command (`/wizard`) tells the user exactly where they are and does the next right thing.
-**Current focus:** Phase 12 — Core Discovery Scanner
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 12 of 16 (Core Discovery Scanner)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-13 — v1.1 roadmap created; all 20 requirements mapped across 5 phases
+Milestone v1.1 Dynamic Toolkit Discovery — SHIPPED 2026-03-14
 
-Progress: ░░░░░░░░░░ 0%
+All 17 phases complete (v1.0: 12 phases, v1.1: 5 phases)
+All 23 plans complete (v1.0: 17 plans, v1.1: 6 plans)
+All 43 requirements satisfied (v1.0: 23, v1.1: 20)
+
+Progress: ██████████ 100%
 
 ## Performance Metrics
 
-**v1.0 Summary:** 11 phases (+ 1 decimal), 17 plans, 23 requirements — all complete (shipped 2026-03-13)
-
-**v1.1 Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+**v1.0 Summary:** 12 phases, 17 plans, 23 requirements — shipped 2026-03-13
+**v1.1 Summary:** 5 phases, 6 plans, 20 requirements — shipped 2026-03-14
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [v1.1 Roadmap]: Two-level discovery architecture — full registry (toolkit-registry.json) + compact summary in wizard-state.json; keeps startup token cost flat
-- [v1.1 Roadmap]: TTL-gated caching in toolkit-discovery.sh — skip rescan when registry is fresh; critical for 160-agent install
-- [v1.1 Roadmap]: Phase 14 research flag is ACTIVE — read ~/.claude/get-shit-done/workflows/ before writing any injection code; GSD Task() prompt contracts must not break
-- [v1.1 Roadmap]: Hardcoded Phase 7 catalog is the fallback for Phase 15 — never remove it until parity test passes
-- [v1.1 Roadmap]: toolkit-registry.json must be gitignored before Phase 16 global deployment — machine-specific MCP state must not be committed
-- [Phase 12-core-discovery-scanner]: toolkit-discovery.sh: files without YAML frontmatter included with filename-as-name so agent count matches filesystem
-- [Phase 12-core-discovery-scanner]: Stage list cap is 6 per stage (not 8) to satisfy <800B summary size constraint with real-world 176-agent toolkit
-- [Phase 12-core-discovery-scanner]: Hook scanning uses unique commands from settings.json registrations (24 unique) not top-level entry count (23)
-- [Phase 13-state-integration]: TOOLKIT_DISCOVERY section inserted before JSON WRITE so TOOLKIT_JSON variable is shared between heredoc and status box display
-- [Phase 13-state-integration]: Python3 stdin pipe used for TOOLKIT_LINE extraction to prevent JSON special character shell interpolation issues
-- [Phase 14-subagent-injection-confirmation-ux]: wizard-state.json is sole data source for capability injection; toolkit-registry.json never read (PERF-03)
-- [Phase 14-subagent-injection-confirmation-ux]: Capability blocks use <capabilities> XML tag matching existing GSD prompt conventions; injected after <files_to_read> and before <output>/<success_criteria>
-- [Phase 14-01]: Confirmation guard lives inside 'Build Capability Block' helper, not Step 2.5 — fires at spawn sites only when TOOLS_CONFIRMED is nil
-- [Phase 14-01]: TOOLS_CONFIRMED is ephemeral (local variable only) — never written to wizard-state.json; resets each /wizard invocation
-- [Phase 14-01]: Never read toolkit-registry.json from wizard files — only wizard-state.json toolkit.by_stage (PERF-03)
-- [Phase 15-01]: Keystone tools section hardcoded in Display Catalog (not registry-sourced) -- 4/11 agents and 4/4 skills absent from toolkit-registry.json due to parity gap
-- [Phase 15-01]: Display Catalog uses prose redirect pattern ('Go to ## Display Catalog, then re-present this SAME [menu] menu') to enable single shared block serving 4 option handlers
-- [Phase 16-global-deployment-sync]: All 4 v1.1 skill files deployed globally via cp -p; toolkit-discovery.sh verified cross-project via SCRIPT_DIR from /tmp
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Phase 14]: GSD internal Task() prompt format must be read before implementation — injection format (XML comment vs labeled section) is unspecified until templates are reviewed. This is the highest-risk phase in v1.1.
+None — milestone complete.
 
 ## Session Continuity
 
-Last session: 2026-03-13T23:22:05.682Z
-Stopped at: Completed 16-01-PLAN.md — all v1.1 skill files deployed globally
+Last session: 2026-03-14
+Stopped at: v1.1 milestone archived
 Resume file: None
