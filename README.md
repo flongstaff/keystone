@@ -36,7 +36,13 @@ cd keystone
 bash scripts/install-runtime-support.sh --claude
 ```
 
-This installs BMAD + GSD, deploys agents and hooks to `~/.claude/`, and sets up a weekly version check.
+This installs BMAD + GSD, deploys core agents and hooks to `~/.claude/`, and sets up a weekly version check.
+
+To also install optional domain agents (Godot, open-source, admin-docs):
+
+```bash
+bash scripts/install-runtime-support.sh --claude --with-domains
+```
 
 **3. Restart Claude Code.**
 
@@ -52,19 +58,26 @@ The wizard takes it from there.
 
 ### Agents
 
+**Core** (installed by default):
+
 | Category | Agent | What it does |
 |----------|-------|-------------|
 | Entry | `project-setup-wizard` | Interactive project state detection and workflow delivery |
-| Entry | `project-setup-advisor` | Lighter alternative -- direct recommendation, no menus |
 | Bridge | `bmad-gsd-orchestrator` | Translates BMAD docs into GSD `.planning/` structure |
 | Bridge | `context-health-monitor` | Detects architectural drift after phase execution |
 | Bridge | `doc-shard-bridge` | Splits large docs into per-phase context shards |
 | Bridge | `phase-gate-validator` | Formal quality gate between GSD phases |
 | Domain | `it-infra-agent` | IT infrastructure with dry-run, rollback, secret hygiene |
-| Domain | `godot-dev-agent` | Godot 4 / GDScript conventions and patterns |
-| Domain | `open-source-agent` | OSS project management, dependency upgrades, releases |
-| Domain | `admin-docs-agent` | Policy documents, runbooks, internal communications |
 | Maintenance | `stack-update-watcher` | Monitors BMAD/GSD for upstream changes |
+
+**Optional** (install with `--with-domains`):
+
+| Agent | What it does |
+|-------|-------------|
+| `project-setup-advisor` | Lighter alternative to wizard -- direct recommendation, no menus |
+| `godot-dev-agent` | Godot 4 / GDScript conventions and patterns |
+| `open-source-agent` | OSS project management, dependency upgrades, releases |
+| `admin-docs-agent` | Policy documents, runbooks, internal communications |
 
 ### Hooks
 

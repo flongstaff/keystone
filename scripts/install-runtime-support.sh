@@ -25,14 +25,21 @@ step() { echo -e "\n${CYN}▶${NC} $*"; }
 DO_CLAUDE=false
 DO_OPENCODE=false
 DO_PI=false
+DO_DOMAINS=false
 
 for arg in "$@"; do
   case $arg in
-    --claude)   DO_CLAUDE=true ;;
-    --opencode) DO_OPENCODE=true ;;
-    --pi)       DO_PI=true ;;
-    --all)      DO_CLAUDE=true; DO_OPENCODE=true; DO_PI=true ;;
-    *)          echo "Unknown: $arg"; echo "Usage: $0 [--claude] [--opencode] [--pi] [--all]"; exit 1 ;;
+    --claude)       DO_CLAUDE=true ;;
+    --opencode)     DO_OPENCODE=true ;;
+    --pi)           DO_PI=true ;;
+    --all)          DO_CLAUDE=true; DO_OPENCODE=true; DO_PI=true ;;
+    --with-domains) DO_DOMAINS=true ;;
+    *)              echo "Unknown: $arg"
+                    echo "Usage: $0 [--claude] [--opencode] [--pi] [--all] [--with-domains]"
+                    echo ""
+                    echo "  --with-domains  Also install optional domain agents"
+                    echo "                  (Godot, open-source, admin-docs, advisor)"
+                    exit 1 ;;
   esac
 done
 
@@ -93,21 +100,45 @@ fi
 
 # ── Deploy agents to Claude Code ──────────────────────────────────────
 if $DO_CLAUDE; then
-  step "Deploying agents to Claude Code..."
+  step "Deploying core agents to Claude Code..."
   mkdir -p "$CLAUDE_DIR/agents" "$CLAUDE_DIR/scripts" "$CLAUDE_DIR/logs"
 
+  # Core agents: everything except agents/optional/
   AGENT_COUNT=0
   while IFS= read -r -d '' agent_src; do
     agent_name=$(basename "$agent_src")
     cp "$agent_src" "$CLAUDE_DIR/agents/"
     ok "Deployed: $agent_name"
     AGENT_COUNT=$((AGENT_COUNT + 1))
-  done < <(find "$AGENTS_SRC" -name '*.md' -print0)
+  done < <(find "$AGENTS_SRC" -name '*.md' -not -path '*/optional/*' -print0)
 
   if [[ $AGENT_COUNT -eq 0 ]]; then
-    warn "No agent files found in $AGENTS_SRC"
+    warn "No core agent files found in $AGENTS_SRC"
   else
-    ok "Deployed $AGENT_COUNT agents to $CLAUDE_DIR/agents/"
+    ok "Deployed $AGENT_COUNT core agents to $CLAUDE_DIR/agents/"
+  fi
+
+  # Optional domain agents (only with --with-domains)
+  if $DO_DOMAINS; then
+    OPTIONAL_SRC="$AGENTS_SRC/optional"
+    if [[ -d "$OPTIONAL_SRC" ]]; then
+      step "Deploying optional domain agents..."
+      OPT_COUNT=0
+      while IFS= read -r -d '' agent_src; do
+        agent_name=$(basename "$agent_src")
+        cp "$agent_src" "$CLAUDE_DIR/agents/"
+        ok "Optional: $agent_name"
+        OPT_COUNT=$((OPT_COUNT + 1))
+      done < <(find "$OPTIONAL_SRC" -name '*.md' -print0)
+      ok "Deployed $OPT_COUNT optional agents"
+    else
+      warn "No optional agents directory found at $OPTIONAL_SRC"
+    fi
+  else
+    echo ""
+    echo "  Skipped optional domain agents (Godot, open-source, admin-docs, advisor)."
+    echo "  To include them: $0 --claude --with-domains"
+    echo ""
   fi
 fi
 
@@ -122,6 +153,9 @@ if $DO_PI; then
 
   # Pi loads AGENTS.md files from ~/.pi/agent/
   # We create Pi-compatible versions (no Claude Code frontmatter, AGENTS.md format)
+
+  FIND_OPTS=(-name '*.md')
+  $DO_DOMAINS || FIND_OPTS+=(-not -path '*/optional/*')
 
   while IFS= read -r -d '' agent_src; do
     agent_name=$(basename "$agent_src" .md)
@@ -149,7 +183,7 @@ print(f"  → Pi agent: {dst}")
 PYEOF
 
     ok "Pi agent: $agent_name"
-  done < <(find "$AGENTS_SRC" -name '*.md' -print0)
+  done < <(find "$AGENTS_SRC" "${FIND_OPTS[@]}" -print0)
 
   ok "Pi agents deployed to $PI_DIR/agent/"
   echo "  Pi loads these automatically at startup from ~/.pi/agent/"
@@ -172,7 +206,9 @@ if $DO_OPENCODE; then
   done
 
   if [[ -n "$OC_AGENT_DIR" ]]; then
-    find "$AGENTS_SRC" -name '*.md' -exec cp {} "$OC_AGENT_DIR/" \;
+    OC_FIND_OPTS=(-name '*.md')
+    $DO_DOMAINS || OC_FIND_OPTS+=(-not -path '*/optional/*')
+    find "$AGENTS_SRC" "${OC_FIND_OPTS[@]}" -exec cp {} "$OC_AGENT_DIR/" \;
     ok "OpenCode agents deployed to $OC_AGENT_DIR"
   else
     warn "Could not determine OpenCode agent directory. Deploy manually."

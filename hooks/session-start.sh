@@ -5,11 +5,24 @@
 # Shows project state, active GSD phase, BMAD status, update banner.
 # Non-blocking: all network calls are async or cached.
 
+# Note: -e is intentionally omitted — grep/compgen/detection checks return non-zero
+# on no-match, which is normal flow for this hook. -u catches unset vars.
+set -uo pipefail
+
 LOG="$HOME/.claude/logs/session-start.log"
 mkdir -p "$HOME/.claude/logs" 2>/dev/null || true
 
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 { echo "[$TIMESTAMP] Session start: $(pwd)" >> "$LOG"; } 2>/dev/null || true
+
+# ── 0. Quick exit if no framework markers ─────────────────────────────
+# Skip the full detection when neither BMAD nor GSD nor CLAUDE.md is present.
+# This avoids overhead in projects that don't use either framework.
+if ! [[ -d "_bmad" || -d ".bmad" || -f ".planning/config.json" || -f ".claude/CLAUDE.md" || -f "CLAUDE.md" || -f "AGENTS.md" ]] \
+   && ! compgen -G "docs/prd*.md" > /dev/null 2>&1; then
+  { echo "[$TIMESTAMP] No framework markers — skipping" >> "$LOG"; } 2>/dev/null || true
+  exit 0
+fi
 
 # ── 1. Detect project state ───────────────────────────────────────────
 HAS_BMAD=false
@@ -32,8 +45,8 @@ import json, sys
 try:
     d = json.load(open('.planning/config.json'))
     print(d.get('project_name',''))
-except:
-    pass
+except (IOError, json.JSONDecodeError, KeyError) as e:
+    print('', file=sys.stderr)
 " 2>/dev/null || true)
 
   # Read current phase from STATE.md
