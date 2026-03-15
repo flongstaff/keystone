@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Wizard detection script — shared by wizard.md and wizard-detect.sh
+# Wizard detection script — called by the wizard skill (wizard.md)
 # Detects project state, writes .claude/wizard-state.json, prints status box.
+
+# Note: -e is intentionally omitted — many commands (find, grep on missing dirs)
+# return non-zero in normal operation. -u catches unset vars, pipefail catches pipe errors.
+set -uo pipefail
 
 # -- BMAD MARKERS -------------------------------------------------------
 BMAD_DIR=false
@@ -57,6 +61,15 @@ if [ "$GSD_ROADMAP" = "true" ]; then
     [ -z "$TOTAL" ] && TOTAL=0
     [ "$TOTAL" -gt 0 ] && GSD_TOTAL_PHASES_JSON=$TOTAL
 
+    # Helper: set GSD_NEXT_CMD to advance or complete based on phase position
+    set_advance_cmd() {
+        if [ "$PHASE_NUM" -ge "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
+            GSD_NEXT_CMD="/gsd:complete-milestone"
+        else
+            GSD_NEXT_CMD="/gsd:discuss-phase $((PHASE_NUM + 1))"
+        fi
+    }
+
     # File-state ladder: find latest phase dir
     LATEST_PHASE_DIR=$(find .planning/phases -maxdepth 1 -type d -name "[0-9]*" 2>/dev/null | sort -V | tail -1)
 
@@ -74,15 +87,7 @@ if [ "$GSD_ROADMAP" = "true" ]; then
         HAS_VERIFICATION=$(find "$LATEST_PHASE_DIR" -maxdepth 1 -name "*-VERIFICATION.md" 2>/dev/null | head -1 | wc -l | tr -d ' ')
 
         if [ "$HAS_VERIFICATION" -gt 0 ]; then
-            # Phase is verified complete — same advance logic as uat-passing
-            TOTAL_RAW=$(grep -c "^### Phase" .planning/ROADMAP.md 2>/dev/null || true)
-            [ -z "$TOTAL_RAW" ] && TOTAL_RAW=0
-            if [ "$PHASE_NUM" -ge "$TOTAL_RAW" ] && [ "$TOTAL_RAW" -gt 0 ]; then
-                GSD_NEXT_CMD="/gsd:complete-milestone"
-            else
-                NEXT_NUM=$((PHASE_NUM + 1))
-                GSD_NEXT_CMD="/gsd:discuss-phase $NEXT_NUM"
-            fi
+            set_advance_cmd
             GSD_PHASE_STATUS="complete"
         elif [ "$HAS_UAT" -gt 0 ]; then
             FAIL_COUNT=$(grep -c "FAIL\|fail" "$LATEST_PHASE_DIR"/*-UAT.md 2>/dev/null || true)
@@ -91,17 +96,10 @@ if [ "$GSD_ROADMAP" = "true" ]; then
                 GSD_NEXT_CMD="/gsd:execute-phase $PHASE_NUM"
                 GSD_PHASE_STATUS="uat-failing"
             else
-                # Check if all phases done
-                TOTAL_RAW=$(grep -c "^### Phase" .planning/ROADMAP.md 2>/dev/null || true)
-                [ -z "$TOTAL_RAW" ] && TOTAL_RAW=0
-                if [ "$PHASE_NUM" -ge "$TOTAL_RAW" ] && [ "$TOTAL_RAW" -gt 0 ]; then
-                    GSD_NEXT_CMD="/gsd:complete-milestone"
-                    GSD_PHASE_STATUS="complete"
-                else
-                    NEXT_NUM=$((PHASE_NUM + 1))
-                    GSD_NEXT_CMD="/gsd:discuss-phase $NEXT_NUM"
-                    GSD_PHASE_STATUS="uat-passing"
-                fi
+                set_advance_cmd
+                GSD_PHASE_STATUS="uat-passing"
+                # If advancing past last phase, mark complete instead
+                [ "$PHASE_NUM" -ge "$TOTAL" ] && [ "$TOTAL" -gt 0 ] && GSD_PHASE_STATUS="complete"
             fi
         elif [ "$HAS_PLAN" -gt 0 ]; then
             GSD_NEXT_CMD="/gsd:execute-phase $PHASE_NUM"
@@ -163,16 +161,25 @@ fi
 
 # -- INFRA SAFETY INJECTION ---------------------------------------------
 PLANNING_CONFIG=".planning/config.json"
+INFRA_SAFETY_APPLIED=false
 if [ "$PROJECT_TYPE" = "infra" ] && [ -f "$PLANNING_CONFIG" ]; then
-    python3 -c "
-import json
-with open('$PLANNING_CONFIG', 'r') as f:
-    config = json.load(f)
-config['auto_advance'] = False
-config['dry_run_required'] = True
-with open('$PLANNING_CONFIG', 'w') as f:
-    json.dump(config, f, indent=2)
-" 2>/dev/null
+    if python3 -c "
+import json, sys
+try:
+    with open('$PLANNING_CONFIG', 'r') as f:
+        config = json.load(f)
+    config['auto_advance'] = False
+    config['dry_run_required'] = True
+    with open('$PLANNING_CONFIG', 'w') as f:
+        json.dump(config, f, indent=2)
+except Exception as e:
+    print(f'ERROR: infra safety injection failed: {e}', file=sys.stderr)
+    sys.exit(1)
+" 2>&1; then
+        INFRA_SAFETY_APPLIED=true
+    else
+        echo "WARNING: infra safety injection failed — config.json may be malformed" >&2
+    fi
 fi
 
 # -- COMPLEXITY DETECTION -----------------------------------------------
@@ -256,11 +263,6 @@ case "$SCENARIO" in
         ;;
 esac
 
-# -- BOOLEAN JSON HELPERS -----------------------------------------------
-# Derive JSON-ready booleans for nested objects
-BMAD_PRESENT=$BMAD_DOCS
-GSD_PRESENT=$GSD_ROADMAP
-
 # -- IS_RESET DETECTION -------------------------------------------------
 # Must run BEFORE JSON write — reads previous wizard-state.json
 IS_RESET=false
@@ -313,44 +315,55 @@ fi
 DETECTED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 mkdir -p ".claude"
 
-cat > ".claude/wizard-state.json" << EOF
-{
-  "scenario": "$SCENARIO",
-  "detected_at": "$DETECTED_AT",
-  "next_command": "$NEXT_CMD",
-  "project_type": $PROJECT_TYPE_JSON,
-  "complexity_signal": $COMPLEXITY_JSON,
-  "recommended_path": "$RECOMMENDED_PATH",
-  "bridge_eligible": $BRIDGE_ELIGIBLE,
-  "bmad": {
-    "present": $BMAD_PRESENT,
-    "prd": $BMAD_PRD,
-    "architecture": $BMAD_ARCH,
-    "stories_total": $BMAD_STORIES_TOTAL,
-    "stories_approved": $BMAD_STORIES_APPROVED,
-    "stories_done": $BMAD_STORIES_DONE
-  },
-  "gsd": {
-    "present": $GSD_PRESENT,
-    "roadmap": $GSD_ROADMAP,
-    "state": $GSD_STATE,
-    "current_phase": $GSD_CURRENT_PHASE_JSON,
-    "total_phases": $GSD_TOTAL_PHASES_JSON,
-    "phase_status": $GSD_PHASE_STATUS_JSON
-  },
-  "toolkit": $TOOLKIT_JSON
+# Use python3 for safe JSON construction (prevents injection from project names with quotes)
+python3 -c "
+import json, sys
+
+data = {
+    'scenario': sys.argv[1],
+    'detected_at': sys.argv[2],
+    'next_command': sys.argv[3],
+    'project_type': None if sys.argv[4] == 'null' else sys.argv[4],
+    'complexity_signal': json.loads(sys.argv[5]),
+    'recommended_path': sys.argv[6],
+    'bridge_eligible': sys.argv[7] == 'true',
+    'bmad': {
+        'present': sys.argv[8] == 'true',
+        'prd': sys.argv[9] == 'true',
+        'architecture': sys.argv[10] == 'true',
+        'stories_total': int(sys.argv[11]),
+        'stories_approved': int(sys.argv[12]),
+        'stories_done': int(sys.argv[13]),
+    },
+    'gsd': {
+        'present': sys.argv[14] == 'true',
+        'roadmap': sys.argv[15] == 'true',
+        'state': sys.argv[16] == 'true',
+        'current_phase': None if sys.argv[17] == 'null' else int(sys.argv[17]),
+        'total_phases': None if sys.argv[18] == 'null' else int(sys.argv[18]),
+        'phase_status': None if sys.argv[19] == 'null' else sys.argv[19].strip('\"'),
+    },
+    'toolkit': json.loads(sys.argv[20]),
 }
-EOF
+
+with open('.claude/wizard-state.json', 'w') as f:
+    json.dump(data, f, indent=2)
+" \
+    "$SCENARIO" "$DETECTED_AT" "$NEXT_CMD" \
+    "${PROJECT_TYPE_JSON}" "$COMPLEXITY_JSON" "$RECOMMENDED_PATH" \
+    "$BRIDGE_ELIGIBLE" \
+    "$BMAD_DOCS" "$BMAD_PRD" "$BMAD_ARCH" \
+    "$BMAD_STORIES_TOTAL" "$BMAD_STORIES_APPROVED" "$BMAD_STORIES_DONE" \
+    "$GSD_ROADMAP" "$GSD_ROADMAP" "$GSD_STATE" \
+    "$GSD_CURRENT_PHASE_JSON" "$GSD_TOTAL_PHASES_JSON" "$GSD_PHASE_STATUS_JSON" \
+    "$TOOLKIT_JSON"
 
 # -- ORIENTATION CONTEXT (GSD scenarios) ---------------------------------
 STOPPED_AT=""
-LAST_ACTIVITY=""
 PHASE_NAME=""
 
 if [ "$GSD_STATE" = "true" ] && [ -f ".planning/STATE.md" ]; then
     STOPPED_AT=$(grep "^stopped_at:" .planning/STATE.md 2>/dev/null | head -1 | sed 's/^stopped_at: *//')
-    # shellcheck disable=SC2034
-    LAST_ACTIVITY=$(grep "^last_activity:" .planning/STATE.md 2>/dev/null | head -1 | sed 's/^last_activity: *//')
 fi
 
 if [ "$GSD_ROADMAP" = "true" ] && [ -n "$GSD_CURRENT_PHASE_JSON" ] && [ "$GSD_CURRENT_PHASE_JSON" != "null" ]; then
@@ -378,7 +391,11 @@ if [ -n "$PROJECT_TYPE" ]; then
     printf "│  Type: %-49s│\n" "$PROJECT_TYPE"
 fi
 if [ "$PROJECT_TYPE" = "infra" ]; then
-    printf "│  IT Safety: active                                       │\n"
+    if [ "$INFRA_SAFETY_APPLIED" = "true" ]; then
+        printf "│  IT Safety: active                                       │\n"
+    else
+        printf "│  IT Safety: FAILED (check config.json)                   │\n"
+    fi
 fi
 if [ -n "$PHASE_NAME" ]; then
     PHASE_LABEL="Phase $GSD_CURRENT_PHASE_JSON: $PHASE_NAME"
@@ -405,7 +422,9 @@ if [ "$SCENARIO" = "bmad-ready" ] || [ "$SCENARIO" = "bmad-incomplete" ]; then
         elif [ "$BMAD_STORIES_APPROVED" -lt "$BMAD_STORIES_TOTAL" ] 2>/dev/null; then
             MISSING="${MISSING}${BMAD_STORIES_APPROVED}/${BMAD_STORIES_TOTAL}-approved "
         fi
-        printf "│  Bridge: BLOCKED (missing: %s)%*s│\n" "$MISSING" $((27 - ${#MISSING})) ""
+        PAD=$((27 - ${#MISSING}))
+        [ "$PAD" -lt 0 ] && PAD=0
+        printf "│  Bridge: BLOCKED (missing: %s)%*s│\n" "$MISSING" "$PAD" ""
     fi
 fi
 printf "│                                                          │\n"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # weekly-stack-check.sh — Standalone version check. Fetches npm versions, writes cache.
 # Run manually or via cron. Does NOT apply changes.
 #
@@ -53,7 +53,14 @@ fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Done. BMAD=$BMAD_LOCAL>$BMAD_LATEST GSD=$GSD_LOCAL>$GSD_LATEST Pi=$PI_LOCAL>$PI_LATEST" >> "$LOG" 2>/dev/null || true
 
-echo "BMAD: $BMAD_LOCAL > $BMAD_LATEST $( [ "$BMAD_LOCAL" = "$BMAD_LATEST" ] && echo "(current)" || echo "(UPDATE)" )"
-echo "GSD:  $GSD_LOCAL > $GSD_LATEST $( [ "$GSD_LOCAL" = "$GSD_LATEST" ] && echo "(current)" || echo "(UPDATE)" )"
-echo "Pi:   $PI_LOCAL > $PI_LATEST $( [ "$PI_LOCAL" = "$PI_LATEST" ] && echo "(current)" || echo "(UPDATE)" )"
+version_status() {
+    local label="$1" local_ver="$2" latest_ver="$3"
+    local status="(UPDATE)"
+    [ "$local_ver" = "$latest_ver" ] && status="(current)"
+    printf "%-5s %s > %s %s\n" "$label" "$local_ver" "$latest_ver" "$status"
+}
+
+version_status "BMAD:" "$BMAD_LOCAL" "$BMAD_LATEST"
+version_status "GSD:"  "$GSD_LOCAL"  "$GSD_LATEST"
+version_status "Pi:"   "$PI_LOCAL"   "$PI_LATEST"
 echo "Say 'check for updates' in Claude Code for full changelog analysis."

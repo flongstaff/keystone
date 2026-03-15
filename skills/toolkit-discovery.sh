@@ -62,7 +62,7 @@ for stage in STAGES:
 
 summary = {'version': 1, 'counts': counts, 'by_stage': by_stage}
 print(json.dumps(summary, separators=(',', ':')))
-" 2>/dev/null
+" 2>>"$HOME/.claude/logs/toolkit-discovery-errors.log"
         exit 0
     fi
 fi
@@ -110,8 +110,10 @@ def assign_stages(name, description):
     return matched if matched else STAGES[:]
 
 
-def parse_agent_frontmatter(path):
-    '''Parse YAML frontmatter from an agent .md file. Returns dict (possibly empty) or None on read error.'''
+def parse_frontmatter(path, require_frontmatter=False):
+    '''Parse YAML frontmatter from a .md file. Returns dict or None on read error.
+    If require_frontmatter=True, returns None when no frontmatter is found.
+    Otherwise returns empty dict (so the file still gets included).'''
     try:
         content = path.read_text(encoding='utf-8', errors='replace')
     except Exception:
@@ -120,8 +122,7 @@ def parse_agent_frontmatter(path):
     # Extract between first --- and second ---
     m = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
     if not m:
-        # No frontmatter -- return empty dict so file still gets included
-        return {}
+        return None if require_frontmatter else {}
 
     fm = m.group(1)
     result = {}
@@ -152,7 +153,6 @@ def parse_agent_frontmatter(path):
             i += 1
             while i < len(lines):
                 l = lines[i]
-                # Continuation lines start with whitespace
                 if l and (l[0] == ' ' or l[0] == '\t'):
                     desc_lines.append(l.strip())
                     i += 1
@@ -172,14 +172,10 @@ def parse_agent_frontmatter(path):
                 pass
             i += 1
         elif key == 'tools':
-            # Could be inline: 'tools: Read, Write, Bash'
-            # or a YAML list on subsequent lines
             if rest:
-                # Inline list (comma-separated)
                 result['tools'] = [t.strip() for t in rest.split(',') if t.strip()]
                 i += 1
             else:
-                # Multi-line YAML list
                 tool_list = []
                 i += 1
                 while i < len(lines):
@@ -199,59 +195,13 @@ def parse_agent_frontmatter(path):
     return result
 
 
-def parse_skill_frontmatter(path):
-    '''Parse YAML frontmatter from SKILL.md. Returns dict or None.'''
-    try:
-        content = path.read_text(encoding='utf-8', errors='replace')
-    except Exception:
-        return None
-
-    m = re.match(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
-    if not m:
-        return None
-
-    fm = m.group(1)
-    result = {}
-    lines = fm.split('\n')
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        if ':' not in line or not line.strip():
-            i += 1
-            continue
-        key, _, rest = line.partition(':')
-        key = key.strip()
-        rest = rest.strip()
-        if key == 'name':
-            result['name'] = rest
-            i += 1
-        elif key == 'description':
-            if rest in ('>', '|', '>-', '|-'):
-                desc_lines = []
-                i += 1
-                while i < len(lines):
-                    l = lines[i]
-                    if l and (l[0] == ' ' or l[0] == '\t'):
-                        desc_lines.append(l.strip())
-                        i += 1
-                    else:
-                        break
-                result['description'] = ' '.join(desc_lines)
-            else:
-                result['description'] = rest
-                i += 1
-        else:
-            i += 1
-    return result
-
-
 # -----------------------------------------------------------------------
 # 1. AGENT SCANNING (DISC-01)
 # -----------------------------------------------------------------------
 agents = []
 if AGENTS_DIR.is_dir():
     for md_file in sorted(AGENTS_DIR.glob('*.md')):
-        fm = parse_agent_frontmatter(md_file)
+        fm = parse_frontmatter(md_file)
         if fm is None:
             # File could not be read at all — skip
             print(f'WARNING: Could not read agent file {md_file.name}', file=sys.stderr)
@@ -294,7 +244,7 @@ if SKILLS_DIR.is_dir():
         if not skill_dir.is_dir() or not skill_md.exists():
             continue
 
-        fm = parse_skill_frontmatter(skill_md)
+        fm = parse_frontmatter(skill_md, require_frontmatter=True)
         if fm is None:
             print(f'WARNING: Could not parse frontmatter from {skill_md}', file=sys.stderr)
             continue
@@ -464,6 +414,6 @@ summary = {
 }
 
 print(json.dumps(summary, separators=(',', ':')))
-" 2>/dev/null
+" 2>>"$HOME/.claude/logs/toolkit-discovery-errors.log"
 
 exit 0

@@ -16,7 +16,7 @@ TARGET="all"
 while [[ $# -gt 0 ]]; do
   case $1 in
     --dry-run|-n) DRY_RUN=true ;;
-    --target)     TARGET="$2"; shift ;;
+    --target)     [[ $# -lt 2 ]] && echo "ERROR: --target requires a value" >&2 && exit 1; TARGET="$2"; shift ;;
     --help|-h)    echo "Usage: $0 [--dry-run] [--target claude|pi|opencode|all]"; exit 0 ;;
     *) echo "Unknown: $1"; exit 1 ;;
   esac
@@ -51,25 +51,35 @@ validate_source() {
   return 0
 }
 
+# Pre-restore backup: snapshot existing target before overwriting
+backup_existing() {
+  local target="$1"
+  $DRY_RUN && return 0
+  if [[ -e "$target" ]]; then
+    cp -a "$target" "${target}.pre-restore.$(date +%s)" 2>/dev/null || true
+  fi
+}
+
+# Validate source dir, backup existing target, then rsync
+restore_dir() {
+  local src="$1" dest="$2" label="$3"
+  shift 3
+  # remaining args are extra rsync flags (e.g. --exclude)
+  if validate_source "$src" "$label"; then
+    backup_existing "$dest"
+    log "Restoring $label..."
+    run rsync -a --delete "$@" "$src" "$dest"
+  fi
+}
+
 log "Restoring from: $BACKUP_DIR"
 $DRY_RUN && log "DRY RUN MODE — no changes will be made"
 
 if [[ "$TARGET" == "all" || "$TARGET" == "claude" ]]; then
-  if validate_source "$BACKUP_DIR/claude-agents/" "Claude Code agents"; then
-    if [[ -d "$HOME/.claude/agents/" ]] && ! $DRY_RUN; then
-      cp -a "$HOME/.claude/agents/" "$HOME/.claude/agents.pre-restore.$(date +%s)" 2>/dev/null || true
-    fi
-    log "Restoring Claude Code agents..."
-    run rsync -a --delete "$BACKUP_DIR/claude-agents/" "$HOME/.claude/agents/"
-  fi
-  if validate_source "$BACKUP_DIR/claude-hooks/" "Claude Code hooks"; then
-    log "Restoring Claude Code hooks..."
-    run rsync -a --delete "$BACKUP_DIR/claude-hooks/" "$HOME/.claude/hooks/"
-  fi
+  restore_dir "$BACKUP_DIR/claude-agents/" "$HOME/.claude/agents/" "Claude Code agents"
+  restore_dir "$BACKUP_DIR/claude-hooks/" "$HOME/.claude/hooks/" "Claude Code hooks"
   if [[ -f "$BACKUP_DIR/claude-settings.json" ]]; then
-    if [[ -f "$HOME/.claude/settings.json" ]] && ! $DRY_RUN; then
-      cp "$HOME/.claude/settings.json" "$HOME/.claude/settings.json.pre-restore.$(date +%s)" 2>/dev/null || true
-    fi
+    backup_existing "$HOME/.claude/settings.json"
     log "Restoring Claude Code settings..."
     run cp "$BACKUP_DIR/claude-settings.json" "$HOME/.claude/settings.json"
   else
@@ -79,19 +89,11 @@ if [[ "$TARGET" == "all" || "$TARGET" == "claude" ]]; then
 fi
 
 if [[ "$TARGET" == "all" || "$TARGET" == "pi" ]]; then
-  if validate_source "$BACKUP_DIR/pi-agent/" "Pi agents"; then
-    log "Restoring Pi agent config..."
-    run rsync -a --delete --exclude='sessions' "$BACKUP_DIR/pi-agent/" "$HOME/.pi/agent/"
-    log "Pi restored."
-  fi
+  restore_dir "$BACKUP_DIR/pi-agent/" "$HOME/.pi/agent/" "Pi agents" --exclude='sessions'
 fi
 
 if [[ "$TARGET" == "all" || "$TARGET" == "opencode" ]]; then
-  if validate_source "$BACKUP_DIR/opencode/" "OpenCode config"; then
-    log "Restoring OpenCode config..."
-    run rsync -a --delete --exclude='cache' --exclude='node_modules' "$BACKUP_DIR/opencode/" "$HOME/.config/opencode/"
-    log "OpenCode restored."
-  fi
+  restore_dir "$BACKUP_DIR/opencode/" "$HOME/.config/opencode/" "OpenCode config" --exclude='cache' --exclude='node_modules'
 fi
 
 log "Restore complete."
